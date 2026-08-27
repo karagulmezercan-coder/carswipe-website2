@@ -207,6 +207,13 @@
     .filter-range-val { font-size: 12px; color: #E53935; font-weight: 700; min-width: 60px; text-align: right; }
     .apply-btn { display: block; background: #E53935; color: #fff; font-size: 16px; font-weight: 700; border: none; border-radius: 14px; padding: 14px; margin: 14px 12px 10px; width: calc(100% - 24px); cursor: pointer; transition: background .15s; }
     .apply-btn:hover { background: #c62828; }
+    .fcat-card { background:#fff; border:1.5px solid #e0e0e0; border-radius:12px; padding:10px 6px; text-align:center; cursor:pointer; transition:border-color .15s, background .15s; }
+    .fcat-card.active { border-color:#43A047; background:#f1f8f1; }
+    .fcat-icon { font-size:22px; margin-bottom:4px; }
+    .fcat-lbl { font-size:11px; font-weight:600; color:#444; line-height:1.3; }
+    .fcat-card.active .fcat-lbl { color:#43A047; }
+    .fcat-btn { flex:1; padding:10px; border:1.5px solid #e0e0e0; border-radius:10px; background:#fff; font-size:13px; font-weight:600; cursor:pointer; color:#555; transition:all .15s; }
+    .fcat-btn.active { border-color:#43A047; background:#f1f8f1; color:#43A047; }
     /* Liked cars */
     .liked-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #bbb; font-size: 15px; gap: 12px; padding: 40px 20px; text-align: center; }
     .liked-empty-icon { font-size: 48px; }
@@ -490,125 +497,183 @@
       <div class="app-notch"><div class="app-notch-bar"></div></div>
       <div class="app-header">
         <div class="app-header-title">Filtrele</div>
-        <button onclick="resetFilters()" style="background:none;border:none;color:#E53935;font-size:13px;font-weight:600;cursor:pointer;margin-left:auto;">Sıfırla</button>
       </div>
-      <div class="app-body">
+      <div class="app-body" style="padding:12px 14px 80px;">
 
+        <!-- İlan No -->
         <div class="filter-section">
-          <div class="filter-label">Araç Kategorisi</div>
-          <div class="filter-chips" id="fc-kategori">
-            <div class="chip active" onclick="toggleChipGroup(this,'fc-kategori')">Tümü</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-kategori')">Otomobil</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-kategori')">SUV</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-kategori')">Minivan</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-kategori')">Elektrikli</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-kategori')">Klasik</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-kategori')">Ticari</div>
+          <div class="filter-label">🔎 İlan Numarası ile Ara</div>
+          <div style="display:flex;gap:8px;">
+            <input type="text" placeholder="örn. 100000001" style="flex:1;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;outline:none;background:#fff;">
+            <button style="background:#43A047;color:#fff;border:none;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;">Ara</button>
           </div>
         </div>
 
+        <!-- Kelime -->
         <div class="filter-section">
-          <div class="filter-label">Marka</div>
-          <div class="filter-chips" id="fc-marka">
-            <div class="chip active" onclick="toggleChipGroup(this,'fc-marka')">Tümü</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">Toyota</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">Volkswagen</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">BMW</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">Mercedes</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">Honda</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">Audi</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">Ford</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">Renault</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">Hyundai</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">Kia</div>
+          <div class="filter-label">🔍 Kelime ile Filtrele</div>
+          <input type="text" placeholder="örn. otomatik, sunroof..." style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;outline:none;background:#fff;">
+        </div>
+
+        <div style="text-align:center;color:#aaa;font-size:12px;margin:6px 0;">Yada</div>
+
+        <!-- Vasıta Türü -->
+        <div class="filter-section">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="filter-label" style="margin:0;">🚗 Vasıta Türü</div>
+            <button onclick="resetFilters()" style="background:none;border:none;color:#43A047;font-size:12px;font-weight:700;cursor:pointer;">Temizle</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;" id="fc-vasita">
+            <div class="fcat-card active" onclick="toggleFcat(this,'fc-vasita')"><div class="fcat-icon">🚗</div><div class="fcat-lbl">Otomobil</div></div>
+            <div class="fcat-card" onclick="toggleFcat(this,'fc-vasita')"><div class="fcat-icon">🚙</div><div class="fcat-lbl">Arazi, SUV &amp; Pickup</div></div>
+            <div class="fcat-card" onclick="toggleFcat(this,'fc-vasita')"><div class="fcat-icon">⚡</div><div class="fcat-lbl">Elektrikli Araçlar</div></div>
+            <div class="fcat-card" onclick="toggleFcat(this,'fc-vasita')"><div class="fcat-icon">🚐</div><div class="fcat-lbl">Minivan &amp; Panelvan</div></div>
+            <div class="fcat-card" onclick="toggleFcat(this,'fc-vasita')"><div class="fcat-icon">🚚</div><div class="fcat-lbl">Ticari Araçlar</div></div>
+            <div class="fcat-card" onclick="toggleFcat(this,'fc-vasita')"><div class="fcat-icon">🔧</div><div class="fcat-lbl">Hasarlı Araçlar</div></div>
           </div>
         </div>
 
+        <!-- Arama Mesafesi -->
         <div class="filter-section">
-          <div class="filter-label">Fiyat Aralığı</div>
+          <div class="filter-label">📍 Arama Mesafesi</div>
+          <button style="width:100%;padding:9px;border:1.5px solid #e0e0e0;border-radius:10px;background:#fff;font-size:13px;cursor:pointer;color:#555;">📍 Konumumu Kullan</button>
+          <div style="text-align:center;color:#43A047;font-weight:700;font-size:13px;margin:8px 0 4px;">1 km</div>
+          <input type="range" min="1" max="100" value="1" style="width:100%;accent-color:#43A047;">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#aaa;"><span>1 km</span><span>Tüm Türkiye</span></div>
+        </div>
+
+        <div style="text-align:center;color:#aaa;font-size:12px;margin:6px 0;">Yada</div>
+
+        <!-- Konum -->
+        <div class="filter-section">
+          <div class="filter-label">📍 Konum</div>
+          <div style="display:flex;gap:8px;">
+            <select style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Şehir seç</option><option>İstanbul</option><option>Ankara</option><option>İzmir</option><option>Bursa</option><option>Antalya</option></select>
+            <select style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>İlçe seç</option></select>
+          </div>
+        </div>
+
+        <!-- Marka & Model -->
+        <div class="filter-section">
+          <div class="filter-label">🚗 Marka &amp; Model</div>
+          <div style="display:flex;gap:8px;">
+            <select style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Marka</option><option>Toyota</option><option>Volkswagen</option><option>BMW</option><option>Mercedes</option><option>Honda</option><option>Audi</option><option>Ford</option><option>Renault</option><option>Hyundai</option><option>Kia</option></select>
+            <select style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Model</option></select>
+          </div>
+        </div>
+
+        <!-- Yıl Aralığı -->
+        <div class="filter-section">
+          <div class="filter-label">📅 Yıl Aralığı</div>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input type="number" placeholder="Min ₺" style="flex:1;padding:8px 10px;border:1.5px solid #eee;border-radius:10px;font-size:13px;outline:none;">
-            <span style="color:#aaa;">—</span>
-            <input type="number" placeholder="Maks ₺" style="flex:1;padding:8px 10px;border:1.5px solid #eee;border-radius:10px;font-size:13px;outline:none;">
+            <select style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Yıldan</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option></select>
+            <span style="color:#aaa;">__</span>
+            <select style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Yıla kadar</option><option>2022</option><option>2023</option><option>2024</option><option>2025</option></select>
           </div>
         </div>
 
+        <!-- Kilometre Aralığı -->
         <div class="filter-section">
-          <div class="filter-label">Kilometre (maks.)</div>
-          <div class="filter-chips" id="fc-km">
-            <div class="chip active" onclick="toggleChipGroup(this,'fc-km')">Tümü</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-km')">50.000 km</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-km')">100.000 km</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-km')">150.000 km</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-km')">200.000 km</div>
-          </div>
-        </div>
-
-        <div class="filter-section">
-          <div class="filter-label">Yıl Aralığı</div>
+          <div class="filter-label">🏎 Kilometre Aralığı</div>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input type="number" placeholder="Min yıl" style="flex:1;padding:8px 10px;border:1.5px solid #eee;border-radius:10px;font-size:13px;outline:none;">
+            <div style="flex:1;border:1.5px solid #e0e0e0;border-radius:10px;padding:9px 10px;background:#fff;">
+              <div style="font-size:10px;color:#aaa;">En az</div>
+              <div style="display:flex;align-items:center;gap:4px;"><input type="number" value="0" style="border:none;outline:none;font-size:14px;font-weight:700;width:60px;background:transparent;"><span style="color:#aaa;font-size:12px;">km</span></div>
+            </div>
             <span style="color:#aaa;">—</span>
-            <input type="number" placeholder="Maks yıl" style="flex:1;padding:8px 10px;border:1.5px solid #eee;border-radius:10px;font-size:13px;outline:none;">
+            <div style="flex:1;border:1.5px solid #e0e0e0;border-radius:10px;padding:9px 10px;background:#fff;">
+              <div style="font-size:10px;color:#aaa;">En fazla</div>
+              <div style="display:flex;align-items:center;gap:4px;"><input type="text" value="∞" style="border:none;outline:none;font-size:14px;font-weight:700;width:40px;background:transparent;"><span style="color:#aaa;font-size:12px;">km</span></div>
+            </div>
           </div>
         </div>
 
+        <!-- Fiyat Aralığı -->
         <div class="filter-section">
-          <div class="filter-label">Vites</div>
-          <div class="filter-chips" id="fc-vites">
-            <div class="chip active" onclick="toggleChipGroup(this,'fc-vites')">Tümü</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-vites')">Otomatik</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-vites')">Manuel</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-vites')">Yarı Otomatik</div>
+          <div class="filter-label">💰 Fiyat Aralığı (₺)</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div style="flex:1;border:1.5px solid #e0e0e0;border-radius:10px;padding:9px 10px;background:#fff;">
+              <div style="font-size:10px;color:#aaa;">En az</div>
+              <div style="display:flex;align-items:center;gap:4px;"><input type="number" value="0" style="border:none;outline:none;font-size:14px;font-weight:700;width:60px;background:transparent;"><span style="color:#aaa;font-size:12px;">₺</span></div>
+            </div>
+            <span style="color:#aaa;">—</span>
+            <div style="flex:1;border:1.5px solid #e0e0e0;border-radius:10px;padding:9px 10px;background:#fff;">
+              <div style="font-size:10px;color:#aaa;">En fazla</div>
+              <div style="display:flex;align-items:center;gap:4px;"><input type="text" value="∞" style="border:none;outline:none;font-size:14px;font-weight:700;width:40px;background:transparent;"><span style="color:#aaa;font-size:12px;">₺</span></div>
+            </div>
           </div>
         </div>
 
+        <!-- Yakıt -->
         <div class="filter-section">
-          <div class="filter-label">Yakıt Tipi</div>
-          <div class="filter-chips" id="fc-yakit">
-            <div class="chip active" onclick="toggleChipGroup(this,'fc-yakit')">Tümü</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-yakit')">Benzin</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-yakit')">Dizel</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-yakit')">Hibrit</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-yakit')">Elektrik</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-yakit')">LPG</div>
-          </div>
+          <div class="filter-label">⛽ Yakıt</div>
+          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>Benzin</option><option>Dizel</option><option>Hibrit</option><option>Elektrik</option><option>LPG</option></select>
         </div>
 
+        <!-- Vites -->
         <div class="filter-section">
-          <div class="filter-label">Kasa Tipi</div>
-          <div class="filter-chips" id="fc-kasa">
-            <div class="chip active" onclick="toggleChipGroup(this,'fc-kasa')">Tümü</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-kasa')">Sedan</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-kasa')">Hatchback</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-kasa')">SUV</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-kasa')">Station Wagon</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-kasa')">Coupe</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-kasa')">Cabrio</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-kasa')">Pick-up</div>
-          </div>
+          <div class="filter-label">⚙️ Vites</div>
+          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>Otomatik</option><option>Manuel</option><option>Yarı Otomatik</option></select>
         </div>
 
+        <!-- Kasa Tipi -->
         <div class="filter-section">
-          <div class="filter-label">Hasar Durumu</div>
-          <div class="filter-chips" id="fc-hasar">
-            <div class="chip active" onclick="toggleChipGroup(this,'fc-hasar')">Tümü</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-hasar')">Hasarsız</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-hasar')">Boyalı</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-hasar')">Hasarlı</div>
-          </div>
+          <div class="filter-label">🚗 Kasa Tipi</div>
+          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>Sedan</option><option>Hatchback</option><option>SUV</option><option>Station Wagon</option><option>Coupe</option><option>Cabrio</option><option>Pick-up</option></select>
         </div>
 
+        <!-- Çekiş -->
         <div class="filter-section">
-          <div class="filter-label">Kimden</div>
-          <div class="filter-chips" id="fc-kimden">
-            <div class="chip active" onclick="toggleChipGroup(this,'fc-kimden')">Tümü</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-kimden')">Sahibinden</div>
-            <div class="chip" onclick="toggleChipGroup(this,'fc-kimden')">Galeriden</div>
+          <div class="filter-label">🔧 Çekiş</div>
+          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>Önden Çekiş</option><option>Arkadan İtiş</option><option>4x4</option></select>
+        </div>
+
+        <!-- Araç Durumu -->
+        <div class="filter-section">
+          <div class="filter-label">📋 Araç Durumu</div>
+          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>İkinci El</option><option>Sıfır</option></select>
+        </div>
+
+        <!-- Motor Hacmi -->
+        <div class="filter-section">
+          <div class="filter-label">🔩 Motor Hacmi</div>
+          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>1000 cc</option><option>1200 cc</option><option>1400 cc</option><option>1600 cc</option><option>2000 cc</option><option>2500 cc+</option></select>
+        </div>
+
+        <!-- Motor Gücü -->
+        <div class="filter-section">
+          <div class="filter-label">⚡ Motor Gücü (HP)</div>
+          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>0-100 HP</option><option>100-150 HP</option><option>150-200 HP</option><option>200-300 HP</option><option>300+ HP</option></select>
+        </div>
+
+        <!-- Takas -->
+        <div class="filter-section">
+          <div class="filter-label">🔄 Takas</div>
+          <div style="display:flex;gap:8px;" id="fc-takas">
+            <button class="fcat-btn active" onclick="toggleFcatBtn(this,'fc-takas')">Evet</button>
+            <button class="fcat-btn" onclick="toggleFcatBtn(this,'fc-takas')">Hayır</button>
           </div>
         </div>
 
-        <button class="apply-btn" onclick="applyFilter()">Araçları Göster</button>
+        <!-- Hasar -->
+        <div class="filter-section">
+          <div class="filter-label">🔨 Hasar</div>
+          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>Hasarsız</option><option>Boyalı</option><option>Hasarlı</option></select>
+        </div>
+
+        <!-- Kimden -->
+        <div class="filter-section">
+          <div class="filter-label">🤝 Kimden</div>
+          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>Sahibinden</option><option>Galeriden</option></select>
+        </div>
+
+        <!-- Renk -->
+        <div class="filter-section">
+          <div class="filter-label">🎨 Renk</div>
+          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>Beyaz</option><option>Siyah</option><option>Gri</option><option>Kırmızı</option><option>Mavi</option><option>Gümüş</option></select>
+        </div>
+
+        <button class="apply-btn" onclick="applyFilter()" style="background:#43A047;margin-top:8px;">Filtrele</button>
       </div>
     </div>
   </div>
@@ -1118,6 +1183,14 @@ function likeFromDetail() {
 
 function toggleChip(el) {
   el.classList.toggle('active');
+}
+function toggleFcat(el, groupId) {
+  el.classList.toggle('active');
+}
+function toggleFcatBtn(el, groupId) {
+  const group = document.getElementById(groupId);
+  group.querySelectorAll('.fcat-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
 }
 function toggleChipGroup(el, groupId) {
   const group = document.getElementById(groupId);
