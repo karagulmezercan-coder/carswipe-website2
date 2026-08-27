@@ -34,7 +34,7 @@
     #view-kesfet { align-items: center; justify-content: center; }
 
     /* PHONE FRAME */
-    .phone-frame { width: 320px; height: 640px; background: #fff; border-radius: 44px; box-shadow: 0 0 0 8px #222, 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; position: relative; display: flex; flex-direction: column; }
+    .phone-frame { width: 288px; height: 576px; background: #fff; border-radius: 44px; box-shadow: 0 0 0 8px #222, 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; position: relative; display: flex; flex-direction: column; }
     .phone-notch { background: #222; height: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .phone-notch-bar { width: 80px; height: 5px; background: #555; border-radius: 3px; }
 
@@ -188,7 +188,7 @@
     .faq-item.open .faq-a { display: block; }
 
     /* APP PHONE SCREENS (Filtrele, Beğeniler, Mesajlar, Profil) */
-    .app-screen { display: flex; flex-direction: column; width: 340px; height: 680px; background: #f5f5f5; border-radius: 40px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 2px #222; }
+    .app-screen { display: flex; flex-direction: column; width: 288px; height: 576px; background: #f5f5f5; border-radius: 44px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 8px #222; }
     .app-notch { background: #111; padding: 14px 0 10px; display: flex; justify-content: center; flex-shrink: 0; }
     .app-notch-bar { width: 90px; height: 5px; background: #333; border-radius: 3px; }
     .app-header { background: #E53935; padding: 14px 20px 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; position: relative; }
@@ -264,7 +264,7 @@
       .features { grid-template-columns: 1fr; }
       .mobile-nav { display: block; }
       body { padding-bottom: 65px; }
-      .phone-frame { width: 290px; height: 580px; }
+      .phone-frame { width: 260px; height: 520px; }
       .content-page { padding: 24px 16px; gap: 24px; }
     }
     @media (max-width: 900px) { .content-page { padding: 32px 24px; } }
@@ -280,6 +280,7 @@
   <a class="nav-item" onclick="showView('filtrele', this)"><div class="nav-icon">≡</div>Filtrele</a>
   <a class="nav-item" onclick="showView('mesajlar', this)"><div class="nav-icon">💬</div>Mesajlar</a>
   <a class="nav-item" onclick="showView('profil', this)"><div class="nav-icon">👤</div>Profil</a>
+  <a class="nav-item" onclick="showView('begeniler', this)"><div class="nav-icon">♥</div>Beğenilenler</a>
   <div class="sidebar-section">Bilgi</div>
   <a class="nav-item" onclick="showView('nasil', this)"><div class="nav-icon">▶</div>Nasıl Çalışır</a>
   <a class="nav-item" onclick="showView('hakkinda', this)"><div class="nav-icon">ℹ</div>Hakkında</a>
@@ -314,7 +315,7 @@
           <button class="act-btn sm btn-undo" onclick="undoCard()" title="Geri Al">↺</button>
           <button class="act-btn lg btn-pass" onclick="animatePass()" title="Geç">✕</button>
           <button class="act-btn lg btn-like" onclick="animateLike()" title="Beğen">♥</button>
-          <button class="act-btn sm btn-super" onclick="goBegeniler()" title="Beğeniler">★</button>
+          <button class="act-btn sm btn-super" onclick="goBugunEklenenler()" title="Bugün Eklenenler">★</button>
         </div>
       </div>
     </div>
@@ -489,71 +490,142 @@
       <div class="app-notch"><div class="app-notch-bar"></div></div>
       <div class="app-header">
         <div class="app-header-title">Filtrele</div>
+        <button onclick="resetFilters()" style="background:none;border:none;color:#E53935;font-size:13px;font-weight:600;cursor:pointer;margin-left:auto;">Sıfırla</button>
       </div>
       <div class="app-body">
+
         <div class="filter-section">
-          <div class="filter-label">Kategori</div>
-          <div class="filter-chips">
-            <div class="chip active" onclick="toggleChip(this)">Otomobil</div>
-            <div class="chip" onclick="toggleChip(this)">SUV</div>
-            <div class="chip" onclick="toggleChip(this)">Minivan</div>
-            <div class="chip" onclick="toggleChip(this)">Elektrikli</div>
-            <div class="chip" onclick="toggleChip(this)">Klasik</div>
-            <div class="chip" onclick="toggleChip(this)">Ticari</div>
+          <div class="filter-label">Araç Kategorisi</div>
+          <div class="filter-chips" id="fc-kategori">
+            <div class="chip active" onclick="toggleChipGroup(this,'fc-kategori')">Tümü</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-kategori')">Otomobil</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-kategori')">SUV</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-kategori')">Minivan</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-kategori')">Elektrikli</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-kategori')">Klasik</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-kategori')">Ticari</div>
           </div>
         </div>
-        <div class="filter-section" style="margin-top:8px;">
+
+        <div class="filter-section">
           <div class="filter-label">Marka</div>
-          <div class="filter-chips">
-            <div class="chip" onclick="toggleChip(this)">Toyota</div>
-            <div class="chip" onclick="toggleChip(this)">Volkswagen</div>
-            <div class="chip" onclick="toggleChip(this)">BMW</div>
-            <div class="chip" onclick="toggleChip(this)">Mercedes</div>
-            <div class="chip" onclick="toggleChip(this)">Honda</div>
-            <div class="chip" onclick="toggleChip(this)">Audi</div>
-            <div class="chip" onclick="toggleChip(this)">Ford</div>
-            <div class="chip" onclick="toggleChip(this)">Renault</div>
+          <div class="filter-chips" id="fc-marka">
+            <div class="chip active" onclick="toggleChipGroup(this,'fc-marka')">Tümü</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">Toyota</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">Volkswagen</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">BMW</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">Mercedes</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">Honda</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">Audi</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">Ford</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">Renault</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">Hyundai</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-marka')">Kia</div>
           </div>
         </div>
-        <div class="filter-section" style="margin-top:8px;">
+
+        <div class="filter-section">
           <div class="filter-label">Fiyat Aralığı</div>
-          <div class="filter-range-row">
-            <input type="range" min="300" max="5000" value="2000" step="50" oninput="document.getElementById('fiyat-val').textContent=this.value+' bin ₺'">
-            <div class="filter-range-val" id="fiyat-val">2000 bin ₺</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="number" placeholder="Min ₺" style="flex:1;padding:8px 10px;border:1.5px solid #eee;border-radius:10px;font-size:13px;outline:none;">
+            <span style="color:#aaa;">—</span>
+            <input type="number" placeholder="Maks ₺" style="flex:1;padding:8px 10px;border:1.5px solid #eee;border-radius:10px;font-size:13px;outline:none;">
           </div>
         </div>
-        <div class="filter-section" style="margin-top:8px;">
+
+        <div class="filter-section">
           <div class="filter-label">Kilometre (maks.)</div>
-          <div class="filter-range-row">
-            <input type="range" min="0" max="300" value="100" step="5" oninput="document.getElementById('km-val').textContent=this.value+'k km'">
-            <div class="filter-range-val" id="km-val">100k km</div>
+          <div class="filter-chips" id="fc-km">
+            <div class="chip active" onclick="toggleChipGroup(this,'fc-km')">Tümü</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-km')">50.000 km</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-km')">100.000 km</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-km')">150.000 km</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-km')">200.000 km</div>
           </div>
         </div>
-        <div class="filter-section" style="margin-top:8px;">
+
+        <div class="filter-section">
+          <div class="filter-label">Yıl Aralığı</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="number" placeholder="Min yıl" style="flex:1;padding:8px 10px;border:1.5px solid #eee;border-radius:10px;font-size:13px;outline:none;">
+            <span style="color:#aaa;">—</span>
+            <input type="number" placeholder="Maks yıl" style="flex:1;padding:8px 10px;border:1.5px solid #eee;border-radius:10px;font-size:13px;outline:none;">
+          </div>
+        </div>
+
+        <div class="filter-section">
           <div class="filter-label">Vites</div>
-          <div class="filter-chips">
-            <div class="chip active" onclick="toggleChip(this)">Tümü</div>
-            <div class="chip" onclick="toggleChip(this)">Otomatik</div>
-            <div class="chip" onclick="toggleChip(this)">Manuel</div>
+          <div class="filter-chips" id="fc-vites">
+            <div class="chip active" onclick="toggleChipGroup(this,'fc-vites')">Tümü</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-vites')">Otomatik</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-vites')">Manuel</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-vites')">Yarı Otomatik</div>
           </div>
         </div>
-        <div class="filter-section" style="margin-top:8px;">
+
+        <div class="filter-section">
           <div class="filter-label">Yakıt Tipi</div>
-          <div class="filter-chips">
-            <div class="chip active" onclick="toggleChip(this)">Tümü</div>
-            <div class="chip" onclick="toggleChip(this)">Benzin</div>
-            <div class="chip" onclick="toggleChip(this)">Dizel</div>
-            <div class="chip" onclick="toggleChip(this)">Hibrit</div>
-            <div class="chip" onclick="toggleChip(this)">Elektrik</div>
-            <div class="chip" onclick="toggleChip(this)">LPG</div>
+          <div class="filter-chips" id="fc-yakit">
+            <div class="chip active" onclick="toggleChipGroup(this,'fc-yakit')">Tümü</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-yakit')">Benzin</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-yakit')">Dizel</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-yakit')">Hibrit</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-yakit')">Elektrik</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-yakit')">LPG</div>
           </div>
         </div>
-        <button class="apply-btn" onclick="applyFilter()">Filtre Uygula</button>
+
+        <div class="filter-section">
+          <div class="filter-label">Kasa Tipi</div>
+          <div class="filter-chips" id="fc-kasa">
+            <div class="chip active" onclick="toggleChipGroup(this,'fc-kasa')">Tümü</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-kasa')">Sedan</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-kasa')">Hatchback</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-kasa')">SUV</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-kasa')">Station Wagon</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-kasa')">Coupe</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-kasa')">Cabrio</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-kasa')">Pick-up</div>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-label">Hasar Durumu</div>
+          <div class="filter-chips" id="fc-hasar">
+            <div class="chip active" onclick="toggleChipGroup(this,'fc-hasar')">Tümü</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-hasar')">Hasarsız</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-hasar')">Boyalı</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-hasar')">Hasarlı</div>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-label">Kimden</div>
+          <div class="filter-chips" id="fc-kimden">
+            <div class="chip active" onclick="toggleChipGroup(this,'fc-kimden')">Tümü</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-kimden')">Sahibinden</div>
+            <div class="chip" onclick="toggleChipGroup(this,'fc-kimden')">Galeriden</div>
+          </div>
+        </div>
+
+        <button class="apply-btn" onclick="applyFilter()">Araçları Göster</button>
       </div>
     </div>
   </div>
 
   <!-- BEĞENİLER -->
+  <!-- BUGÜN EKLENENLER -->
+  <div class="view" id="view-bugun">
+    <div class="app-screen">
+      <div class="app-notch"><div class="app-notch-bar"></div></div>
+      <div class="app-header">
+        <button class="detail-back-btn" style="position:static;margin-right:8px;" onclick="showView('kesfet', document.querySelector('.nav-item'))">‹</button>
+        <div class="app-header-title">Bugün Eklenenler</div>
+      </div>
+      <div class="app-body" id="bugun-body"></div>
+    </div>
+  </div>
+
   <div class="view" id="view-begeniler">
     <div class="app-screen">
       <div class="app-notch"><div class="app-notch-bar"></div></div>
@@ -904,8 +976,23 @@ function animatePass() {
 function goBegeniler() {
   const el = document.querySelector('.nav-item[onclick*="begeniler"]') || document.querySelector('.nav-item');
   showView('begeniler', el);
-  // Sidebar'da aktif item'ı temizle (begeniler artık sidebar'da yok)
+}
+function goBugunEklenenler() {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  showView('bugun', null);
+  renderBugunEklenenler();
+}
+function renderBugunEklenenler() {
+  const body = document.getElementById('bugun-body');
+  body.innerHTML = cars.map((c, i) => `
+    <div class="liked-car-item" onclick="idx=${i};detailPhotoIdx=0;openDetail();" style="cursor:pointer;">
+      <img class="liked-car-thumb" src="https://images.unsplash.com/${c.photos[0]}?w=200&q=80" alt="">
+      <div class="liked-car-info">
+        <div class="liked-car-name">${c.name}</div>
+        <div class="liked-car-price">${c.price}</div>
+        <div class="liked-car-meta">${c.location}</div>
+      </div>
+    </div>`).join('');
 }
 function undoCard() {
   if (history.length === 0) return;
@@ -1031,6 +1118,26 @@ function likeFromDetail() {
 
 function toggleChip(el) {
   el.classList.toggle('active');
+}
+function toggleChipGroup(el, groupId) {
+  const group = document.getElementById(groupId);
+  const chips = group.querySelectorAll('.chip');
+  const isAll = el.textContent.trim() === 'Tümü';
+  if (isAll) {
+    chips.forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+  } else {
+    chips[0].classList.remove('active'); // Tümü'yü kaldır
+    el.classList.toggle('active');
+    const anyActive = Array.from(chips).slice(1).some(c => c.classList.contains('active'));
+    if (!anyActive) chips[0].classList.add('active');
+  }
+}
+function resetFilters() {
+  document.querySelectorAll('[id^="fc-"]').forEach(group => {
+    const chips = group.querySelectorAll('.chip');
+    chips.forEach((c,i) => c.classList.toggle('active', i===0));
+  });
 }
 
 function applyFilter() {
