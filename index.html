@@ -548,8 +548,8 @@
         <div class="filter-section">
           <div class="filter-label">📍 Konum</div>
           <div style="display:flex;gap:8px;">
-            <select style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Şehir seç</option><option>İstanbul</option><option>Ankara</option><option>İzmir</option><option>Bursa</option><option>Antalya</option></select>
-            <select style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>İlçe seç</option></select>
+            <select id="f-sehir" style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Şehir seç</option></select>
+            <select id="f-ilce" style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>İlçe seç</option></select>
           </div>
         </div>
 
@@ -557,8 +557,8 @@
         <div class="filter-section">
           <div class="filter-label">🚗 Marka &amp; Model</div>
           <div style="display:flex;gap:8px;">
-            <select style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Marka</option><option>Toyota</option><option>Volkswagen</option><option>BMW</option><option>Mercedes</option><option>Honda</option><option>Audi</option><option>Ford</option><option>Renault</option><option>Hyundai</option><option>Kia</option></select>
-            <select style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Model</option></select>
+            <select id="f-marka" style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Marka</option></select>
+            <select id="f-model" style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Model</option></select>
           </div>
         </div>
 
@@ -566,9 +566,9 @@
         <div class="filter-section">
           <div class="filter-label">📅 Yıl Aralığı</div>
           <div style="display:flex;gap:8px;align-items:center;">
-            <select style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Yıldan</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option></select>
+            <select id="f-yildan" style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Yıldan</option></select>
             <span style="color:#aaa;">__</span>
-            <select style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Yıla kadar</option><option>2022</option><option>2023</option><option>2024</option><option>2025</option></select>
+            <select id="f-yilkadar" style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Yıla kadar</option></select>
           </div>
         </div>
 
@@ -607,43 +607,43 @@
         <!-- Yakıt -->
         <div class="filter-section">
           <div class="filter-label">⛽ Yakıt</div>
-          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>Benzin</option><option>Dizel</option><option>Hibrit</option><option>Elektrik</option><option>LPG</option></select>
+          <select id="f-yakit" style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option></select>
         </div>
 
         <!-- Vites -->
         <div class="filter-section">
           <div class="filter-label">⚙️ Vites</div>
-          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>Otomatik</option><option>Manuel</option><option>Yarı Otomatik</option></select>
+          <select id="f-vites" style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option></select>
         </div>
 
         <!-- Kasa Tipi -->
         <div class="filter-section">
           <div class="filter-label">🚗 Kasa Tipi</div>
-          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>Sedan</option><option>Hatchback</option><option>SUV</option><option>Station Wagon</option><option>Coupe</option><option>Cabrio</option><option>Pick-up</option></select>
+          <select id="f-kasa" style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option></select>
         </div>
 
         <!-- Çekiş -->
         <div class="filter-section">
           <div class="filter-label">🔧 Çekiş</div>
-          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>Önden Çekiş</option><option>Arkadan İtiş</option><option>4x4</option></select>
+          <select id="f-cekis" style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option></select>
         </div>
 
         <!-- Araç Durumu -->
         <div class="filter-section">
           <div class="filter-label">📋 Araç Durumu</div>
-          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>İkinci El</option><option>Sıfır</option></select>
+          <select id="f-aracdurum" style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option></select>
         </div>
 
         <!-- Motor Hacmi -->
         <div class="filter-section">
           <div class="filter-label">🔩 Motor Hacmi</div>
-          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>1000 cc</option><option>1200 cc</option><option>1400 cc</option><option>1600 cc</option><option>2000 cc</option><option>2500 cc+</option></select>
+          <select id="f-hacim" style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option></select>
         </div>
 
         <!-- Motor Gücü -->
         <div class="filter-section">
           <div class="filter-label">⚡ Motor Gücü (HP)</div>
-          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>0-100 HP</option><option>100-150 HP</option><option>150-200 HP</option><option>200-300 HP</option><option>300+ HP</option></select>
+          <select id="f-hp" style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option></select>
         </div>
 
         <!-- Takas -->
@@ -658,19 +658,19 @@
         <!-- Hasar -->
         <div class="filter-section">
           <div class="filter-label">🔨 Hasar</div>
-          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>Hasarsız</option><option>Boyalı</option><option>Hasarlı</option></select>
+          <select id="f-hasar" style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option></select>
         </div>
 
         <!-- Kimden -->
         <div class="filter-section">
           <div class="filter-label">🤝 Kimden</div>
-          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>Sahibinden</option><option>Galeriden</option></select>
+          <select id="f-kimden" style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option></select>
         </div>
 
         <!-- Renk -->
         <div class="filter-section">
           <div class="filter-label">🎨 Renk</div>
-          <select style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option><option>Beyaz</option><option>Siyah</option><option>Gri</option><option>Kırmızı</option><option>Mavi</option><option>Gümüş</option></select>
+          <select id="f-renk" style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option></select>
         </div>
 
         <button class="apply-btn" onclick="applyFilter()" style="background:#43A047;margin-top:8px;">Filtrele</button>
@@ -846,6 +846,54 @@
 </nav>
 
 <script>
+// ─── FİLTRE VERİLERİ (App.js'den) ───
+const MARKALAR = ['Alfa Romeo','Audi','Bentley','BMW','BYD','Cadillac','Chery','Chevrolet','Chrysler','Citroen','Cupra','Dacia','Daewoo','Daihatsu','Dodge','DS Automobiles','Ferrari','Fiat','Ford','Geely','Honda','Hyundai','IKCO','Infiniti','Jaguar','Kia','Lada','Lamborghini','Lancia','Leapmotor','Lexus','Maserati','Mazda','Mercedes-Benz','MG','MINI','Mitsubishi','Nissan','Opel','Peugeot','Porsche','Proton','Renault','Rolls-Royce','Rover','Saab','Seat','Skoda','Smart','Subaru','Suzuki','Tata','Tesla','Tofaş','TOGG','Toyota','Volkswagen','Volvo'];
+const MODELLER = {'Alfa Romeo':['145','146','147','156','159','Brera','Giulia','Giulietta','GTV','Mito','Spider','Stelvio','Tonale'],'Audi':['80 Serisi','100 Serisi','A1','A2','A3','A4','A5','A6','A7','A8','e-tron','e-tron GT','Q2','Q3','Q5','Q7','Q8','Q8 e-tron','RS3','RS4','RS5','RS6','RS7','S3','S4','S5','S6','S7','S8','TT'],'BMW':['1 Serisi','2 Serisi','3 Serisi','4 Serisi','5 Serisi','6 Serisi','7 Serisi','8 Serisi','i Serisi','M Serisi','X Serisi','Z Serisi'],'BYD':['Atto 3','Dolphin','Han','Sea Lion','Seal','Seal U','Song','Tang'],'Chevrolet':['Aveo','Blazer','Camaro','Captiva','Colorado','Corvette','Cruze','Epica','Equinox','Evanda','Kalos','Lacetti','Rezzo','Silverado','Spark','Suburban','Tahoe','Trailblazer','Trax'],'Citroën':['AMI','Berlingo','C-Elysee','C1','C2','C3','C3 AirCross','C3 Picasso','C4','C4 Cactus','C4 Picasso','C4 Grand Picasso','C5','C5 AirCross','C5 X','Jumper','Jumpy','Nemo','Saxo','Xantia','Xsara','ZX'],'Cupra':['Born','Formentor','Leon','Terramar'],'Dacia':['Bigster','Duster','Jogger','Lodgy','Logan','Sandero','Spring'],'Fiat':['500 Ailesi','500X','Albea','Brava','Bravo','Doblo','Ducato','Egea','Egea Cross','Fiorino','Idea','Linea','Marea','Palio','Panda','Punto','Siena','Stilo','Tempra','Tipo','Uno'],'Ford':['B-MAX','Bronco','C-MAX','EcoSport','Edge','Escort','Fiesta','Focus','Fusion','Galaxy','Ka','Kuga','Mondeo','Mustang','Puma','Ranger','S-MAX','Sierra','Transit','Transit Connect','Tourneo Connect'],'Honda':['Accord','City','Civic','CR-V','HR-V','Jazz','ZR-V'],'Hyundai':['Accent','Accent Blue','Bayon','Elantra','Getz','H-1','i10','i20','i30','IONIQ 5','IONIQ6','ix35','Kona','Santa Fe','Sonata','Tucson'],'Kia':['Carens','Carnival','Ceed','Cerato','EV6','EV9','K5','Niro','Picanto','Rio','Seltos','Sorento','Sportage','Stonic','XCeed'],'Lada':['Granta','Kalina','Niva','Samara','Vesta'],'Lexus':['CT','ES','GX','IS','LS','LX','NX','RX','UX'],'Mazda':['2','3','323','6','626','CX-3','CX-30','CX-5','MX-5','MX-30'],'Mercedes-Benz':['A Serisi','AMG GT','B Serisi','C Serisi','CLA','CLE','CLK','CLS','E Serisi','EQA','EQB','EQE','EQS','G Serisi','GLA','GLB','GLC','GLE','GLS','S Serisi','Sprinter','V Serisi','Vito'],'MINI':['Cooper','Cooper Clubman','Cooper Electric','Cooper S','Countryman','One'],'Mitsubishi':['ASX','Attrage','Colt','Eclipse Cross','L200 Triton','Lancer','Outlander','Pajero','Space Star'],'Nissan':['Almera','Juke','Leaf','Micra','Murano','Navara','Note','Pathfinder','Primera','Qashqai','Sunny','X-Trail'],'Opel':['Adam','Agila','Antara','Astra','Combo','Corsa','Crossland','Grandland','Insignia','Kadett','Meriva','Mokka','Omega','Rekord','Vectra','Zafira'],'Peugeot':['2008','205','206','206+','207','208','3008','301','306','307','308','4008','405','406','407','5008','508','e-208','Expert','Partner','Rifter'],'Porsche':['718','911','Cayenne','Cayman','Macan','Panamera','Taycan'],'Renault':['Arkana','Captur','Clio','Espace','Fluence','Kadjar','Koleos','Laguna','Master','Megane','Megane E-Tech','Modus','R5 E-Tech','Scenic','Symbol','Taliant','Talisman','Trafic','Twingo','Zoe'],'Seat':['Alhambra','Altea','Arona','Ateca','Cordoba','Ibiza','Leon','Tarraco','Toledo'],'Skoda':['Citigo','Enyaq','Fabia','Kamiq','Karoq','Kodiaq','Octavia','Rapid','Scala','Superb'],'Smart':['#1','#3','Forfour','Fortwo'],'Subaru':['Forester','Impreza','Legacy','Outback','WRX','XV'],'Suzuki':['Alto','Baleno','Grand Vitara','Ignis','Jimny','Liana','S-Cross','Swift','Vitara'],'Tesla':['Cybertruck','Model 3','Model S','Model X','Model Y'],'Tofaş':['Doğan','Kartal','Murat','Şahin'],'TOGG':['T10F V1','T10F V2','T10X V1','T10X V2'],'Toyota':['Auris','Avensis','C-HR','Camry','Carina','Corolla','Corolla Cross','GR86','HiAce','Hilux','Land Cruiser','Prius','RAV4','Yaris','Yaris Cross'],'Volkswagen':['Amarok','Arteon','Beetle','Bora','Caddy','Golf','ID.3','ID.4','ID.5','Jetta','Multivan','Passat','Polo','Sharan','T-Cross','T-Roc','Tiguan','Touareg','Touran','Transporter'],'Volvo':['C30','S40','S60','S80','S90','V40','V50','V60','V90 Cross Country','XC40','XC60','XC70','XC90']};
+const SEHIRLER = ['Adana','Adıyaman','Afyonkarahisar','Ağrı','Aksaray','Amasya','Ankara','Antalya','Ardahan','Artvin','Aydın','Balıkesir','Bartın','Batman','Bayburt','Bilecik','Bingöl','Bitlis','Bolu','Burdur','Bursa','Çanakkale','Çankırı','Çorum','Denizli','Diyarbakır','Düzce','Edirne','Elazığ','Erzincan','Erzurum','Eskişehir','Gaziantep','Giresun','Gümüşhane','Hakkari','Hatay','Iğdır','Isparta','İstanbul','İzmir','Kahramanmaraş','Karabük','Karaman','Kars','Kastamonu','Kayseri','Kilis','Kırıkkale','Kırklareli','Kırşehir','Kocaeli','Konya','Kütahya','Malatya','Manisa','Mardin','Mersin','Muğla','Muş','Nevşehir','Niğde','Ordu','Osmaniye','Rize','Sakarya','Samsun','Şanlıurfa','Şırnak','Siirt','Sinop','Sivas','Tekirdağ','Tokat','Trabzon','Tunceli','Uşak','Van','Yalova','Yozgat','Zonguldak'];
+const ILCELER = {'İstanbul':['Adalar','Arnavutköy','Ataşehir','Avcılar','Bağcılar','Bahçelievler','Bakırköy','Başakşehir','Bayrampaşa','Beşiktaş','Beykoz','Beylikdüzü','Beyoğlu','Büyükçekmece','Çatalca','Çekmeköy','Esenler','Esenyurt','Eyüpsultan','Fatih','Gaziosmanpaşa','Güngören','Kadıköy','Kağıthane','Kartal','Küçükçekmece','Maltepe','Pendik','Sancaktepe','Sarıyer','Silivri','Sultanbeyli','Sultangazi','Şile','Şişli','Tuzla','Ümraniye','Üsküdar','Zeytinburnu'],'Ankara':['Altındağ','Ayaş','Beypazarı','Çankaya','Çubuk','Elmadağ','Etimesgut','Gölbaşı','Haymana','Kazan','Keçiören','Mamak','Polatlı','Pursaklar','Sincan','Yenimahalle'],'İzmir':['Aliağa','Balçova','Bayındır','Bayraklı','Bergama','Bornova','Buca','Çeşme','Çiğli','Dikili','Foça','Gaziemir','Güzelbahçe','Karabağlar','Karşıyaka','Kemalpaşa','Konak','Menderes','Menemen','Narlıdere','Ödemiş','Seferihisar','Torbalı','Urla'],'Bursa':['Gemlik','Gürsu','İnegöl','İznik','Karacabey','Kestel','Mudanya','Mustafakemalpaşa','Nilüfer','Osmangazi','Orhangazi','Yenişehir','Yıldırım'],'Antalya':['Aksu','Alanya','Döşemealtı','Elmalı','Finike','Gazipaşa','Kaş','Kemer','Kepez','Konyaaltı','Korkuteli','Kumluca','Manavgat','Muratpaşa','Serik'],'Adana':['Ceyhan','Çukurova','Feke','Karataş','Kozan','Pozantı','Sarıçam','Seyhan','Yüreğir'],'Kocaeli':['Başiskele','Çayırova','Darıca','Derince','Dilovası','Gebze','Gölcük','İzmit','Kandıra','Karamürsel','Kartepe','Körfez'],'Konya':['Beyşehir','Çumra','Ereğli','Karatay','Meram','Sarayönü','Selçuklu','Seydişehir'],'Mersin':['Akdeniz','Anamur','Erdemli','Mezitli','Silifke','Tarsus','Toroslar','Yenişehir'],'Gaziantep':['Araban','İslahiye','Karkamış','Nizip','Nurdağı','Oğuzeli','Şahinbey','Şehitkamil','Yavuzeli']};
+const YILLAR = Array.from({length:42},(_,i)=>String(2026-i));
+const MOTOR_HACMI = ["1300 cm³'e kadar",'1301-1600 cm³','1601-1800 cm³','1801-2000 cm³','2001-2500 cm³','2501-3000 cm³','3001-3500 cm³','3501-4000 cm³','4001-4500 cm³','4501-5000 cm³','5001-5500 cm³','5501-6000 cm³','6001 cm³ ve üzeri'];
+const MOTOR_GUCU = ["50 HP'ye kadar","51 - 75 HP","76 - 100 HP","101 - 125 HP","126 - 150 HP","151 - 175 HP","176 - 200 HP","201 - 225 HP","226 - 250 HP","251 - 275 HP","276 - 300 HP","301 - 325 HP","326 - 350 HP","351 - 375 HP","376 - 400 HP","401 - 425 HP","426 - 450 HP","451 - 475 HP","476 - 500 HP","501 HP ve üzeri"];
+const YAKIT_OPTS = ['Benzin','Benzin (Plug-in Hibrit)','Benzin (Hibrit)','Benzin (Hafif Hibrit)','Benzin (LPG)','Dizel','Dizel (Hafif Hibrit)','Elektrik'];
+const VITES_OPTS = ['Manuel','Otomatik','Yarı Otomatik'];
+const KASA_OPTS = ['Sedan','Hatchback 3 kapı','Hatchback 5 kapı','Station Wagon','Cabrio','Coupe','Coupe 4 kapı','MPV','Roadster','SUV','Pickup'];
+const HASAR_OPTS = ['Hasarsız','Boyalı','Parça Boyalı','Değişen parça var','Ağır hasarlı'];
+const CEKIS_OPTS = ['Önden Çekiş','Arkadan İtiş','4x4'];
+const ARAC_DURUMU_OPTS = ['İkinci El','Yurtdışından İthal Sıfır','Sıfır'];
+const RENK_OPTS = ['Beyaz','Siyah','Gri','Gümüş','Mavi','Lacivert','Kırmızı','Bordo','Yeşil','Sarı','Turuncu','Kahverengi','Bej','Altın','Şampanya','Pembe','Mor','Diğer'];
+
+function buildSelect(id, opts, placeholder) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  sel.innerHTML = `<option value="">${placeholder}</option>` + opts.map(o=>`<option>${o}</option>`).join('');
+}
+function initFilters() {
+  buildSelect('f-marka', MARKALAR, 'Marka');
+  buildSelect('f-model', [], 'Model');
+  buildSelect('f-yildan', YILLAR, 'Yıldan');
+  buildSelect('f-yilkadar', YILLAR, 'Yıla kadar');
+  buildSelect('f-yakit', YAKIT_OPTS, 'Seçiniz');
+  buildSelect('f-vites', VITES_OPTS, 'Seçiniz');
+  buildSelect('f-kasa', KASA_OPTS, 'Seçiniz');
+  buildSelect('f-cekis', CEKIS_OPTS, 'Seçiniz');
+  buildSelect('f-aracdurum', ARAC_DURUMU_OPTS, 'Seçiniz');
+  buildSelect('f-hacim', MOTOR_HACMI, 'Seçiniz');
+  buildSelect('f-hp', MOTOR_GUCU, 'Seçiniz');
+  buildSelect('f-hasar', HASAR_OPTS, 'Seçiniz');
+  buildSelect('f-kimden', ['Sahibinden','Galeriden'], 'Seçiniz');
+  buildSelect('f-renk', RENK_OPTS, 'Seçiniz');
+  buildSelect('f-sehir', SEHIRLER, 'Şehir seç');
+  buildSelect('f-ilce', [], 'İlçe seç');
+  document.getElementById('f-marka').addEventListener('change', function() {
+    const models = MODELLER[this.value] || [];
+    buildSelect('f-model', models, 'Model');
+  });
+  document.getElementById('f-sehir').addEventListener('change', function() {
+    const ilceler = ILCELER[this.value] || [];
+    buildSelect('f-ilce', ilceler, 'İlçe seç');
+  });
+}
+
 const cars = [
   { name:'Toyota Corolla', brand:'Toyota', model:'Corolla', year:'2022', price:'895.000 ₺', location:'İstanbul / Kadıköy', meta:'📍 İstanbul · Kadıköy · 22.000 km', seller:'Sahibinden', km:'22.000 km', fuel:'Benzin', gear:'Otomatik', color:'Beyaz', kasa:'Sedan', motor:'132 hp', hacim:'1600 cc', hasar:'Hasarsız', durum:'İkinci El', ilanNo:'100000001',
     photos:['photo-1621007947382-bb3c3994e3fb','photo-1559416523-140ddc3d238c','photo-1568605117036-5fe5e7bab0b7','photo-1492144534655-ae79c964c9d7','photo-1520031441872-265e4ff70366','photo-1474512879090-37a57c5e8f1f'] },
@@ -1137,6 +1185,7 @@ function showView(id, el) {
   // Refresh data screens
   if (id === 'begeniler') renderBegeniler();
   if (id === 'profil') { const s = document.getElementById('stat-liked'); if(s) s.textContent = liked.length; }
+  if (id === 'filtrele') initFilters();
 }
 
 // Gallery swipe support
