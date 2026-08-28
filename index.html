@@ -1839,11 +1839,12 @@ let idx = 0;
 let photoIdx = 0;
 let history = [];
 let liked = [];
+let activeCars = cars; // filtrelenmiş liste
 
 function loadCard(i, transition) {
-  idx = ((i % cars.length) + cars.length) % cars.length;
+  idx = ((i % activeCars.length) + activeCars.length) % activeCars.length;
   photoIdx = 0;
-  const c = cars[idx];
+  const c = activeCars[idx];
   const img = document.getElementById('card-img');
   if (transition) {
     img.style.opacity = '0';
@@ -1862,7 +1863,7 @@ function loadCard(i, transition) {
 }
 
 function updateDots() {
-  const c = cars[idx];
+  const c = activeCars[idx];
   const dotsEl = document.getElementById('photo-dots');
   dotsEl.innerHTML = c.photos.map((_, i) =>
     `<div class="dot${i === photoIdx ? ' active' : ''}"></div>`
@@ -1870,7 +1871,7 @@ function updateDots() {
 }
 
 function prevPhoto() {
-  const c = cars[idx];
+  const c = activeCars[idx];
   photoIdx = (photoIdx - 1 + c.photos.length) % c.photos.length;
   const img = document.getElementById('card-img');
   img.style.opacity = '0';
@@ -1879,7 +1880,7 @@ function prevPhoto() {
 }
 
 function nextPhoto() {
-  const c = cars[idx];
+  const c = activeCars[idx];
   photoIdx = (photoIdx + 1) % c.photos.length;
   const img = document.getElementById('card-img');
   img.style.opacity = '0';
@@ -1891,7 +1892,7 @@ let detailPhotoIdx = 0;
 let galleryPhotoIdx = 0;
 
 function openDetail() {
-  const c = cars[idx];
+  const c = activeCars[idx];
   detailPhotoIdx = 0;
   document.getElementById('detail-img').src = `https://images.unsplash.com/${c.photos[0]}?w=700&q=80`;
   document.getElementById('detail-name').textContent = c.name + ' ' + c.year;
@@ -1938,19 +1939,19 @@ function switchDetailTab(el, tabId) {
 }
 
 function updateDetailPhotoCount() {
-  const c = cars[idx];
+  const c = activeCars[idx];
   document.getElementById('detail-photo-count').textContent = `${detailPhotoIdx + 1} / ${c.photos.length}`;
 }
 
 function renderDetailThumbs() {
-  const c = cars[idx];
+  const c = activeCars[idx];
   document.getElementById('detail-thumbs').innerHTML = c.photos.map((p, i) =>
     `<img class="thumb-img${i === 0 ? ' active' : ''}" src="https://images.unsplash.com/${p}?w=120&q=70" onclick="selectThumb(${i})" alt="">`
   ).join('');
 }
 
 function selectThumb(i) {
-  const c = cars[idx];
+  const c = activeCars[idx];
   detailPhotoIdx = i;
   const img = document.getElementById('detail-img');
   img.style.opacity = '0';
@@ -1960,12 +1961,12 @@ function selectThumb(i) {
 }
 
 function detailPrevPhoto() {
-  const c = cars[idx];
+  const c = activeCars[idx];
   selectThumb((detailPhotoIdx - 1 + c.photos.length) % c.photos.length);
 }
 
 function detailNextPhoto() {
-  const c = cars[idx];
+  const c = activeCars[idx];
   selectThumb((detailPhotoIdx + 1) % c.photos.length);
 }
 
@@ -1980,7 +1981,7 @@ function closeGallery() {
 }
 
 function updateGalleryImg() {
-  const c = cars[idx];
+  const c = activeCars[idx];
   const img = document.getElementById('gallery-img');
   img.style.opacity = '0';
   setTimeout(() => { img.src = `https://images.unsplash.com/${c.photos[galleryPhotoIdx]}?w=1200&q=90`; img.style.opacity = '1'; }, 150);
@@ -1988,13 +1989,13 @@ function updateGalleryImg() {
 }
 
 function galleryPrev() {
-  const c = cars[idx];
+  const c = activeCars[idx];
   galleryPhotoIdx = (galleryPhotoIdx - 1 + c.photos.length) % c.photos.length;
   updateGalleryImg();
 }
 
 function galleryNext() {
-  const c = cars[idx];
+  const c = activeCars[idx];
   galleryPhotoIdx = (galleryPhotoIdx + 1) % c.photos.length;
   updateGalleryImg();
 }
@@ -2190,10 +2191,73 @@ function resetFilters() {
 }
 
 function applyFilter() {
-  // Filtreleri uygula ve keşfete dön
+  const val = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+
+  const ilanNo   = val('f-ilan-no') || val('f-ilannon');
+  const kelime   = (document.querySelector('#view-filtrele input[type=text]') ?
+    document.querySelectorAll('#view-filtrele input[type=text]')[1]?.value.trim().toLowerCase() : '') || '';
+  const sehir    = val('f-sehir');
+  const ilce     = val('f-ilce');
+  const marka    = val('f-marka');
+  const model    = val('f-model');
+  const yildan   = parseInt(val('f-yildan')) || 0;
+  const yilkadar = parseInt(val('f-yilkadar')) || 9999;
+  const kmMin    = parseFloat(document.querySelectorAll('#view-filtrele input[type=number]')[0]?.value) || 0;
+  const kmMax    = parseFloat(document.querySelectorAll('#view-filtrele input[type=number]')[1]?.value) || Infinity;
+  const fiyatMin = parseFloat(document.querySelectorAll('#view-filtrele input[type=number]')[2]?.value) || 0;
+  const fiyatMax = parseFloat(document.querySelectorAll('#view-filtrele input[type=number]')[3]?.value) || Infinity;
+  const yakit    = val('f-yakit');
+  const vites    = val('f-vites');
+  const kasa     = val('f-kasa');
+  const hasar    = val('f-hasar');
+  const renk     = val('f-renk') === 'Diğer' ? val('renk-diger') : val('f-renk');
+  const durum    = val('f-aracdurum');
+
+  // Vasıta türü seçimi (fcat-card.active)
+  const vasitaCards = document.querySelectorAll('#fc-vasita .fcat-card.active');
+  const vasitaSet = new Set([...vasitaCards].map(c => c.querySelector('.fcat-lbl').textContent.trim()));
+
+  activeCars = cars.filter(c => {
+    const carKm    = parseFloat(c.km?.replace(/\./g,'').replace(' km','')) || 0;
+    const carFiyat = parseFloat(c.price?.replace(/\./g,'').replace(/[₺ ]/g,'')) || 0;
+    const carYil   = parseInt(c.year) || 0;
+
+    if (ilanNo && c.ilanNo !== ilanNo) return false;
+    if (kelime) {
+      const haystack = [c.name,c.brand,c.model,c.color,c.fuel,c.gear,c.kasa,c.hasar,c.location].join(' ').toLowerCase();
+      if (!haystack.includes(kelime)) return false;
+    }
+    if (sehir && sehir !== 'Şehir seç' && !c.location?.includes(sehir)) return false;
+    if (ilce && ilce !== 'İlçe seç' && !c.location?.includes(ilce)) return false;
+    if (marka && marka !== 'Marka' && c.brand !== marka) return false;
+    if (model && model !== 'Model' && c.model !== model) return false;
+    if (yildan  && carYil < yildan)  return false;
+    if (yilkadar < 9999 && carYil > yilkadar) return false;
+    if (kmMin   && carKm < kmMin)   return false;
+    if (kmMax < Infinity && carKm > kmMax) return false;
+    if (fiyatMin && carFiyat < fiyatMin) return false;
+    if (fiyatMax < Infinity && carFiyat > fiyatMax) return false;
+    if (yakit && yakit !== 'Seçiniz' && c.fuel !== yakit) return false;
+    if (vites && vites !== 'Seçiniz' && c.gear !== vites) return false;
+    if (kasa  && kasa  !== 'Seçiniz' && c.kasa !== kasa)  return false;
+    if (hasar && hasar !== 'Seçiniz' && c.hasar !== hasar) return false;
+    if (renk  && renk  !== 'Seçiniz' && c.color !== renk)  return false;
+    if (durum && durum !== 'Seçiniz' && c.durum !== durum) return false;
+    return true;
+  });
+
+  if (activeCars.length === 0) {
+    activeCars = cars; // eşleşme yoksa tümünü göster
+    alert('Filtrelerle eşleşen araç bulunamadı. Filtreler sıfırlandı.');
+  }
+
+  idx = 0;
+  photoIdx = 0;
+  loadCard(0, false);
+
+  // Keşfet'e dön
   const kesfetEl = document.querySelector('.nav-item');
   showView('kesfet', kesfetEl);
-  // Sidebar'da Keşfet'i aktif yap
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   kesfetEl.classList.add('active');
 }
