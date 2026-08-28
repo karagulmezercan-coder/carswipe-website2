@@ -1409,17 +1409,20 @@ document.addEventListener('keydown', e => {
 
         <!-- İlan No -->
         <div class="filter-section">
-          <div class="filter-label">🔎 İlan Numarası ile Ara</div>
-          <div style="display:flex;gap:8px;">
-            <input type="text" placeholder="örn. 100000001" style="flex:1;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;outline:none;background:#fff;">
-            <button style="background:#43A047;color:#fff;border:none;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;">Ara</button>
+          <div class="filter-label">🔍 İlan Numarası ile Ara</div>
+          <div style="display:flex;align-items:center;border:1.5px solid #e0e0e0;border-radius:10px;overflow:hidden;background:#fff;">
+            <input type="text" placeholder="örn. 100000001" style="flex:1;padding:9px 12px;border:none;font-size:13px;outline:none;background:transparent;">
+            <button style="background:#43A047;color:#fff;border:none;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">Ara</button>
           </div>
         </div>
 
         <!-- Kelime -->
         <div class="filter-section">
           <div class="filter-label">🔍 Kelime ile Filtrele</div>
-          <input type="text" placeholder="örn. otomatik, sunroof..." style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;outline:none;background:#fff;">
+          <div style="display:flex;align-items:center;border:1.5px solid #e0e0e0;border-radius:10px;overflow:hidden;background:#fff;">
+            <input type="text" placeholder="örn. otomatik, sunroof..." style="flex:1;padding:9px 12px;border:none;font-size:13px;outline:none;background:transparent;">
+            <button style="background:#43A047;color:#fff;border:none;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">Ara</button>
+          </div>
         </div>
 
         <div style="text-align:center;color:#aaa;font-size:12px;margin:6px 0;">Yada</div>
