@@ -18,14 +18,14 @@ button{cursor:pointer;font-family:inherit;border:none;outline:none}
 
 /* ── NAV ── */
 .nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:68px;background:rgba(248,244,238,0.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,0,0,0.08)}
-.nav-logo{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:800;letter-spacing:-0.5px}
+.nav-logo{display:flex;align-items:center;gap:12px;font-size:26px;font-weight:900;letter-spacing:-1px}
 .nav-logo span{color:#E53935}
-.nav-logo-icon{width:34px;height:34px;background:linear-gradient(135deg,#E53935,#EF5350);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px}
+.nav-logo-icon{width:44px;height:44px;background:linear-gradient(135deg,#E53935,#EF5350);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
 .nav-links{display:flex;align-items:center;gap:28px;list-style:none}
 .nav-links a{font-size:14px;font-weight:500;color:rgba(26,26,26,.7);transition:color .2s}
 .nav-links a:hover{color:#1a1a1a}
 .nav-right{display:flex;align-items:center;gap:14px}
-.btn-ghost{background:none;color:rgba(26,26,26,.75);font-size:14px;font-weight:600;padding:8px 16px;border-radius:24px;border:1.5px solid rgba(255,255,255,0.2);transition:all .2s}
+.btn-ghost{background:none;color:rgba(26,26,26,.8);font-size:14px;font-weight:600;padding:8px 16px;border-radius:24px;border:1.5px solid rgba(0,0,0,.2);transition:all .2s}
 .btn-ghost:hover{border-color:#1a1a1a;color:#1a1a1a}
 .btn-green{background:#E53935;color:#fff;font-size:14px;font-weight:700;padding:9px 20px;border-radius:24px;transition:background .2s}
 .btn-green:hover{background:#C62828}
@@ -33,23 +33,23 @@ button{cursor:pointer;font-family:inherit;border:none;outline:none}
 .lang-btn:hover{color:#1a1a1a}
 
 /* ── HERO ── */
-.hero{min-height:100vh;display:flex;align-items:center;padding:80px 40px 40px;background:radial-gradient(ellipse 80% 70% at 60% 40%,#F0E8DC 0%,#0d0d0d 60%);position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1600&q=60') center/cover;opacity:.04;pointer-events:none}
+.hero{min-height:100vh;display:flex;align-items:center;padding:80px 40px 40px;background:linear-gradient(135deg,#1a0a0a 0%,#0d0d0d 60%,#1a0505 100%);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1600&q=60') center/cover;opacity:.08;pointer-events:none}
 .hero-content{max-width:540px;z-index:2;position:relative}
-.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(229,57,53,.12);border:1px solid rgba(229,57,53,.3);border-radius:24px;padding:6px 16px;font-size:13px;font-weight:600;color:#C62828;margin-bottom:28px;letter-spacing:.3px}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(229,57,53,.2);border:1px solid rgba(229,57,53,.4);border-radius:24px;padding:6px 16px;font-size:13px;font-weight:600;color:#EF9A9A;margin-bottom:28px;letter-spacing:.3px}
 .hero-eyebrow::before{content:'🚗'}
-.hero h1{font-size:clamp(36px,5vw,58px);font-weight:900;line-height:1.08;letter-spacing:-2px;margin-bottom:22px}
+.hero h1{font-size:clamp(36px,5vw,58px);font-weight:900;line-height:1.08;letter-spacing:-2px;margin-bottom:22px;color:#fff}
 .hero h1 em{font-style:normal;color:#E53935}
-.hero-sub{font-size:clamp(15px,2vw,18px);color:rgba(26,26,26,.6);line-height:1.6;margin-bottom:38px;max-width:420px}
+.hero-sub{font-size:clamp(15px,2vw,18px);color:rgba(255,255,255,.65);line-height:1.6;margin-bottom:38px;max-width:420px}
 .hero-ctas{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:50px}
 .btn-hero-primary{background:#E53935;color:#fff;font-size:15px;font-weight:700;padding:14px 28px;border-radius:32px;transition:all .2s;box-shadow:0 0 32px rgba(229,57,53,.35)}
 .btn-hero-primary:hover{background:#C62828;transform:translateY(-1px);box-shadow:0 0 48px rgba(229,57,53,.5)}
-.btn-hero-secondary{background:rgba(0,0,0,.07);color:#1a1a1a;font-size:15px;font-weight:600;padding:14px 28px;border-radius:32px;border:1.5px solid rgba(0,0,0,.2);transition:all .2s}
-.btn-hero-secondary:hover{background:rgba(0,0,0,.12);border-color:rgba(0,0,0,.35)}
+.btn-hero-secondary{background:rgba(255,255,255,.1);color:#fff;font-size:15px;font-weight:600;padding:14px 28px;border-radius:32px;border:1.5px solid rgba(255,255,255,.3);transition:all .2s}
+.btn-hero-secondary:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.5)}
 .hero-stats{display:flex;gap:32px;flex-wrap:wrap}
 .stat{display:flex;flex-direction:column}
 .stat-num{font-size:24px;font-weight:800;color:#E53935;letter-spacing:-1px}
-.stat-label{font-size:12px;color:rgba(26,26,26,.45);font-weight:500;margin-top:2px}
+.stat-label{font-size:12px;color:rgba(255,255,255,.5);font-weight:500;margin-top:2px}
 .hero-phone-wrap{flex:1;display:flex;justify-content:center;align-items:center;position:relative;min-width:320px;z-index:2}
 .hero-phone-glow{position:absolute;width:260px;height:260px;background:radial-gradient(circle,rgba(229,57,53,.3),transparent 70%);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%)}
 
@@ -252,7 +252,7 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
   <div class="nav-right">
     <button class="lang-btn" onclick="toggleLang()" id="lang-toggle">EN</button>
     <button class="btn-ghost" data-tr="Giriş Yap" data-en="Log In">Giriş Yap</button>
-    <button class="btn-green" data-tr="Uygulamayı İndir" data-en="Get the App">Uygulamayı İndir</button>
+
   </div>
 </nav>
 
@@ -271,6 +271,16 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
       <div class="stat"><span class="stat-num">87</span><span class="stat-label" data-tr="Marka" data-en="Brands">Marka</span></div>
       <div class="stat"><span class="stat-num">81</span><span class="stat-label" data-tr="Şehir" data-en="Cities">Şehir</span></div>
       <div class="stat"><span class="stat-num">1M+</span><span class="stat-label" data-tr="Kaydırma" data-en="Swipes">Kaydırma</span></div>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:32px;flex-wrap:wrap">
+      <a href="#" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:14px;padding:10px 18px;color:#fff;text-decoration:none;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.18)'" onmouseout="this.style.background='rgba(255,255,255,.1)'">
+        <span style="font-size:24px"> </span>
+        <div><div style="font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px" data-tr="App Store'dan İndir" data-en="Download on the">App Store'dan İndir</div><div style="font-size:15px;font-weight:700">App Store</div></div>
+      </a>
+      <a href="#" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:14px;padding:10px 18px;color:#fff;text-decoration:none;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.18)'" onmouseout="this.style.background='rgba(255,255,255,.1)'">
+        <span style="font-size:24px">▶</span>
+        <div><div style="font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px" data-tr="Google Play'den Al" data-en="Get it on">Google Play'den Al</div><div style="font-size:15px;font-weight:700">Google Play</div></div>
+      </a>
     </div>
   </div>
 
