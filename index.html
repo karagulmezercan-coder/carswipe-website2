@@ -245,7 +245,7 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
   </a>
   <div class="nav-right">
     <button class="lang-btn" onclick="toggleLang()" id="lang-toggle" data-tr="EN" data-en="TR">EN</button>
-    <button class="btn-green" data-tr="Oturum Aç" data-en="Log In">Oturum Aç</button>
+    <button class="btn-green" data-tr="Oturum Aç" data-en="Log In" onclick="openAuth()">Oturum Aç</button>
   </div>
 </nav>
 
@@ -329,7 +329,7 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
         <a class="ov-link" href="#filter-feature" data-tr="Daha fazla →" data-en="Learn more →">Daha fazla →</a>
       </div>
       <div class="ov-card">
-        <div class="ov-icon-btn" style="width:56px;height:56px;border-radius:50%;border:2.5px solid #F43F5E;display:flex;align-items:center;justify-content:center;font-size:22px;color:#F43F5E;margin-bottom:16px">✕</div>
+        <div class="ov-icon-btn" style="width:56px;height:56px;border-radius:50%;border:2.5px solid #F43F5E;display:flex;align-items:center;justify-content:center;font-size:26px;color:#F43F5E;margin-bottom:16px">💬</div>
         <div class="ov-name" data-tr="Anlık Mesajlaşma" data-en="Instant Messaging">Anlık Mesajlaşma</div>
         <div class="ov-desc" data-tr="Beğendiğin araç sahipleriyle direkt mesajlaş. Hızlı fiyat sorma, randevu al." data-en="Message car owners directly. Quick price inquiries, schedule test drives.">Beğendiğin araç sahipleriyle direkt mesajlaş. Hızlı fiyat sorma, randevu al.</div>
         <a class="ov-link" href="#msg-feature" data-tr="Daha fazla →" data-en="Learn more →">Daha fazla →</a>
@@ -704,6 +704,198 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     const el = document.getElementById(id);
     if (el) { e.preventDefault(); el.scrollIntoView({behavior:'smooth', block:'start'}); }
   });
+});
+</script>
+
+<!-- ══ FIREBASE AUTH ══ -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<!-- ── AUTH MODAL HTML ── -->
+<div id="auth-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2000;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+  <div style="background:#fff;border-radius:24px;padding:40px 36px;width:100%;max-width:420px;margin:20px;box-shadow:0 24px 80px rgba(0,0,0,.25);position:relative">
+    <button onclick="closeAuth()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;line-height:1">×</button>
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="width:48px;height:48px;background:linear-gradient(135deg,#E53935,#EF5350);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:12px">🚗</div>
+      <div style="font-size:22px;font-weight:900;color:#E53935;letter-spacing:-0.5px">CarSwipe</div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;background:#f5f5f5;border-radius:12px;padding:4px;margin-bottom:24px">
+      <button id="tab-login" onclick="switchTab('login')" style="flex:1;padding:8px;border-radius:9px;background:#fff;border:none;font-size:14px;font-weight:700;color:#1a1a1a;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.1)">Giriş Yap</button>
+      <button id="tab-register" onclick="switchTab('register')" style="flex:1;padding:8px;border-radius:9px;background:transparent;border:none;font-size:14px;font-weight:600;color:#888;cursor:pointer">Kayıt Ol</button>
+    </div>
+
+    <!-- Error -->
+    <div id="auth-error" style="display:none;background:#fff0f0;border:1px solid #fcc;border-radius:10px;padding:10px 14px;font-size:13px;color:#c62828;margin-bottom:16px"></div>
+
+    <!-- Form -->
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <input id="auth-name" placeholder="Ad Soyad" type="text" style="display:none;padding:13px 16px;border-radius:12px;border:1.5px solid #e0e0e0;font-size:15px;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#E53935'" onblur="this.style.borderColor='#e0e0e0'">
+      <input id="auth-email" placeholder="E-posta adresi" type="email" style="padding:13px 16px;border-radius:12px;border:1.5px solid #e0e0e0;font-size:15px;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#E53935'" onblur="this.style.borderColor='#e0e0e0'">
+      <input id="auth-pass" placeholder="Şifre" type="password" style="padding:13px 16px;border-radius:12px;border:1.5px solid #e0e0e0;font-size:15px;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#E53935'" onblur="this.style.borderColor='#e0e0e0'">
+      <button id="auth-submit" onclick="submitAuth()" style="background:#E53935;color:#fff;padding:14px;border-radius:12px;border:none;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s" onmouseover="this.style.background='#C62828'" onmouseout="this.style.background='#E53935'">Giriş Yap</button>
+    </div>
+
+    <!-- Divider -->
+    <div style="display:flex;align-items:center;gap:12px;margin:20px 0">
+      <div style="flex:1;height:1px;background:#e0e0e0"></div>
+      <span style="font-size:13px;color:#aaa">veya</span>
+      <div style="flex:1;height:1px;background:#e0e0e0"></div>
+    </div>
+
+    <!-- Google -->
+    <button onclick="signInGoogle()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:12px;padding:13px;border-radius:12px;border:1.5px solid #e0e0e0;background:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='#fff'">
+      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.96 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Google ile Devam Et
+    </button>
+
+    <div id="forgot-link" style="text-align:center;margin-top:16px">
+      <a href="#" onclick="resetPassword();return false" style="font-size:13px;color:#E53935;font-weight:600">Şifremi unuttum</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── FIREBASE INIT ──
+const firebaseConfig = {
+  apiKey: "AIzaSyCZS7Y1S-4wNxmickZEUxncuF9gTZgt_Nc",
+  authDomain: "carswipe-33030.firebaseapp.com",
+  projectId: "carswipe-33030",
+  storageBucket: "carswipe-33030.firebasestorage.app",
+  messagingSenderId: "588954344790",
+  appId: "1:588954344790:web:89d2401cb18ca895df8af7"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+let currentTab = 'login';
+
+// ── MODAL ──
+function openAuth() {
+  document.getElementById('auth-overlay').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeAuth() {
+  document.getElementById('auth-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+  clearError();
+}
+document.getElementById('auth-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeAuth();
+});
+
+// ── TABS ──
+function switchTab(tab) {
+  currentTab = tab;
+  const nameField = document.getElementById('auth-name');
+  const submitBtn = document.getElementById('auth-submit');
+  const forgotLink = document.getElementById('forgot-link');
+  const tabLogin = document.getElementById('tab-login');
+  const tabReg = document.getElementById('tab-register');
+  clearError();
+  if (tab === 'login') {
+    nameField.style.display = 'none';
+    submitBtn.textContent = 'Giriş Yap';
+    forgotLink.style.display = 'block';
+    tabLogin.style.background = '#fff'; tabLogin.style.color = '#1a1a1a'; tabLogin.style.fontWeight = '700'; tabLogin.style.boxShadow = '0 1px 4px rgba(0,0,0,.1)';
+    tabReg.style.background = 'transparent'; tabReg.style.color = '#888'; tabReg.style.fontWeight = '600'; tabReg.style.boxShadow = 'none';
+  } else {
+    nameField.style.display = 'block';
+    submitBtn.textContent = 'Kayıt Ol';
+    forgotLink.style.display = 'none';
+    tabReg.style.background = '#fff'; tabReg.style.color = '#1a1a1a'; tabReg.style.fontWeight = '700'; tabReg.style.boxShadow = '0 1px 4px rgba(0,0,0,.1)';
+    tabLogin.style.background = 'transparent'; tabLogin.style.color = '#888'; tabLogin.style.fontWeight = '600'; tabLogin.style.boxShadow = 'none';
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg; el.style.display = 'block';
+}
+function clearError() {
+  document.getElementById('auth-error').style.display = 'none';
+}
+
+// ── SUBMIT ──
+function submitAuth() {
+  const email = document.getElementById('auth-email').value.trim();
+  const pass = document.getElementById('auth-pass').value;
+  const btn = document.getElementById('auth-submit');
+  clearError();
+  if (!email || !pass) { showError('E-posta ve şifre gerekli.'); return; }
+  btn.textContent = '...'; btn.disabled = true;
+  if (currentTab === 'login') {
+    auth.signInWithEmailAndPassword(email, pass)
+      .then(() => closeAuth())
+      .catch(e => { showError(getErrMsg(e.code)); btn.textContent = 'Giriş Yap'; btn.disabled = false; });
+  } else {
+    const name = document.getElementById('auth-name').value.trim();
+    auth.createUserWithEmailAndPassword(email, pass)
+      .then(r => { if (name) return r.user.updateProfile({displayName: name}); })
+      .then(() => closeAuth())
+      .catch(e => { showError(getErrMsg(e.code)); btn.textContent = 'Kayıt Ol'; btn.disabled = false; });
+  }
+}
+
+// ── GOOGLE ──
+function signInGoogle() {
+  auth.signInWithPopup(googleProvider)
+    .then(() => closeAuth())
+    .catch(e => showError(getErrMsg(e.code)));
+}
+
+// ── RESET ──
+function resetPassword() {
+  const email = document.getElementById('auth-email').value.trim();
+  if (!email) { showError('Şifre sıfırlama için e-posta girin.'); return; }
+  auth.sendPasswordResetEmail(email)
+    .then(() => { clearError(); document.getElementById('auth-error').style.background='#f0fff4'; document.getElementById('auth-error').style.borderColor='#b7f5c8'; document.getElementById('auth-error').style.color='#1a7a3a'; document.getElementById('auth-error').textContent='Sıfırlama e-postası gönderildi!'; document.getElementById('auth-error').style.display='block'; })
+    .catch(e => showError(getErrMsg(e.code)));
+}
+
+// ── ERROR MESSAGES ──
+function getErrMsg(code) {
+  const msgs = {
+    'auth/user-not-found': 'Bu e-posta adresiyle kayıtlı kullanıcı bulunamadı.',
+    'auth/wrong-password': 'Şifre yanlış.',
+    'auth/email-already-in-use': 'Bu e-posta adresi zaten kullanımda.',
+    'auth/weak-password': 'Şifre en az 6 karakter olmalı.',
+    'auth/invalid-email': 'Geçersiz e-posta adresi.',
+    'auth/popup-closed-by-user': 'Google girişi iptal edildi.',
+    'auth/network-request-failed': 'Bağlantı hatası. İnternet bağlantınızı kontrol edin.',
+    'auth/too-many-requests': 'Çok fazla deneme. Lütfen bekleyin.',
+    'auth/invalid-credential': 'E-posta veya şifre hatalı.',
+  };
+  return msgs[code] || 'Bir hata oluştu. Lütfen tekrar deneyin.';
+}
+
+// ── AUTH STATE ──
+auth.onAuthStateChanged(user => {
+  const btn = document.querySelector('.btn-green');
+  if (!btn) return;
+  if (user) {
+    const name = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
+    const avatar = user.photoURL
+      ? `<img src="${user.photoURL}" style="width:28px;height:28px;border-radius:50%;object-fit:cover">`
+      : `<div style="width:28px;height:28px;border-radius:50%;background:#E53935;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">${name[0].toUpperCase()}</div>`;
+    btn.innerHTML = `${avatar} <span style="margin-left:6px">${name}</span>`;
+    btn.onclick = () => {
+      if (confirm('Çıkış yapmak istiyor musunuz?')) auth.signOut();
+    };
+    btn.style.display = 'flex';
+    btn.style.alignItems = 'center';
+  } else {
+    btn.innerHTML = 'Oturum Aç';
+    btn.onclick = openAuth;
+  }
+});
+
+// ── ENTER KEY ──
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeAuth();
+  if (e.key === 'Enter' && document.getElementById('auth-overlay').style.display === 'flex') submitAuth();
 });
 </script>
 </body>
