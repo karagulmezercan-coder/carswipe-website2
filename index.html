@@ -776,6 +776,11 @@ let currentTab = 'login';
 function openAuth() {
   document.getElementById('auth-overlay').style.display = 'flex';
   document.body.style.overflow = 'hidden';
+  switchTab('login');
+  document.getElementById('auth-email').value = '';
+  document.getElementById('auth-pass').value = '';
+  document.getElementById('auth-name').value = '';
+  clearError();
 }
 function closeAuth() {
   document.getElementById('auth-overlay').style.display = 'none';
