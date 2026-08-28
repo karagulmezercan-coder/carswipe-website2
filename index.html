@@ -430,6 +430,7 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
     .app-body::-webkit-scrollbar { width: 0; }
     /* Filter screen */
     .filter-section { background: #fff; margin: 8px 10px 0; border-radius: 12px; padding: 10px 12px; }
+    .filter-section select { flex:1; min-width:0; max-width:100%; overflow:hidden; text-overflow:ellipsis; box-sizing:border-box; }
     .filter-label { font-size: 12px; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
     .filter-chips { display: flex; flex-wrap: wrap; gap: 7px; }
     .chip { padding: 6px 14px; border-radius: 20px; background: #f0f0f0; font-size: 13px; font-weight: 600; color: #444; cursor: pointer; transition: all .15s; border: 2px solid transparent; }
@@ -1410,9 +1411,9 @@ document.addEventListener('keydown', e => {
         <!-- İlan No -->
         <div class="filter-section">
           <div class="filter-label">🔍 İlan Numarası ile Ara</div>
-          <div style="display:flex;align-items:center;border:1.5px solid #e0e0e0;border-radius:10px;overflow:hidden;background:#fff;">
-            <input type="text" placeholder="örn. 100000001" style="flex:1;padding:9px 12px;border:none;font-size:13px;outline:none;background:transparent;">
-            <button style="background:#43A047;color:#fff;border:none;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">Ara</button>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <input type="text" placeholder="örn. 100000001" style="flex:1;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;outline:none;background:#fff;min-width:0;">
+            <button style="background:#43A047;color:#fff;border:none;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">Ara</button>
           </div>
         </div>
 
@@ -1458,8 +1459,8 @@ document.addEventListener('keydown', e => {
         <div class="filter-section">
           <div class="filter-label">📍 Konum</div>
           <div style="display:flex;gap:8px;">
-            <select id="f-sehir" style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Şehir seç</option></select>
-            <select id="f-ilce" style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>İlçe seç</option></select>
+            <select id="f-sehir" style="flex:1;min-width:0;width:0;padding:9px 6px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:12px;background:#fff;color:#555;outline:none;overflow:hidden;text-overflow:ellipsis;"><option>Şehir seç</option></select>
+            <select id="f-ilce" style="flex:1;min-width:0;width:0;padding:9px 6px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:12px;background:#fff;color:#555;outline:none;overflow:hidden;text-overflow:ellipsis;"><option>İlçe seç</option></select>
           </div>
         </div>
 
@@ -1467,8 +1468,8 @@ document.addEventListener('keydown', e => {
         <div class="filter-section">
           <div class="filter-label">🚗 Marka &amp; Model</div>
           <div style="display:flex;gap:8px;">
-            <select id="f-marka" style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Marka</option></select>
-            <select id="f-model" style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Model</option></select>
+            <select id="f-marka" style="flex:1;min-width:0;width:0;padding:9px 6px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:12px;background:#fff;color:#555;outline:none;overflow:hidden;text-overflow:ellipsis;"><option>Marka</option></select>
+            <select id="f-model" style="flex:1;min-width:0;width:0;padding:9px 6px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:12px;background:#fff;color:#555;outline:none;overflow:hidden;text-overflow:ellipsis;"><option>Model</option></select>
           </div>
         </div>
 
@@ -1476,9 +1477,9 @@ document.addEventListener('keydown', e => {
         <div class="filter-section">
           <div class="filter-label">📅 Yıl Aralığı</div>
           <div style="display:flex;gap:8px;align-items:center;">
-            <select id="f-yildan" style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Yıldan</option></select>
+            <select id="f-yildan" style="flex:1;min-width:0;width:0;padding:9px 6px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:12px;background:#fff;color:#555;outline:none;overflow:hidden;text-overflow:ellipsis;"><option>Yıldan</option></select>
             <span style="color:#aaa;">__</span>
-            <select id="f-yilkadar" style="flex:1;padding:9px 8px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Yıla kadar</option></select>
+            <select id="f-yilkadar" style="flex:1;min-width:0;width:0;padding:9px 6px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:12px;background:#fff;color:#555;outline:none;overflow:hidden;text-overflow:ellipsis;"><option>Yıla kadar</option></select>
           </div>
         </div>
 
@@ -1486,14 +1487,14 @@ document.addEventListener('keydown', e => {
         <div class="filter-section">
           <div class="filter-label">🏎 Kilometre Aralığı</div>
           <div style="display:flex;gap:8px;align-items:center;">
-            <div style="flex:1;border:1.5px solid #e0e0e0;border-radius:10px;padding:9px 10px;background:#fff;">
+            <div style="flex:1;min-width:0;border:1.5px solid #e0e0e0;border-radius:10px;padding:8px 10px;background:#fff;overflow:hidden;">
               <div style="font-size:10px;color:#aaa;">En az</div>
-              <div style="display:flex;align-items:center;gap:4px;"><input type="number" value="0" style="border:none;outline:none;font-size:14px;font-weight:700;width:60px;background:transparent;"><span style="color:#aaa;font-size:12px;">km</span></div>
+              <div style="display:flex;align-items:center;gap:2px;"><input type="number" placeholder="0" min="0" style="border:none;outline:none;font-size:13px;font-weight:700;width:100%;min-width:0;background:transparent;-moz-appearance:textfield;"><span style="color:#aaa;font-size:11px;flex-shrink:0;">km</span></div>
             </div>
-            <span style="color:#aaa;">—</span>
-            <div style="flex:1;border:1.5px solid #e0e0e0;border-radius:10px;padding:9px 10px;background:#fff;">
+            <span style="color:#aaa;flex-shrink:0;">—</span>
+            <div style="flex:1;min-width:0;border:1.5px solid #e0e0e0;border-radius:10px;padding:8px 10px;background:#fff;overflow:hidden;">
               <div style="font-size:10px;color:#aaa;">En fazla</div>
-              <div style="display:flex;align-items:center;gap:4px;"><input type="text" value="∞" style="border:none;outline:none;font-size:14px;font-weight:700;width:40px;background:transparent;"><span style="color:#aaa;font-size:12px;">km</span></div>
+              <div style="display:flex;align-items:center;gap:2px;"><input type="number" placeholder="∞" min="0" style="border:none;outline:none;font-size:13px;font-weight:700;width:100%;min-width:0;background:transparent;-moz-appearance:textfield;"><span style="color:#aaa;font-size:11px;flex-shrink:0;">km</span></div>
             </div>
           </div>
         </div>
@@ -1502,14 +1503,14 @@ document.addEventListener('keydown', e => {
         <div class="filter-section">
           <div class="filter-label">💰 Fiyat Aralığı (₺)</div>
           <div style="display:flex;gap:8px;align-items:center;">
-            <div style="flex:1;border:1.5px solid #e0e0e0;border-radius:10px;padding:9px 10px;background:#fff;">
+            <div style="flex:1;min-width:0;border:1.5px solid #e0e0e0;border-radius:10px;padding:8px 10px;background:#fff;overflow:hidden;">
               <div style="font-size:10px;color:#aaa;">En az</div>
-              <div style="display:flex;align-items:center;gap:4px;"><input type="number" value="0" style="border:none;outline:none;font-size:14px;font-weight:700;width:60px;background:transparent;"><span style="color:#aaa;font-size:12px;">₺</span></div>
+              <div style="display:flex;align-items:center;gap:2px;"><input type="number" placeholder="0" min="0" style="border:none;outline:none;font-size:13px;font-weight:700;width:100%;min-width:0;background:transparent;-moz-appearance:textfield;"><span style="color:#aaa;font-size:11px;flex-shrink:0;">₺</span></div>
             </div>
-            <span style="color:#aaa;">—</span>
-            <div style="flex:1;border:1.5px solid #e0e0e0;border-radius:10px;padding:9px 10px;background:#fff;">
+            <span style="color:#aaa;flex-shrink:0;">—</span>
+            <div style="flex:1;min-width:0;border:1.5px solid #e0e0e0;border-radius:10px;padding:8px 10px;background:#fff;overflow:hidden;">
               <div style="font-size:10px;color:#aaa;">En fazla</div>
-              <div style="display:flex;align-items:center;gap:4px;"><input type="text" value="∞" style="border:none;outline:none;font-size:14px;font-weight:700;width:40px;background:transparent;"><span style="color:#aaa;font-size:12px;">₺</span></div>
+              <div style="display:flex;align-items:center;gap:2px;"><input type="number" placeholder="∞" min="0" style="border:none;outline:none;font-size:13px;font-weight:700;width:100%;min-width:0;background:transparent;-moz-appearance:textfield;"><span style="color:#aaa;font-size:11px;flex-shrink:0;">₺</span></div>
             </div>
           </div>
         </div>
@@ -1580,7 +1581,8 @@ document.addEventListener('keydown', e => {
         <!-- Renk -->
         <div class="filter-section">
           <div class="filter-label">🎨 Renk</div>
-          <select id="f-renk" style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;"><option>Seçiniz</option></select>
+          <select id="f-renk" style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#555;outline:none;" onchange="document.getElementById('renk-diger').style.display=this.value==='Diğer'?'block':'none'"><option>Seçiniz</option></select>
+          <input id="renk-diger" type="text" placeholder="Renk yazın..." style="display:none;margin-top:8px;width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;outline:none;background:#fff;box-sizing:border-box;">
         </div>
 
         <button class="apply-btn" onclick="applyFilter()" style="background:#43A047;margin-top:8px;">Filtrele</button>
