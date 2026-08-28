@@ -590,7 +590,7 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
         <div class="faq-a" data-tr="CarSwipe Türkiye'nin tüm 81 ilinde aktif olarak hizmet vermektedir. Adana'dan Zonguldak'a, tüm şehir ve ilçelerde ilanları görüntüleyebilirsin." data-en="CarSwipe is actively available in all 81 provinces of Turkey. From Adana to Zonguldak, you can view listings in every city and district."><span style="color:#E53935">CarSwipe</span> Türkiye'nin tüm 81 ilinde aktif olarak hizmet vermektedir. Adana'dan Zonguldak'a, tüm şehir ve ilçelerde ilanları görüntüleyebilirsin.</div>
       </div>
     </div>
-    <div class="faq-cta"><a href="demo.html" data-tr="Tüm Soruları Gör" data-en="See All Questions">Tüm Soruları Gör</a></div>
+    <div class="faq-cta"><a href="kesfet.html" data-tr="Tüm Soruları Gör" data-en="See All Questions">Tüm Soruları Gör</a></div>
   </div>
 </section>
 
@@ -629,7 +629,7 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
       <div class="footer-col">
         <h4 data-tr="Ürün" data-en="Product">Ürün</h4>
         <ul>
-          <li><a href="demo.html" data-tr="Demo" data-en="Demo">Demo</a></li>
+          <li><a href="kesfet.html" data-tr="Demo" data-en="Demo">Demo</a></li>
           <li><a href="#features" data-tr="Özellikler" data-en="Features">Özellikler</a></li>
           <li><a href="#faq" data-tr="SSS" data-en="FAQ">SSS</a></li>
         </ul>
@@ -842,13 +842,13 @@ function submitAuth() {
   btn.textContent = '...'; btn.disabled = true;
   if (currentTab === 'login') {
     auth.signInWithEmailAndPassword(email, pass)
-      .then(() => { closeAuth(); window.location.href = 'demo.html'; })
+      .then(() => { closeAuth(); window.location.href = 'kesfet.html'; })
       .catch(e => { showError(getErrMsg(e.code)); btn.textContent = 'Giriş Yap'; btn.disabled = false; });
   } else {
     const name = document.getElementById('auth-name').value.trim();
     auth.createUserWithEmailAndPassword(email, pass)
       .then(r => { if (name) return r.user.updateProfile({displayName: name}); })
-      .then(() => { closeAuth(); window.location.href = 'demo.html'; })
+      .then(() => { closeAuth(); window.location.href = 'kesfet.html'; })
       .catch(e => { showError(getErrMsg(e.code)); btn.textContent = 'Kayıt Ol'; btn.disabled = false; });
   }
 }
@@ -856,7 +856,7 @@ function submitAuth() {
 // ── GOOGLE ──
 function signInGoogle() {
   auth.signInWithPopup(googleProvider)
-    .then(() => { closeAuth(); window.location.href = 'demo.html'; })
+    .then(() => { closeAuth(); window.location.href = 'kesfet.html'; })
     .catch(e => showError(getErrMsg(e.code)));
 }
 
