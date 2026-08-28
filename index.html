@@ -1172,15 +1172,13 @@ auth.onAuthStateChanged(user => {
       ? `<img src="${user.photoURL}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border-radius:50%">`
       : `<div style="width:28px;height:28px;border-radius:50%;background:#E53935;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">${name[0].toUpperCase()}</div>`;
     btn.innerHTML = `${avatar} <span style="margin-left:6px">${name}</span>`;
-    btn.onclick = () => {
-      const choice = confirm('Keşfet\'e gitmek için Tamam, çıkış yapmak için İptal\'e basın.');
-      if (choice) { showApp(); } else { auth.signOut(); }
-    };
+    btn.onclick = () => showApp();
     btn.style.display = 'flex';
     btn.style.alignItems = 'center';
-    // Sayfada landing görünüyorsa otomatik keşfet'e geç
-    const lv = document.getElementById('landing-view');
-    if (lv && lv.style.display !== 'none' && typeof showApp === 'function') showApp();
+    // Otomatik keşfete geç (tüm scriptler yüklenince)
+    setTimeout(function() {
+      if (typeof showApp === 'function') showApp();
+    }, 100);
   } else {
     btn.innerHTML = 'Oturum Aç';
     btn.onclick = openAuth;
@@ -1213,6 +1211,8 @@ document.addEventListener('keydown', e => {
   <a class="nav-item" onclick="showView('hakkinda', this)"><div class="nav-icon">ℹ</div>Hakkında</a>
   <a class="nav-item" onclick="showView('indir', this)"><div class="nav-icon">⬇</div>İndir</a>
   <a class="nav-item" onclick="showView('sss', this)"><div class="nav-icon">?</div>SSS</a>
+  <div style="flex:1"></div>
+  <a class="nav-item" onclick="if(confirm('Çıkış yapılsın mı?'))auth.signOut().then(()=>showLanding())" style="color:#E53935"><div class="nav-icon" style="color:#E53935">⏻</div>Çıkış Yap</a>
 </div>
 
 <!-- MAIN -->
@@ -1922,7 +1922,7 @@ function openDetail() {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 }
 
-function switchTab(el, tabId) {
+function switchDetailTab(el, tabId) {
   document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   ['tab-specs','tab-desc','tab-map'].forEach(id => {
