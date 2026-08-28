@@ -1175,10 +1175,6 @@ auth.onAuthStateChanged(user => {
     btn.onclick = () => showApp();
     btn.style.display = 'flex';
     btn.style.alignItems = 'center';
-    // Otomatik keşfete geç (tüm scriptler yüklenince)
-    setTimeout(function() {
-      if (typeof showApp === 'function') showApp();
-    }, 100);
   } else {
     btn.innerHTML = 'Oturum Aç';
     btn.onclick = openAuth;
