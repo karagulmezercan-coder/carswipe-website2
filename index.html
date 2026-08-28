@@ -1169,17 +1169,24 @@ auth.onAuthStateChanged(user => {
   if (user) {
     const name = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
     const avatar = user.photoURL
-      ? `<img src="${user.photoURL}" style="width:28px;height:28px;border-radius:50%;object-fit:cover">`
+      ? `<img src="${user.photoURL}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border-radius:50%">`
       : `<div style="width:28px;height:28px;border-radius:50%;background:#E53935;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">${name[0].toUpperCase()}</div>`;
     btn.innerHTML = `${avatar} <span style="margin-left:6px">${name}</span>`;
     btn.onclick = () => {
-      if (confirm('Çıkış yapmak istiyor musunuz?')) auth.signOut();
+      const choice = confirm('Keşfet\'e gitmek için Tamam, çıkış yapmak için İptal\'e basın.');
+      if (choice) { showApp(); } else { auth.signOut(); }
     };
     btn.style.display = 'flex';
     btn.style.alignItems = 'center';
+    // Sayfada landing görünüyorsa otomatik keşfet'e geç
+    const lv = document.getElementById('landing-view');
+    if (lv && lv.style.display !== 'none' && typeof showApp === 'function') showApp();
   } else {
     btn.innerHTML = 'Oturum Aç';
     btn.onclick = openAuth;
+    // Keşfet açıksa landing'e dön
+    const av = document.getElementById('app-view');
+    if (av && av.style.display === 'flex' && typeof showLanding === 'function') showLanding();
   }
 });
 
