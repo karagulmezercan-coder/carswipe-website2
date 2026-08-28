@@ -256,7 +256,7 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
     <h1 data-tr="Hayalindeki arabayı bulmak bir <em>kaydırmayla</em> başlar.™" data-en="Finding your dream car starts with a <em>swipe</em>.™">Hayalindeki arabayı bulmak bir <em>kaydırmayla</em> başlar.™</h1>
     <p class="hero-sub" data-tr="50.000'den fazla ilan, 87 marka, 81 şehir. Kaydır, beğen, satın al." data-en="50,000+ listings, 87 brands, 81 cities. Swipe, like, buy.">50.000'den fazla ilan, 87 marka, 81 şehir. Kaydır, beğen, satın al.</p>
     <div class="hero-ctas">
-      <button class="btn-hero-primary" onclick="window.location='demo.html'" data-tr="Uygulamayı Dene" data-en="Try the App">Uygulamayı Dene</button>
+      <button class="btn-hero-primary" onclick="openAuth();switchTab('register')" data-tr="Uygulamayı Dene" data-en="Try the App">Uygulamayı Dene</button>
       <button class="btn-hero-secondary" data-tr="Nasıl Çalışır?" data-en="How It Works?" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Nasıl Çalışır?</button>
     </div>
     <div class="hero-stats">
@@ -600,8 +600,8 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
   <h2 data-tr="Yeterince okudun.<br>Hayalini bul." data-en="You've read enough.<br>Go find it.">Yeterince okudun.<br>Hayalini bul.</h2>
   <p data-tr="Türkiye'nin en akıllı araç platformu seni bekliyor." data-en="Turkey's smartest car platform is waiting for you.">Türkiye'nin en akıllı araç platformu seni bekliyor.</p>
   <div class="final-ctas">
-    <button class="btn-final" onclick="window.location='demo.html'" data-tr="Uygulamayı Dene" data-en="Try the App">Uygulamayı Dene</button>
-    <button class="btn-final-ghost" data-tr="Hesap Oluştur" data-en="Create Account">Hesap Oluştur</button>
+    <button class="btn-final" onclick="openAuth();switchTab('register')" data-tr="Uygulamayı Dene" data-en="Try the App">Uygulamayı Dene</button>
+    <button class="btn-final-ghost" onclick="openAuth();switchTab('register')" data-tr="Hesap Oluştur" data-en="Create Account">Hesap Oluştur</button>
   </div>
   <div class="app-badges">
     <div class="badge">
@@ -733,7 +733,10 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     <div style="display:flex;flex-direction:column;gap:12px">
       <input id="auth-name" placeholder="Ad Soyad" type="text" style="display:none;padding:13px 16px;border-radius:12px;border:1.5px solid #e0e0e0;font-size:15px;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#E53935'" onblur="this.style.borderColor='#e0e0e0'">
       <input id="auth-email" placeholder="E-posta adresi" type="email" style="padding:13px 16px;border-radius:12px;border:1.5px solid #e0e0e0;font-size:15px;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#E53935'" onblur="this.style.borderColor='#e0e0e0'">
-      <input id="auth-pass" placeholder="Şifre" type="password" style="padding:13px 16px;border-radius:12px;border:1.5px solid #e0e0e0;font-size:15px;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#E53935'" onblur="this.style.borderColor='#e0e0e0'">
+      <div style="position:relative">
+        <input id="auth-pass" placeholder="Şifre" type="password" style="width:100%;box-sizing:border-box;padding:13px 44px 13px 16px;border-radius:12px;border:1.5px solid #e0e0e0;font-size:15px;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#E53935'" onblur="this.style.borderColor='#e0e0e0'">
+        <button type="button" onclick="togglePass()" id="pass-eye" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#aaa;font-size:18px;padding:0;line-height:1" title="Şifreyi göster">👁</button>
+      </div>
       <button id="auth-submit" onclick="submitAuth()" style="background:#E53935;color:#fff;padding:14px;border-radius:12px;border:none;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s" onmouseover="this.style.background='#C62828'" onmouseout="this.style.background='#E53935'">Giriş Yap</button>
     </div>
 
@@ -822,6 +825,12 @@ function showError(msg) {
 function clearError() {
   document.getElementById('auth-error').style.display = 'none';
 }
+function togglePass() {
+  const inp = document.getElementById('auth-pass');
+  const btn = document.getElementById('pass-eye');
+  if (inp.type === 'password') { inp.type = 'text'; btn.style.color = '#E53935'; }
+  else { inp.type = 'password'; btn.style.color = '#aaa'; }
+}
 
 // ── SUBMIT ──
 function submitAuth() {
@@ -833,13 +842,13 @@ function submitAuth() {
   btn.textContent = '...'; btn.disabled = true;
   if (currentTab === 'login') {
     auth.signInWithEmailAndPassword(email, pass)
-      .then(() => closeAuth())
+      .then(() => { closeAuth(); window.location.href = 'demo.html'; })
       .catch(e => { showError(getErrMsg(e.code)); btn.textContent = 'Giriş Yap'; btn.disabled = false; });
   } else {
     const name = document.getElementById('auth-name').value.trim();
     auth.createUserWithEmailAndPassword(email, pass)
       .then(r => { if (name) return r.user.updateProfile({displayName: name}); })
-      .then(() => closeAuth())
+      .then(() => { closeAuth(); window.location.href = 'demo.html'; })
       .catch(e => { showError(getErrMsg(e.code)); btn.textContent = 'Kayıt Ol'; btn.disabled = false; });
   }
 }
@@ -847,7 +856,7 @@ function submitAuth() {
 // ── GOOGLE ──
 function signInGoogle() {
   auth.signInWithPopup(googleProvider)
-    .then(() => closeAuth())
+    .then(() => { closeAuth(); window.location.href = 'demo.html'; })
     .catch(e => showError(getErrMsg(e.code)));
 }
 
