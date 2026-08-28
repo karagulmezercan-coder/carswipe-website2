@@ -17,8 +17,8 @@ img{display:block;max-width:100%}
 button{cursor:pointer;font-family:inherit;border:none;outline:none}
 
 /* ── NAV ── */
-.nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:68px;background:rgba(248,244,238,0.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,0,0,0.08)}
-.nav-logo{display:flex;align-items:center;gap:12px;font-size:26px;font-weight:900;letter-spacing:-1px}
+.nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:68px;background:rgba(255,255,255,0.97);backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,0,0,0.08)}
+.nav-logo{display:flex;align-items:center;gap:12px;font-size:26px;font-weight:900;letter-spacing:-1px;color:#E53935}
 .nav-logo span{color:#E53935}
 .nav-logo-icon{width:44px;height:44px;background:linear-gradient(135deg,#E53935,#EF5350);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
 .nav-links{display:flex;align-items:center;gap:28px;list-style:none}
@@ -241,18 +241,11 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
 <nav>
   <a href="/" class="nav-logo">
     <div class="nav-logo-icon">🚗</div>
-    Car<span>Swipe</span>
+    CarSwipe
   </a>
-  <ul class="nav-links">
-    <li><a href="#features" data-tr="Özellikler" data-en="Features">Özellikler</a></li>
-    <li><a href="#why" data-tr="Neden CarSwipe?" data-en="Why CarSwipe?">Neden CarSwipe?</a></li>
-    <li><a href="#faq" data-tr="SSS" data-en="FAQ">SSS</a></li>
-    <li><a href="demo.html" data-tr="Demo →" data-en="Demo →">Demo →</a></li>
-  </ul>
   <div class="nav-right">
-    <button class="lang-btn" onclick="toggleLang()" id="lang-toggle">EN</button>
-    <button class="btn-ghost" data-tr="Giriş Yap" data-en="Log In">Giriş Yap</button>
-
+    <button class="lang-btn" onclick="toggleLang()" id="lang-toggle" data-tr="EN" data-en="TR">EN</button>
+    <button class="btn-green" data-tr="Oturum Aç" data-en="Log In">Oturum Aç</button>
   </div>
 </nav>
 
@@ -627,9 +620,9 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
   <div class="footer-inner">
     <div class="footer-top">
       <div class="footer-brand">
-        <div class="nav-logo" style="font-size:18px;font-weight:800">
+        <div class="nav-logo" style="font-size:18px;font-weight:800;color:#E53935">
           <div class="nav-logo-icon" style="width:30px;height:30px;font-size:15px">🚗</div>
-          Car<span style="color:#E53935">Swipe</span>
+          CarSwipe
         </div>
         <p data-tr="Türkiye'nin en akıllı ikinci el araç platformu. Kaydır, beğen, satın al." data-en="Turkey's smartest used car platform. Swipe, like, buy.">Türkiye'nin en akıllı ikinci el araç platformu. Kaydır, beğen, satın al.</p>
       </div>
@@ -700,8 +693,8 @@ function toggleFaq(el) {
 window.addEventListener('scroll', () => {
   const nav = document.querySelector('.nav');
   nav.style.background = window.scrollY > 40
-    ? 'rgba(248,244,238,0.99)'
-    : 'rgba(248,244,238,0.95)';
+    ? 'rgba(255,255,255,1)'
+    : 'rgba(255,255,255,0.97)';
 });
 
 // ── SMOOTH ANCHOR ──
