@@ -1679,21 +1679,35 @@ document.addEventListener('keydown', e => {
         </div>
       </div>
 
-      <!-- Sohbet Ekranı (üstüne gelir) -->
+      <!-- Sohbet Ekranı -->
       <div id="chat-screen" style="display:none;position:absolute;inset:0;background:#f5f5f5;flex-direction:column;z-index:10;">
-        <!-- Chat Header -->
-        <div class="app-header" style="display:flex;align-items:center;gap:10px;justify-content:flex-start;padding:12px 14px;">
+
+        <!-- Normal Header -->
+        <div id="chat-header-normal" class="app-header" style="display:flex;align-items:center;gap:10px;padding:10px 12px;">
           <button onclick="closeChat()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0 4px;">‹</button>
-          <img id="chat-avatar" src="" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">
-          <div id="chat-title" style="font-size:14px;font-weight:700;color:#fff;"></div>
+          <img id="chat-avatar" src="" style="width:30px;height:30px;border-radius:50%;object-fit:cover;">
+          <div id="chat-title" style="font-size:13px;font-weight:700;color:#fff;flex:1;"></div>
+          <button onclick="enterSelectMode()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:5px 10px;border-radius:8px;font-size:11px;cursor:pointer;">Seç</button>
         </div>
+
+        <!-- Seçim Modu Header -->
+        <div id="chat-header-select" style="display:none;background:#333;padding:10px 12px;flex-shrink:0;display:none;align-items:center;gap:8px;flex-wrap:wrap;">
+          <button onclick="exitSelectMode()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">✕</button>
+          <span id="select-count" style="color:#fff;font-size:12px;font-weight:700;flex:1;">0 seçildi</span>
+          <button onclick="selectAll()" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 9px;border-radius:8px;font-size:11px;cursor:pointer;">Tümünü Seç</button>
+          <button onclick="deleteAllMsgs()" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 9px;border-radius:8px;font-size:11px;cursor:pointer;">Tümünü Sil</button>
+          <button onclick="deleteSelected()" style="background:#E53935;border:none;color:#fff;padding:5px 9px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">🗑 Sil</button>
+        </div>
+
         <!-- Chat Mesajlar -->
-        <div id="chat-body" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;"></div>
-        <!-- Chat Input -->
-        <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid #e0e0e0;background:#fff;flex-shrink:0;">
+        <div id="chat-body" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px;"></div>
+
+        <!-- Input (seçim modunda gizlenir) -->
+        <div id="chat-input-bar" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid #e0e0e0;background:#fff;flex-shrink:0;">
           <input id="chat-input" type="text" placeholder="Mesaj yaz..." style="flex:1;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:20px;font-size:13px;outline:none;background:#f9f9f9;" onkeydown="if(event.key==='Enter')sendMsg()">
-          <button onclick="sendMsg()" style="width:34px;height:34px;background:#E53935;border:none;border-radius:50%;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">➤</button>
+          <button onclick="sendMsg()" style="width:34px;height:34px;background:#E53935;border:none;border-radius:50%;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">➤</button>
         </div>
+
       </div>
 
     </div>
@@ -2363,18 +2377,27 @@ function openChat(name, avatar, firstMsg) {
     const div = document.createElement('div');
     div.dataset.key = key;
     div.dataset.isMe = isMe;
-    div.style.cssText = `display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};padding:2px 0;transition:background .15s;border-radius:8px;`;
-    div.innerHTML = `
-      <div class="chat-bubble" style="max-width:75%;padding:9px 13px;border-radius:16px;font-size:12px;line-height:1.5;background:${isMe?'#E53935':'#fff'};color:${isMe?'#fff':'#111'};border-bottom-${isMe?'right':'left'}-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.08);cursor:pointer;user-select:none;">${m.text}</div>
+    div.style.cssText = `display:flex;flex-direction:row;align-items:center;gap:6px;padding:2px 4px;transition:background .15s;border-radius:8px;justify-content:${isMe?'flex-end':'flex-start'};`;
+    const chkSpan = document.createElement('span');
+    chkSpan.className = 'msg-chk';
+    chkSpan.textContent = '○';
+    chkSpan.style.cssText = 'display:none;color:#E53935;font-size:14px;flex-shrink:0;cursor:pointer;';
+    const inner = document.createElement('div');
+    inner.style.cssText = `display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};`;
+    inner.innerHTML = `
+      <div class="chat-bubble" style="max-width:75%;padding:9px 13px;border-radius:16px;font-size:12px;line-height:1.5;background:${isMe?'#E53935':'#fff'};color:${isMe?'#fff':'#111'};border-bottom-${isMe?'right':'left'}-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.08);">${m.text}</div>
       <div style="font-size:10px;color:#bbb;margin-top:2px;">${timeStr}</div>`;
-    // Uzun bas veya çift tık ile seç
-    let pressTimer;
-    const bubble = div.querySelector('.chat-bubble');
-    bubble.addEventListener('mousedown', () => { pressTimer = setTimeout(() => toggleMsgSelect(div, key), 500); });
-    bubble.addEventListener('mouseup', () => clearTimeout(pressTimer));
-    bubble.addEventListener('mouseleave', () => clearTimeout(pressTimer));
-    bubble.addEventListener('touchstart', () => { pressTimer = setTimeout(() => toggleMsgSelect(div, key), 500); }, {passive:true});
-    bubble.addEventListener('touchend', () => clearTimeout(pressTimer));
+    if (isMe) { div.appendChild(inner); div.appendChild(chkSpan); }
+    else { div.appendChild(chkSpan); div.appendChild(inner); }
+    // Seçim modunda tıklama
+    div.addEventListener('click', () => {
+      if (_selectMode) {
+        chkSpan.style.display = 'inline';
+        toggleMsgSelect(div, key);
+      }
+    });
+    // Seçim moduna girildiğinde checkbox'ları göster
+    div._showChk = () => { chkSpan.style.display = 'inline'; };
     body.appendChild(div);
     body.scrollTop = body.scrollHeight;
   });
@@ -2387,58 +2410,92 @@ function openChat(name, avatar, firstMsg) {
   });
 }
 
+let _selectMode = false;
+
+function enterSelectMode() {
+  _selectMode = true;
+  window._selectedMsgs = {};
+  document.getElementById('chat-header-normal').style.display = 'none';
+  document.getElementById('chat-header-select').style.display = 'flex';
+  document.getElementById('chat-input-bar').style.display = 'none';
+  // Mevcut mesajlarda checkboxları göster
+  document.getElementById('chat-body').querySelectorAll('[data-key]').forEach(div => {
+    const chk = div.querySelector('.msg-chk');
+    if (chk) { chk.style.display = 'inline'; chk.textContent = '○'; }
+  });
+  _refreshSelectUI();
+}
+
+function exitSelectMode() {
+  _selectMode = false;
+  window._selectedMsgs = {};
+  document.getElementById('chat-header-normal').style.display = 'flex';
+  document.getElementById('chat-header-select').style.display = 'none';
+  document.getElementById('chat-input-bar').style.display = 'flex';
+  document.getElementById('chat-body').querySelectorAll('[data-key]').forEach(div => {
+    div.style.background = '';
+    div.style.outline = '';
+    const chk = div.querySelector('.msg-chk');
+    if (chk) chk.style.display = 'none';
+  });
+}
+
+function _refreshSelectUI() {
+  const count = Object.keys(window._selectedMsgs).length;
+  const el = document.getElementById('select-count');
+  if (el) el.textContent = count === 0 ? '0 seçildi' : count + ' mesaj seçildi';
+}
+
 function toggleMsgSelect(div, key) {
+  if (!_selectMode) return;
+  const chk = div.querySelector('.msg-chk');
   if (window._selectedMsgs[key]) {
     delete window._selectedMsgs[key];
     div.style.background = '';
-    div.querySelector('.chat-bubble').style.opacity = '1';
+    div.style.outline = '';
+    if (chk) chk.textContent = '○';
   } else {
     window._selectedMsgs[key] = true;
-    div.style.background = 'rgba(229,57,53,.12)';
-    div.querySelector('.chat-bubble').style.opacity = '0.7';
+    div.style.background = 'rgba(229,57,53,.10)';
+    div.style.outline = '1.5px solid #E53935';
+    if (chk) chk.textContent = '●';
   }
-  updateDeleteBar();
+  _refreshSelectUI();
 }
 
-function updateDeleteBar() {
-  const count = Object.keys(window._selectedMsgs).length;
-  let bar = document.getElementById('delete-bar');
-  if (!bar) {
-    bar = document.createElement('div');
-    bar.id = 'delete-bar';
-    bar.style.cssText = 'position:absolute;bottom:60px;left:0;right:0;background:#E53935;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;font-size:13px;font-weight:700;z-index:20;';
-    bar.innerHTML = `<span id="delete-bar-count"></span><div style="display:flex;gap:12px;"><button onclick="cancelSelect()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;">Vazgeç</button><button onclick="deleteSelected()" style="background:#fff;border:none;color:#E53935;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">🗑 Sil</button></div>`;
-    document.getElementById('chat-screen').appendChild(bar);
-  }
-  if (count === 0) { bar.style.display = 'none'; }
-  else { bar.style.display = 'flex'; document.getElementById('delete-bar-count').textContent = count + ' mesaj seçildi'; }
-}
-
-function cancelSelect() {
+function selectAll() {
   document.getElementById('chat-body').querySelectorAll('[data-key]').forEach(div => {
-    div.style.background = '';
-    const b = div.querySelector('.chat-bubble'); if (b) b.style.opacity = '1';
+    const key = div.dataset.key;
+    window._selectedMsgs[key] = true;
+    div.style.background = 'rgba(229,57,53,.10)';
+    div.style.outline = '1.5px solid #E53935';
+    const chk = div.querySelector('.msg-chk');
+    if (chk) chk.textContent = '●';
   });
-  window._selectedMsgs = {};
-  updateDeleteBar();
+  _refreshSelectUI();
 }
 
 function deleteSelected() {
   if (!currentRoomId) return;
   const keys = Object.keys(window._selectedMsgs);
-  if (!keys.length) return;
-  if (!confirm(keys.length + ' mesaj silinsin mi?')) return;
+  if (!keys.length) { alert('Önce mesaj seçin.'); return; }
   const ref = db.ref('chats/' + currentRoomId + '/messages');
   keys.forEach(k => ref.child(k).remove());
-  window._selectedMsgs = {};
-  updateDeleteBar();
+  exitSelectMode();
+}
+
+function deleteAllMsgs() {
+  if (!currentRoomId) return;
+  if (!confirm('Tüm mesajlar silinsin mi?')) return;
+  db.ref('chats/' + currentRoomId + '/messages').remove();
+  exitSelectMode();
 }
 
 function closeChat() {
   if (chatListener) { db.ref('chats/' + chatListener + '/messages').off(); chatListener = null; }
   currentRoomId = null;
   window._selectedMsgs = {};
-  const bar = document.getElementById('delete-bar'); if (bar) bar.remove();
+  if (_selectMode) exitSelectMode();
   document.getElementById('chat-screen').style.display = 'none';
   document.getElementById('msg-list-screen').style.display = 'flex';
 }
