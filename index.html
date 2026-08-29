@@ -537,11 +537,11 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
 <!-- ══ HERO ══ -->
 <section class="hero" style="display:flex;gap:60px;">
   <div class="hero-content">
-    <div class="hero-eyebrow">🚗 Lansman Öncesi · Erken Erişim</div>
+    <div class="hero-eyebrow">🚗 Yakında · Bildirim Al</div>
     <h1>Aradığın aracı uzun listelerde değil, <em>sana özel akışta</em> bul.</h1>
     <p class="hero-sub">CarSwipe, bütçene ve tercihlerine uygun araçları kaydırarak keşfetmeni sağlar. Beğendiğin araçları kaydet, detayları incele ve satıcıyla doğrudan iletişime geç.</p>
     <div class="hero-ctas">
-      <button class="btn-hero-primary" onclick="openEarlyAccess()">🚀 Erken Erişime Katıl</button>
+      <button class="btn-hero-primary" onclick="openEarlyAccess()">🔔 Çıkınca Bana Bildir</button>
       <button class="btn-hero-secondary" onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">Nasıl Çalışır?</button>
     </div>
     <!-- Erken erişim formu -->
@@ -551,7 +551,7 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
         <input id="early-email" type="email" placeholder="E-posta adresin" style="flex:1;min-width:200px;padding:11px 16px;border-radius:10px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;font-size:14px;outline:none;" onfocus="this.style.borderColor='#E53935'" onblur="this.style.borderColor='rgba(255,255,255,.2)'">
         <button onclick="submitEarlyAccess()" style="background:#E53935;color:#fff;font-weight:700;font-size:14px;padding:11px 20px;border-radius:10px;border:none;cursor:pointer;white-space:nowrap;">Kayıt Ol</button>
       </div>
-      <div id="early-success" style="display:none;color:#81C784;font-size:13px;margin-top:10px;font-weight:600;">✓ Harika! Lansmanda sana ilk bildirim gidecek.</div>
+      <div id="early-success" style="display:none;color:#81C784;font-size:13px;margin-top:10px;font-weight:600;">✓ Kaydedildi! Uygulama yayına girince sana bildireceğiz.</div>
     </div>
     <div class="hero-stats" style="margin-top:36px;">
       <div class="stat">
@@ -936,9 +936,9 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
         </div>
       </div>
       <button onclick="openEarlyAccess()" style="background:#E53935;color:#fff;font-size:16px;font-weight:700;padding:15px 32px;border-radius:32px;border:none;cursor:pointer;box-shadow:0 0 32px rgba(229,57,53,.4);transition:all .2s;" onmouseover="this.style.background='#C62828'" onmouseout="this.style.background='#E53935'">
-        🚗 Aracımı Satmak İstiyorum
+        🔔 Çıkınca Haber Ver
       </button>
-      <div style="font-size:12px;color:rgba(255,255,255,.3);margin-top:12px;">Lansman öncesi ön kayıt — öncelikli erişim hakkı kazanırsın.</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.3);margin-top:12px;">Uygulama yayına girince e-posta ile bilgilendireceğiz.</div>
     </div>
     <div style="flex:0;min-width:260px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:28px;backdrop-filter:blur(8px);">
       <div style="font-size:13px;font-weight:800;color:rgba(255,255,255,.4);letter-spacing:.5px;margin-bottom:20px;">SATICI PANELİ — ÖNZIYARET</div>
@@ -1057,14 +1057,14 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
 
 <!-- ══ FINAL CTA ══ -->
 <section class="final-cta">
-  <p class="section-tag" style="text-align:center;margin-bottom:20px;">ERKEN ERİŞİM</p>
-  <h2>İlk araç keşfine<br>sen de katıl.</h2>
-  <p>Lansman öncesi kayıt ol, öncelikli erişim hakkı kazan ve CarSwipe'ı ilk deneyenler arasında yer al.</p>
+  <p class="section-tag" style="text-align:center;margin-bottom:20px;">BİLDİRİM</p>
+  <h2>Çıktığında<br>seni haberdar edelim.</h2>
+  <p>E-postanı bırak, uygulama yayına girince sana bildireceğiz.</p>
   <div style="display:flex;gap:10px;max-width:460px;margin:32px auto 0;flex-wrap:wrap;justify-content:center;">
     <input id="final-early-email" type="email" placeholder="E-posta adresin" style="flex:1;min-width:220px;padding:14px 18px;border-radius:12px;border:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;font-size:14px;outline:none;" onfocus="this.style.borderColor='#fff'" onblur="this.style.borderColor='rgba(255,255,255,.25)'">
-    <button onclick="submitFinalAccess()" style="background:#E53935;color:#fff;font-size:15px;font-weight:700;padding:14px 24px;border-radius:12px;border:none;cursor:pointer;white-space:nowrap;">🚀 Kayıt Ol</button>
+    <button onclick="submitFinalAccess()" style="background:#E53935;color:#fff;font-size:15px;font-weight:700;padding:14px 24px;border-radius:12px;border:none;cursor:pointer;white-space:nowrap;">🔔 Bildir</button>
   </div>
-  <div id="final-success" style="display:none;margin-top:16px;color:#81C784;font-weight:600;font-size:14px;">✓ Harika! Lansmanda ilk seni haberdar edeceğiz.</div>
+  <div id="final-success" style="display:none;margin-top:16px;color:#81C784;font-weight:600;font-size:14px;">✓ Kaydedildi! Yayına girince sana haber vereceğiz.</div>
   <p style="margin-top:16px;font-size:13px;opacity:.4;">Spam yok. İstediğin zaman çıkabilirsin.</p>
 </section>
 
@@ -1139,19 +1139,39 @@ function openEarlyAccess() {
     }
   }
 }
+function _saveEarlyAccess(email, successId, inputId) {
+  if (!email || !email.includes('@')) { alert('Geçerli bir e-posta adresi gir.'); return; }
+  // Firebase hazır mı kontrol et (landing page'de firebase henüz init olmamış olabilir)
+  if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
+    // Firebase yok, localStorage'a yedek kayıt
+    const list = JSON.parse(localStorage.getItem('earlyAccessEmails') || '[]');
+    if (list.includes(email)) { alert('Bu e-posta zaten kayıtlı.'); return; }
+    list.push(email);
+    localStorage.setItem('earlyAccessEmails', JSON.stringify(list));
+  } else {
+    firebase.database().ref('earlyAccess').push({
+      email: email,
+      time: Date.now(),
+      source: 'landing'
+    }).catch(err => {
+      // Firebase yazma başarısız → localStorage yedeği
+      const list = JSON.parse(localStorage.getItem('earlyAccessEmails') || '[]');
+      list.push(email);
+      localStorage.setItem('earlyAccessEmails', JSON.stringify(list));
+    });
+  }
+  document.getElementById(successId).style.display = 'block';
+  const inp = document.getElementById(inputId);
+  if (inp) { inp.disabled = true; inp.value = ''; }
+}
+
 function submitEarlyAccess() {
   const email = (document.getElementById('early-email') || {}).value || '';
-  if (!email || !email.includes('@')) { alert('Geçerli bir e-posta adresi gir.'); return; }
-  document.getElementById('early-success').style.display = 'block';
-  document.getElementById('early-email').disabled = true;
-  document.getElementById('early-email').closest('div').querySelector('button').disabled = true;
-  // Gerçek entegrasyon için buraya Firebase/API çağrısı eklenebilir
+  _saveEarlyAccess(email, 'early-success', 'early-email');
 }
 function submitFinalAccess() {
   const email = (document.getElementById('final-early-email') || {}).value || '';
-  if (!email || !email.includes('@')) { alert('Geçerli bir e-posta adresi gir.'); return; }
-  document.getElementById('final-success').style.display = 'block';
-  document.getElementById('final-early-email').disabled = true;
+  _saveEarlyAccess(email, 'final-success', 'final-early-email');
 }
 
 // ── LANGUAGE TOGGLE ──
@@ -1260,7 +1280,7 @@ const firebaseConfig = {
   storageBucket: "carswipe-33030.firebasestorage.app",
   messagingSenderId: "588954344790",
   appId: "1:588954344790:web:89d2401cb18ca895df8af7",
-  databaseURL: "https://carswipe-33030-default-rtdb.firebaseio.com"
+  databaseURL: "https://carswipe-33030-default-rtdb.europe-west1.firebasedatabase.app"
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
