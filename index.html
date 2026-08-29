@@ -2115,7 +2115,7 @@ function goBugunEklenenler() {
 function renderBugunEklenenler() {
   const body = document.getElementById('bugun-body');
   body.innerHTML = cars.map((c, i) => `
-    <div class="liked-car-item" onclick="idx=${i};detailPhotoIdx=0;openDetail();" style="cursor:pointer;">
+    <div class="liked-car-item" onclick="openDetailFromBugun(${i})" style="cursor:pointer;">
       <img class="liked-car-thumb" src="https://images.unsplash.com/${c.photos[0]}?w=200&q=80" alt="">
       <div class="liked-car-info">
         <div class="liked-car-name">${c.name}</div>
@@ -2123,6 +2123,13 @@ function renderBugunEklenenler() {
         <div class="liked-car-meta">${c.location}</div>
       </div>
     </div>`).join('');
+}
+
+function openDetailFromBugun(carIdx) {
+  idx = carIdx;
+  detailPhotoIdx = 0;
+  _prevView = 'bugun';
+  openDetail();
 }
 function undoCard() {
   if (history.length === 0) return;
@@ -2240,6 +2247,11 @@ function goBack() {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     if (el) el.classList.add('active');
     _prevView = 'kesfet';
+    return;
+  }
+  if (_prevView === 'bugun') {
+    _prevView = 'kesfet';
+    showView('bugun', null);
     return;
   }
   const kesfetEl = document.querySelector('.nav-item');
