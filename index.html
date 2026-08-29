@@ -986,6 +986,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 <!-- ══ FIREBASE AUTH ══ -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <!-- ── AUTH MODAL HTML ── -->
 </div><!-- /landing-view -->
@@ -1044,10 +1045,12 @@ const firebaseConfig = {
   projectId: "carswipe-33030",
   storageBucket: "carswipe-33030.firebasestorage.app",
   messagingSenderId: "588954344790",
-  appId: "1:588954344790:web:89d2401cb18ca895df8af7"
+  appId: "1:588954344790:web:89d2401cb18ca895df8af7",
+  databaseURL: "https://carswipe-33030-default-rtdb.firebaseio.com"
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+const db = firebase.database();
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
 let currentTab = 'login';
@@ -1624,53 +1627,75 @@ document.addEventListener('keydown', e => {
 
   <!-- MESAJLAR -->
   <div class="view" id="view-mesajlar">
-    <div class="app-screen">
-      <div class="app-header">
-        <div class="app-header-title">Mesajlar</div>
+    <div class="app-screen" style="position:relative;">
+
+      <!-- Mesaj Listesi -->
+      <div id="msg-list-screen" style="display:flex;flex-direction:column;height:100%;">
+        <div class="app-header">
+          <div class="app-header-title">Mesajlar</div>
+        </div>
+        <div class="app-body">
+          <div class="msg-item" onclick="openChat('Toyota Corolla 2022','https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=100&q=80','Merhaba, araç hâlâ satışta mı?')">
+            <img class="msg-avatar" src="https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=100&q=80" alt="">
+            <div class="msg-info">
+              <div class="msg-name">Toyota Corolla 2022</div>
+              <div class="msg-preview">Merhaba, araç hâlâ satışta mı?</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
+              <div class="msg-time">14:32</div>
+              <div class="msg-unread-dot"></div>
+            </div>
+          </div>
+          <div class="msg-item" onclick="openChat('BMW 3 Serisi 2021','https://images.unsplash.com/photo-1555215695-3004980ad54e?w=100&q=80','Fiyatta pazarlık mümkün mü?')">
+            <img class="msg-avatar" src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=100&q=80" alt="">
+            <div class="msg-info">
+              <div class="msg-name">BMW 3 Serisi 2021</div>
+              <div class="msg-preview">Fiyatta pazarlık mümkün mü?</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
+              <div class="msg-time">Dün</div>
+            </div>
+          </div>
+          <div class="msg-item" onclick="openChat('Audi A4 2022','https://images.unsplash.com/photo-1542362567-b07e54358753?w=100&q=80','Araç İstanbul\'da mı?')">
+            <img class="msg-avatar" src="https://images.unsplash.com/photo-1542362567-b07e54358753?w=100&q=80" alt="">
+            <div class="msg-info">
+              <div class="msg-name">Audi A4 2022</div>
+              <div class="msg-preview">Araç İstanbul'da mı?</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
+              <div class="msg-time">Pazartesi</div>
+            </div>
+          </div>
+          <div class="msg-item" onclick="openChat('Porsche Cayenne 2019','https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=100&q=80','Test sürüşü yapabilir miyim?')">
+            <img class="msg-avatar" src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=100&q=80" alt="">
+            <div class="msg-info">
+              <div class="msg-name">Porsche Cayenne 2019</div>
+              <div class="msg-preview">Test sürüşü yapabilir miyim?</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
+              <div class="msg-time">Pazar</div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="app-body">
-        <div class="msg-item">
-          <img class="msg-avatar" src="https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=100&q=80" alt="">
-          <div class="msg-info">
-            <div class="msg-name">Toyota Corolla 2022</div>
-            <div class="msg-preview">Merhaba, araç hâlâ satışta mı?</div>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
-            <div class="msg-time">14:32</div>
-            <div class="msg-unread-dot"></div>
-          </div>
+
+      <!-- Sohbet Ekranı (üstüne gelir) -->
+      <div id="chat-screen" style="display:none;position:absolute;inset:0;background:#f5f5f5;flex-direction:column;z-index:10;">
+        <!-- Chat Header -->
+        <div class="app-header" style="display:flex;align-items:center;gap:10px;justify-content:flex-start;padding:12px 14px;">
+          <button onclick="closeChat()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0 4px;">‹</button>
+          <img id="chat-avatar" src="" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">
+          <div id="chat-title" style="font-size:14px;font-weight:700;color:#fff;"></div>
         </div>
-        <div class="msg-item">
-          <img class="msg-avatar" src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=100&q=80" alt="">
-          <div class="msg-info">
-            <div class="msg-name">BMW 3 Serisi 2021</div>
-            <div class="msg-preview">Fiyatta pazarlık mümkün mü?</div>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
-            <div class="msg-time">Dün</div>
-          </div>
-        </div>
-        <div class="msg-item">
-          <img class="msg-avatar" src="https://images.unsplash.com/photo-1542362567-b07e54358753?w=100&q=80" alt="">
-          <div class="msg-info">
-            <div class="msg-name">Audi A4 2022</div>
-            <div class="msg-preview">Araç İstanbul'da mı?</div>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
-            <div class="msg-time">Pazartesi</div>
-          </div>
-        </div>
-        <div class="msg-item">
-          <img class="msg-avatar" src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=100&q=80" alt="">
-          <div class="msg-info">
-            <div class="msg-name">Porsche Cayenne 2019</div>
-            <div class="msg-preview">Test sürüşü yapabilir miyim?</div>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
-            <div class="msg-time">Pazar</div>
-          </div>
+        <!-- Chat Mesajlar -->
+        <div id="chat-body" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;"></div>
+        <!-- Chat Input -->
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid #e0e0e0;background:#fff;flex-shrink:0;">
+          <input id="chat-input" type="text" placeholder="Mesaj yaz..." style="flex:1;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:20px;font-size:13px;outline:none;background:#f9f9f9;" onkeydown="if(event.key==='Enter')sendMsg()">
+          <button onclick="sendMsg()" style="width:34px;height:34px;background:#E53935;border:none;border-radius:50%;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">➤</button>
         </div>
       </div>
+
     </div>
   </div>
 
@@ -2290,6 +2315,76 @@ function applyFilter() {
   showView('kesfet', kesfetEl);
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   kesfetEl.classList.add('active');
+}
+
+// ── MESAJLAR / CHAT (Firebase Realtime Database) ──
+let currentRoomId = null;
+let chatListener = null;
+
+function getRoomId(carSlug) {
+  const uid = auth.currentUser ? auth.currentUser.uid : 'anon';
+  // Room: uid + carSlug (demo: tek kullanıcı kendi sohbetini görür)
+  return uid + '_' + carSlug.replace(/[^a-zA-Z0-9]/g,'_');
+}
+
+function openChat(name, avatar, firstMsg) {
+  if (!auth.currentUser) { alert('Sohbet için giriş yapmalısın.'); return; }
+  document.getElementById('chat-title').textContent = name;
+  document.getElementById('chat-avatar').src = avatar;
+  document.getElementById('msg-list-screen').style.display = 'none';
+  const cs = document.getElementById('chat-screen');
+  cs.style.display = 'flex';
+  cs.dataset.name = name;
+  cs.dataset.avatar = avatar;
+
+  currentRoomId = getRoomId(name);
+  const messagesRef = db.ref('chats/' + currentRoomId + '/messages');
+
+  // Önceki listener'ı kapat
+  if (chatListener) { db.ref('chats/' + chatListener + '/messages').off(); }
+  chatListener = currentRoomId;
+
+  // İlk mesaj yoksa ekle
+  messagesRef.limitToLast(1).once('value', snap => {
+    if (!snap.exists()) {
+      messagesRef.push({ uid:'other', text: firstMsg, time: Date.now() });
+    }
+  });
+
+  // Gerçek zamanlı dinle
+  const body = document.getElementById('chat-body');
+  body.innerHTML = '';
+  messagesRef.on('child_added', snap => {
+    const m = snap.val();
+    const isMe = m.uid === auth.currentUser.uid;
+    const timeStr = new Date(m.time).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+    const div = document.createElement('div');
+    div.style.cssText = `display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};`;
+    div.innerHTML = `
+      <div style="max-width:75%;padding:9px 13px;border-radius:16px;font-size:12px;line-height:1.5;background:${isMe?'#E53935':'#fff'};color:${isMe?'#fff':'#111'};border-bottom-${isMe?'right':'left'}-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.08);">${m.text}</div>
+      <div style="font-size:10px;color:#bbb;margin-top:2px;">${timeStr}</div>`;
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight;
+  });
+}
+
+function closeChat() {
+  if (chatListener) { db.ref('chats/' + chatListener + '/messages').off(); chatListener = null; }
+  currentRoomId = null;
+  document.getElementById('chat-screen').style.display = 'none';
+  document.getElementById('msg-list-screen').style.display = 'flex';
+}
+
+function sendMsg() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text || !currentRoomId || !auth.currentUser) return;
+  db.ref('chats/' + currentRoomId + '/messages').push({
+    uid: auth.currentUser.uid,
+    text: text,
+    time: Date.now()
+  });
+  input.value = '';
 }
 
 function renderBegeniler() {
