@@ -2354,23 +2354,91 @@ function openChat(name, avatar, firstMsg) {
   // Gerçek zamanlı dinle
   const body = document.getElementById('chat-body');
   body.innerHTML = '';
+  window._selectedMsgs = {};
   messagesRef.on('child_added', snap => {
     const m = snap.val();
+    const key = snap.key;
     const isMe = m.uid === auth.currentUser.uid;
     const timeStr = new Date(m.time).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
     const div = document.createElement('div');
-    div.style.cssText = `display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};`;
+    div.dataset.key = key;
+    div.dataset.isMe = isMe;
+    div.style.cssText = `display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};padding:2px 0;transition:background .15s;border-radius:8px;`;
     div.innerHTML = `
-      <div style="max-width:75%;padding:9px 13px;border-radius:16px;font-size:12px;line-height:1.5;background:${isMe?'#E53935':'#fff'};color:${isMe?'#fff':'#111'};border-bottom-${isMe?'right':'left'}-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.08);">${m.text}</div>
+      <div class="chat-bubble" style="max-width:75%;padding:9px 13px;border-radius:16px;font-size:12px;line-height:1.5;background:${isMe?'#E53935':'#fff'};color:${isMe?'#fff':'#111'};border-bottom-${isMe?'right':'left'}-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.08);cursor:pointer;user-select:none;">${m.text}</div>
       <div style="font-size:10px;color:#bbb;margin-top:2px;">${timeStr}</div>`;
+    // Uzun bas veya çift tık ile seç
+    let pressTimer;
+    const bubble = div.querySelector('.chat-bubble');
+    bubble.addEventListener('mousedown', () => { pressTimer = setTimeout(() => toggleMsgSelect(div, key), 500); });
+    bubble.addEventListener('mouseup', () => clearTimeout(pressTimer));
+    bubble.addEventListener('mouseleave', () => clearTimeout(pressTimer));
+    bubble.addEventListener('touchstart', () => { pressTimer = setTimeout(() => toggleMsgSelect(div, key), 500); }, {passive:true});
+    bubble.addEventListener('touchend', () => clearTimeout(pressTimer));
     body.appendChild(div);
     body.scrollTop = body.scrollHeight;
   });
+  // Firebase'den silinen mesajı DOM'dan kaldır
+  messagesRef.on('child_removed', snap => {
+    const el = body.querySelector(`[data-key="${snap.key}"]`);
+    if (el) el.remove();
+    delete window._selectedMsgs[snap.key];
+    updateDeleteBar();
+  });
+}
+
+function toggleMsgSelect(div, key) {
+  if (window._selectedMsgs[key]) {
+    delete window._selectedMsgs[key];
+    div.style.background = '';
+    div.querySelector('.chat-bubble').style.opacity = '1';
+  } else {
+    window._selectedMsgs[key] = true;
+    div.style.background = 'rgba(229,57,53,.12)';
+    div.querySelector('.chat-bubble').style.opacity = '0.7';
+  }
+  updateDeleteBar();
+}
+
+function updateDeleteBar() {
+  const count = Object.keys(window._selectedMsgs).length;
+  let bar = document.getElementById('delete-bar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'delete-bar';
+    bar.style.cssText = 'position:absolute;bottom:60px;left:0;right:0;background:#E53935;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;font-size:13px;font-weight:700;z-index:20;';
+    bar.innerHTML = `<span id="delete-bar-count"></span><div style="display:flex;gap:12px;"><button onclick="cancelSelect()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;">Vazgeç</button><button onclick="deleteSelected()" style="background:#fff;border:none;color:#E53935;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">🗑 Sil</button></div>`;
+    document.getElementById('chat-screen').appendChild(bar);
+  }
+  if (count === 0) { bar.style.display = 'none'; }
+  else { bar.style.display = 'flex'; document.getElementById('delete-bar-count').textContent = count + ' mesaj seçildi'; }
+}
+
+function cancelSelect() {
+  document.getElementById('chat-body').querySelectorAll('[data-key]').forEach(div => {
+    div.style.background = '';
+    const b = div.querySelector('.chat-bubble'); if (b) b.style.opacity = '1';
+  });
+  window._selectedMsgs = {};
+  updateDeleteBar();
+}
+
+function deleteSelected() {
+  if (!currentRoomId) return;
+  const keys = Object.keys(window._selectedMsgs);
+  if (!keys.length) return;
+  if (!confirm(keys.length + ' mesaj silinsin mi?')) return;
+  const ref = db.ref('chats/' + currentRoomId + '/messages');
+  keys.forEach(k => ref.child(k).remove());
+  window._selectedMsgs = {};
+  updateDeleteBar();
 }
 
 function closeChat() {
   if (chatListener) { db.ref('chats/' + chatListener + '/messages').off(); chatListener = null; }
   currentRoomId = null;
+  window._selectedMsgs = {};
+  const bar = document.getElementById('delete-bar'); if (bar) bar.remove();
   document.getElementById('chat-screen').style.display = 'none';
   document.getElementById('msg-list-screen').style.display = 'flex';
 }
