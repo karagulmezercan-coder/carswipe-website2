@@ -1203,8 +1203,8 @@ document.addEventListener('keydown', e => {
   <a class="nav-item active" onclick="showView('kesfet', this)"><div class="nav-icon">🔍</div>Keşfet</a>
   <a class="nav-item" onclick="showView('filtrele', this)"><div class="nav-icon">≡</div>Filtrele</a>
   <a class="nav-item" onclick="showView('mesajlar', this)"><div class="nav-icon">💬</div>Mesajlar</a>
-  <a class="nav-item" onclick="showView('profil', this)"><div class="nav-icon">👤</div>Profil</a>
   <a class="nav-item" onclick="showView('begeniler', this)"><div class="nav-icon">♥</div>Beğenilenler</a>
+  <a class="nav-item" onclick="showView('profil', this)"><div class="nav-icon">👤</div>Profil</a>
   <div style="flex:1"></div>
   <a class="nav-item" onclick="if(confirm('Çıkış yapılsın mı?'))auth.signOut().then(()=>showLanding())" style="color:#E53935"><div class="nav-icon" style="color:#E53935">⏻</div>Çıkış Yap</a>
 </div>
@@ -2243,11 +2243,17 @@ function goBack() {
 }
 
 function goMessagesFromDetail() {
+  if (!auth.currentUser) { alert('Sohbet için giriş yapmalısın.'); return; }
+  const c = activeCars[idx];
+  const avatar = `https://images.unsplash.com/${c.photos[0]}?w=100&q=80`;
+  // Önce mesajlar view'ını aç
   const el = document.querySelector('.nav-item[onclick*="mesajlar"]');
-  if (el) showView('mesajlar', el);
-  else showView('mesajlar', document.querySelector('.nav-item'));
+  showView('mesajlar', el || document.querySelector('.nav-item'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (el) el.classList.add('active');
+  // Sonra sohbeti aç (detaydan gelindi bayrağı)
+  _chatReturnToDetail = true;
+  openChat(c.name, avatar, 'Merhaba, araç hâlâ satışta mı?');
 }
 
 function likeFromDetail() {
@@ -2530,11 +2536,19 @@ function deleteAllConvs() {
   exitConvSelectMode();
 }
 
+let _chatReturnToDetail = false;
+
 function closeChat() {
   if (chatListener) { db.ref('chats/' + chatListener + '/messages').off(); chatListener = null; }
   currentRoomId = null;
   window._selectedMsgs = {};
   document.getElementById('chat-screen').style.display = 'none';
+  if (_chatReturnToDetail) {
+    _chatReturnToDetail = false;
+    // Detay ekranına dön
+    showView('detail', null);
+    return;
+  }
   document.getElementById('msg-list-screen').style.display = 'flex';
 }
 
