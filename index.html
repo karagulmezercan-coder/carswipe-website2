@@ -2420,26 +2420,12 @@ function openChat(name, avatar, firstMsg) {
     div.dataset.key = key;
     div.dataset.isMe = isMe;
     div.style.cssText = `display:flex;flex-direction:row;align-items:center;gap:6px;padding:2px 4px;transition:background .15s;border-radius:8px;justify-content:${isMe?'flex-end':'flex-start'};`;
-    const chkSpan = document.createElement('span');
-    chkSpan.className = 'msg-chk';
-    chkSpan.textContent = '○';
-    chkSpan.style.cssText = 'display:none;color:#E53935;font-size:14px;flex-shrink:0;cursor:pointer;';
     const inner = document.createElement('div');
     inner.style.cssText = `display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};`;
     inner.innerHTML = `
-      <div class="chat-bubble" style="max-width:75%;padding:9px 13px;border-radius:16px;font-size:12px;line-height:1.5;background:${isMe?'#E53935':'#fff'};color:${isMe?'#fff':'#111'};border-bottom-${isMe?'right':'left'}-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.08);">${m.text}</div>
+      <div class="chat-bubble" style="max-width:75%;padding:9px 13px;border-radius:16px;font-size:12px;line-height:1.5;background:${isMe?'#E53935':'#fff'};color:${isMe?'#fff':'#222'};border-bottom-${isMe?'right':'left'}-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.08);">${m.text}</div>
       <div style="font-size:10px;color:#bbb;margin-top:2px;">${timeStr}</div>`;
-    if (isMe) { div.appendChild(inner); div.appendChild(chkSpan); }
-    else { div.appendChild(chkSpan); div.appendChild(inner); }
-    // Seçim modunda tıklama
-    div.addEventListener('click', () => {
-      if (_selectMode) {
-        chkSpan.style.display = 'inline';
-        toggleMsgSelect(div, key);
-      }
-    });
-    // Seçim moduna girildiğinde checkbox'ları göster
-    div._showChk = () => { chkSpan.style.display = 'inline'; };
+    div.appendChild(inner);
     body.appendChild(div);
     body.scrollTop = body.scrollHeight;
   });
@@ -2447,8 +2433,6 @@ function openChat(name, avatar, firstMsg) {
   messagesRef.on('child_removed', snap => {
     const el = body.querySelector(`[data-key="${snap.key}"]`);
     if (el) el.remove();
-    delete window._selectedMsgs[snap.key];
-    updateDeleteBar();
   });
 }
 
