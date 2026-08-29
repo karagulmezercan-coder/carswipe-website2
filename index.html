@@ -1612,10 +1612,23 @@ document.addEventListener('keydown', e => {
   </div>
 
   <div class="view" id="view-begeniler">
-    <div class="app-screen">
-      <div class="app-header">
-        <div class="app-header-title">Beğeniler</div>
+    <div class="app-screen" style="display:flex;flex-direction:column;">
+
+      <!-- Normal header -->
+      <div id="begen-header-normal" class="app-header" style="display:flex;align-items:center;padding:10px 14px;flex-shrink:0;">
+        <div class="app-header-title" style="flex:1;">Beğeniler</div>
+        <button onclick="enterBegenSelectMode()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:5px 10px;border-radius:8px;font-size:11px;cursor:pointer;">Seç</button>
       </div>
+
+      <!-- Seçim modu header -->
+      <div id="begen-header-select" style="display:none;background:#333;padding:10px 12px;flex-shrink:0;align-items:center;gap:8px;flex-wrap:wrap;">
+        <button onclick="exitBegenSelectMode()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">✕</button>
+        <span id="begen-select-count" style="color:#fff;font-size:12px;font-weight:700;flex:1;">0 seçildi</span>
+        <button onclick="selectAllBegen()" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 9px;border-radius:8px;font-size:11px;cursor:pointer;">Tümünü Seç</button>
+        <button onclick="deleteAllBegen()" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 9px;border-radius:8px;font-size:11px;cursor:pointer;">Tümünü Sil</button>
+        <button onclick="deleteSelectedBegen()" style="background:#E53935;border:none;color:#fff;padding:5px 9px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">🗑 Sil</button>
+      </div>
+
       <div class="app-body" id="begeniler-body">
         <div class="liked-empty">
           <div class="liked-empty-icon">♡</div>
@@ -2212,7 +2225,17 @@ function toggleFaq(el) {
   el.parentElement.classList.toggle('open');
 }
 
+let _prevView = 'kesfet';
+
 function goBack() {
+  if (_prevView === 'begeniler') {
+    const el = document.querySelector('.nav-item[onclick*="begeniler"]');
+    showView('begeniler', el);
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    if (el) el.classList.add('active');
+    _prevView = 'kesfet';
+    return;
+  }
   const kesfetEl = document.querySelector('.nav-item');
   showView('kesfet', kesfetEl);
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -2527,7 +2550,100 @@ function sendMsg() {
   input.value = '';
 }
 
+// ── Beğeniler seçim/silme ──────────────────────────────
+let _begenSelectMode = false;
+let _selectedBegen = {};
+
+function enterBegenSelectMode() {
+  if (liked.length === 0) return;
+  _begenSelectMode = true;
+  _selectedBegen = {};
+  document.getElementById('begen-header-normal').style.display = 'none';
+  document.getElementById('begen-header-select').style.display = 'flex';
+  document.querySelectorAll('.begen-chk').forEach(chk => {
+    chk.style.display = 'inline';
+    chk.textContent = '○';
+  });
+  _refreshBegenSelectUI();
+}
+
+function exitBegenSelectMode() {
+  _begenSelectMode = false;
+  _selectedBegen = {};
+  document.getElementById('begen-header-normal').style.display = 'flex';
+  document.getElementById('begen-header-select').style.display = 'none';
+  document.querySelectorAll('.liked-car-item').forEach(el => {
+    el.style.background = '';
+    el.style.outline = '';
+  });
+  document.querySelectorAll('.begen-chk').forEach(chk => {
+    chk.style.display = 'none';
+    chk.textContent = '○';
+  });
+}
+
+function _refreshBegenSelectUI() {
+  const count = Object.keys(_selectedBegen).length;
+  const el = document.getElementById('begen-select-count');
+  if (el) el.textContent = count === 0 ? '0 seçildi' : count + ' ilan seçildi';
+}
+
+function toggleBegenSelect(el, carIdx) {
+  const chk = el.querySelector('.begen-chk');
+  if (_selectedBegen[carIdx] !== undefined) {
+    delete _selectedBegen[carIdx];
+    el.style.background = '';
+    el.style.outline = '';
+    if (chk) chk.textContent = '○';
+  } else {
+    _selectedBegen[carIdx] = carIdx;
+    el.style.background = 'rgba(229,57,53,.10)';
+    el.style.outline = '1.5px solid #E53935';
+    if (chk) chk.textContent = '●';
+  }
+  _refreshBegenSelectUI();
+}
+
+function selectAllBegen() {
+  document.querySelectorAll('.liked-car-item[data-caridx]').forEach(el => {
+    const i = el.dataset.caridx;
+    _selectedBegen[i] = parseInt(i);
+    el.style.background = 'rgba(229,57,53,.10)';
+    el.style.outline = '1.5px solid #E53935';
+    const chk = el.querySelector('.begen-chk');
+    if (chk) chk.textContent = '●';
+  });
+  _refreshBegenSelectUI();
+}
+
+function deleteSelectedBegen() {
+  const keys = Object.keys(_selectedBegen);
+  if (!keys.length) { alert('Önce ilan seçin.'); return; }
+  const idxsToRemove = keys.map(Number);
+  liked = liked.filter(i => !idxsToRemove.includes(i));
+  exitBegenSelectMode();
+  renderBegeniler();
+}
+
+function deleteAllBegen() {
+  if (!confirm('Tüm beğeniler silinsin mi?')) return;
+  liked = [];
+  exitBegenSelectMode();
+  renderBegeniler();
+}
+
+function openDetailFromBegen(carIdx) {
+  idx = carIdx;
+  detailPhotoIdx = 0;
+  _prevView = 'begeniler';
+  openDetail();
+}
+
 function renderBegeniler() {
+  _begenSelectMode = false;
+  _selectedBegen = {};
+  document.getElementById('begen-header-normal').style.display = 'flex';
+  document.getElementById('begen-header-select').style.display = 'none';
   const body = document.getElementById('begeniler-body');
   const stat = document.getElementById('stat-liked');
   if (stat) stat.textContent = liked.length;
@@ -2535,9 +2651,10 @@ function renderBegeniler() {
     body.innerHTML = '<div class="liked-empty"><div class="liked-empty-icon">♡</div><div>Henüz beğenilen araç yok.<br>Keşfet\'e gidip sağa kaydır!</div></div>';
     return;
   }
-  body.innerHTML = liked.map(i => {
-    const c = cars[i];
-    return `<div class="liked-car-item">
+  body.innerHTML = liked.map((carIdx, li) => {
+    const c = cars[carIdx];
+    return `<div class="liked-car-item" data-caridx="${carIdx}" onclick="begenItemClick(this, ${carIdx})" style="cursor:pointer;">
+      <span class="begen-chk" style="display:none;color:#E53935;font-size:16px;flex-shrink:0;margin-right:4px;">○</span>
       <img class="liked-car-thumb" src="https://images.unsplash.com/${c.photos[0]}?w=200&q=80" alt="">
       <div class="liked-car-info">
         <div class="liked-car-name">${c.name}</div>
@@ -2547,6 +2664,14 @@ function renderBegeniler() {
       </div>
     </div>`;
   }).join('');
+}
+
+function begenItemClick(el, carIdx) {
+  if (_begenSelectMode) {
+    toggleBegenSelect(el, carIdx);
+  } else {
+    openDetailFromBegen(carIdx);
+  }
 }
 </script>
 </body>
