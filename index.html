@@ -2194,7 +2194,7 @@ function showView(id, el) {
   // Desktop sidebar
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
-  el.classList.add('active');
+  if (el) el.classList.add('active');
   // Also sync mobile nav
   const mnavId = 'mnav-' + id;
   const mnav = document.getElementById(mnavId);
@@ -2203,6 +2203,12 @@ function showView(id, el) {
   if (id === 'begeniler') renderBegeniler();
   if (id === 'profil') { const s = document.getElementById('stat-liked'); if(s) s.textContent = liked.length; }
   if (id === 'filtrele') initFilters();
+  // Mesajlar sayfasına geçilince chat ekranını kapat, listeyi göster
+  if (id === 'mesajlar') {
+    document.getElementById('chat-screen').style.display = 'none';
+    document.getElementById('msg-list-screen').style.display = 'flex';
+    if (_convSelectMode) exitConvSelectMode();
+  }
 }
 
 // Gallery swipe support
