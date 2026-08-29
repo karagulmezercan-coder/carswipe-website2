@@ -1631,11 +1631,25 @@ document.addEventListener('keydown', e => {
 
       <!-- Mesaj Listesi -->
       <div id="msg-list-screen" style="display:flex;flex-direction:column;height:100%;">
-        <div class="app-header">
-          <div class="app-header-title">Mesajlar</div>
+
+        <!-- Normal header -->
+        <div id="msglist-header-normal" class="app-header" style="display:flex;align-items:center;padding:10px 14px;">
+          <div class="app-header-title" style="flex:1;">Mesajlar</div>
+          <button onclick="enterConvSelectMode()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:5px 10px;border-radius:8px;font-size:11px;cursor:pointer;">Seç</button>
         </div>
+
+        <!-- Seçim modu header -->
+        <div id="msglist-header-select" style="display:none;background:#333;padding:10px 12px;flex-shrink:0;align-items:center;gap:8px;flex-wrap:wrap;">
+          <button onclick="exitConvSelectMode()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">✕</button>
+          <span id="conv-select-count" style="color:#fff;font-size:12px;font-weight:700;flex:1;">0 seçildi</span>
+          <button onclick="selectAllConvs()" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 9px;border-radius:8px;font-size:11px;cursor:pointer;">Tümünü Seç</button>
+          <button onclick="deleteAllConvs()" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 9px;border-radius:8px;font-size:11px;cursor:pointer;">Tümünü Sil</button>
+          <button onclick="deleteSelectedConvs()" style="background:#E53935;border:none;color:#fff;padding:5px 9px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">🗑 Sil</button>
+        </div>
+
         <div class="app-body">
-          <div class="msg-item" onclick="openChat('Toyota Corolla 2022','https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=100&q=80','Merhaba, araç hâlâ satışta mı?')">
+          <div class="msg-item" id="conv-toyota" data-conv="conv-toyota" onclick="convItemClick(this,'Toyota Corolla 2022','https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=100&q=80','Merhaba, araç hâlâ satışta mı?')">
+            <span class="conv-chk" style="display:none;color:#E53935;font-size:16px;flex-shrink:0;margin-right:4px;">○</span>
             <img class="msg-avatar" src="https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=100&q=80" alt="">
             <div class="msg-info">
               <div class="msg-name">Toyota Corolla 2022</div>
@@ -1646,7 +1660,8 @@ document.addEventListener('keydown', e => {
               <div class="msg-unread-dot"></div>
             </div>
           </div>
-          <div class="msg-item" onclick="openChat('BMW 3 Serisi 2021','https://images.unsplash.com/photo-1555215695-3004980ad54e?w=100&q=80','Fiyatta pazarlık mümkün mü?')">
+          <div class="msg-item" id="conv-bmw" data-conv="conv-bmw" onclick="convItemClick(this,'BMW 3 Serisi 2021','https://images.unsplash.com/photo-1555215695-3004980ad54e?w=100&q=80','Fiyatta pazarlık mümkün mü?')">
+            <span class="conv-chk" style="display:none;color:#E53935;font-size:16px;flex-shrink:0;margin-right:4px;">○</span>
             <img class="msg-avatar" src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=100&q=80" alt="">
             <div class="msg-info">
               <div class="msg-name">BMW 3 Serisi 2021</div>
@@ -1656,7 +1671,8 @@ document.addEventListener('keydown', e => {
               <div class="msg-time">Dün</div>
             </div>
           </div>
-          <div class="msg-item" onclick="openChat('Audi A4 2022','https://images.unsplash.com/photo-1542362567-b07e54358753?w=100&q=80','Araç İstanbul\'da mı?')">
+          <div class="msg-item" id="conv-audi" data-conv="conv-audi" onclick="convItemClick(this,'Audi A4 2022','https://images.unsplash.com/photo-1542362567-b07e54358753?w=100&q=80','Araç İstanbul\'da mı?')">
+            <span class="conv-chk" style="display:none;color:#E53935;font-size:16px;flex-shrink:0;margin-right:4px;">○</span>
             <img class="msg-avatar" src="https://images.unsplash.com/photo-1542362567-b07e54358753?w=100&q=80" alt="">
             <div class="msg-info">
               <div class="msg-name">Audi A4 2022</div>
@@ -1666,7 +1682,8 @@ document.addEventListener('keydown', e => {
               <div class="msg-time">Pazartesi</div>
             </div>
           </div>
-          <div class="msg-item" onclick="openChat('Porsche Cayenne 2019','https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=100&q=80','Test sürüşü yapabilir miyim?')">
+          <div class="msg-item" id="conv-porsche" data-conv="conv-porsche" onclick="convItemClick(this,'Porsche Cayenne 2019','https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=100&q=80','Test sürüşü yapabilir miyim?')">
+            <span class="conv-chk" style="display:none;color:#E53935;font-size:16px;flex-shrink:0;margin-right:4px;">○</span>
             <img class="msg-avatar" src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=100&q=80" alt="">
             <div class="msg-info">
               <div class="msg-name">Porsche Cayenne 2019</div>
@@ -1682,21 +1699,11 @@ document.addEventListener('keydown', e => {
       <!-- Sohbet Ekranı -->
       <div id="chat-screen" style="display:none;position:absolute;inset:0;background:#f5f5f5;flex-direction:column;z-index:10;">
 
-        <!-- Normal Header -->
+        <!-- Chat Header -->
         <div id="chat-header-normal" class="app-header" style="display:flex;align-items:center;gap:10px;padding:10px 12px;">
           <button onclick="closeChat()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0 4px;">‹</button>
           <img id="chat-avatar" src="" style="width:30px;height:30px;border-radius:50%;object-fit:cover;">
           <div id="chat-title" style="font-size:13px;font-weight:700;color:#fff;flex:1;"></div>
-          <button onclick="enterSelectMode()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:5px 10px;border-radius:8px;font-size:11px;cursor:pointer;">Seç</button>
-        </div>
-
-        <!-- Seçim Modu Header -->
-        <div id="chat-header-select" style="display:none;background:#333;padding:10px 12px;flex-shrink:0;display:none;align-items:center;gap:8px;flex-wrap:wrap;">
-          <button onclick="exitSelectMode()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">✕</button>
-          <span id="select-count" style="color:#fff;font-size:12px;font-weight:700;flex:1;">0 seçildi</span>
-          <button onclick="selectAll()" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 9px;border-radius:8px;font-size:11px;cursor:pointer;">Tümünü Seç</button>
-          <button onclick="deleteAllMsgs()" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 9px;border-radius:8px;font-size:11px;cursor:pointer;">Tümünü Sil</button>
-          <button onclick="deleteSelected()" style="background:#E53935;border:none;color:#fff;padding:5px 9px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">🗑 Sil</button>
         </div>
 
         <!-- Chat Mesajlar -->
@@ -2410,92 +2417,100 @@ function openChat(name, avatar, firstMsg) {
   });
 }
 
-let _selectMode = false;
+// ── Konuşma listesi seçim/silme ──────────────────────────────
+let _convSelectMode = false;
+let _selectedConvs = {};
 
-function enterSelectMode() {
-  _selectMode = true;
-  window._selectedMsgs = {};
-  document.getElementById('chat-header-normal').style.display = 'none';
-  document.getElementById('chat-header-select').style.display = 'flex';
-  document.getElementById('chat-input-bar').style.display = 'none';
-  // Mevcut mesajlarda checkboxları göster
-  document.getElementById('chat-body').querySelectorAll('[data-key]').forEach(div => {
-    const chk = div.querySelector('.msg-chk');
-    if (chk) { chk.style.display = 'inline'; chk.textContent = '○'; }
+function convItemClick(el, name, avatar, firstMsg) {
+  if (_convSelectMode) {
+    toggleConvSelect(el);
+  } else {
+    openChat(name, avatar, firstMsg);
+  }
+}
+
+function enterConvSelectMode() {
+  _convSelectMode = true;
+  _selectedConvs = {};
+  document.getElementById('msglist-header-normal').style.display = 'none';
+  document.getElementById('msglist-header-select').style.display = 'flex';
+  document.querySelectorAll('.conv-chk').forEach(chk => {
+    chk.style.display = 'inline';
+    chk.textContent = '○';
   });
-  _refreshSelectUI();
+  _refreshConvSelectUI();
 }
 
-function exitSelectMode() {
-  _selectMode = false;
-  window._selectedMsgs = {};
-  document.getElementById('chat-header-normal').style.display = 'flex';
-  document.getElementById('chat-header-select').style.display = 'none';
-  document.getElementById('chat-input-bar').style.display = 'flex';
-  document.getElementById('chat-body').querySelectorAll('[data-key]').forEach(div => {
-    div.style.background = '';
-    div.style.outline = '';
-    const chk = div.querySelector('.msg-chk');
-    if (chk) chk.style.display = 'none';
+function exitConvSelectMode() {
+  _convSelectMode = false;
+  _selectedConvs = {};
+  document.getElementById('msglist-header-normal').style.display = 'flex';
+  document.getElementById('msglist-header-select').style.display = 'none';
+  document.querySelectorAll('.msg-item').forEach(el => {
+    el.style.background = '';
+    el.style.outline = '';
+  });
+  document.querySelectorAll('.conv-chk').forEach(chk => {
+    chk.style.display = 'none';
+    chk.textContent = '○';
   });
 }
 
-function _refreshSelectUI() {
-  const count = Object.keys(window._selectedMsgs).length;
-  const el = document.getElementById('select-count');
-  if (el) el.textContent = count === 0 ? '0 seçildi' : count + ' mesaj seçildi';
+function _refreshConvSelectUI() {
+  const count = Object.keys(_selectedConvs).length;
+  const el = document.getElementById('conv-select-count');
+  if (el) el.textContent = count === 0 ? '0 seçildi' : count + ' sohbet seçildi';
 }
 
-function toggleMsgSelect(div, key) {
-  if (!_selectMode) return;
-  const chk = div.querySelector('.msg-chk');
-  if (window._selectedMsgs[key]) {
-    delete window._selectedMsgs[key];
-    div.style.background = '';
-    div.style.outline = '';
+function toggleConvSelect(el) {
+  const id = el.dataset.conv;
+  const chk = el.querySelector('.conv-chk');
+  if (_selectedConvs[id]) {
+    delete _selectedConvs[id];
+    el.style.background = '';
+    el.style.outline = '';
     if (chk) chk.textContent = '○';
   } else {
-    window._selectedMsgs[key] = true;
-    div.style.background = 'rgba(229,57,53,.10)';
-    div.style.outline = '1.5px solid #E53935';
+    _selectedConvs[id] = true;
+    el.style.background = 'rgba(229,57,53,.10)';
+    el.style.outline = '1.5px solid #E53935';
     if (chk) chk.textContent = '●';
   }
-  _refreshSelectUI();
+  _refreshConvSelectUI();
 }
 
-function selectAll() {
-  document.getElementById('chat-body').querySelectorAll('[data-key]').forEach(div => {
-    const key = div.dataset.key;
-    window._selectedMsgs[key] = true;
-    div.style.background = 'rgba(229,57,53,.10)';
-    div.style.outline = '1.5px solid #E53935';
-    const chk = div.querySelector('.msg-chk');
+function selectAllConvs() {
+  document.querySelectorAll('.msg-item[data-conv]').forEach(el => {
+    const id = el.dataset.conv;
+    _selectedConvs[id] = true;
+    el.style.background = 'rgba(229,57,53,.10)';
+    el.style.outline = '1.5px solid #E53935';
+    const chk = el.querySelector('.conv-chk');
     if (chk) chk.textContent = '●';
   });
-  _refreshSelectUI();
+  _refreshConvSelectUI();
 }
 
-function deleteSelected() {
-  if (!currentRoomId) return;
-  const keys = Object.keys(window._selectedMsgs);
-  if (!keys.length) { alert('Önce mesaj seçin.'); return; }
-  const ref = db.ref('chats/' + currentRoomId + '/messages');
-  keys.forEach(k => ref.child(k).remove());
-  exitSelectMode();
+function deleteSelectedConvs() {
+  const keys = Object.keys(_selectedConvs);
+  if (!keys.length) { alert('Önce sohbet seçin.'); return; }
+  keys.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  });
+  exitConvSelectMode();
 }
 
-function deleteAllMsgs() {
-  if (!currentRoomId) return;
-  if (!confirm('Tüm mesajlar silinsin mi?')) return;
-  db.ref('chats/' + currentRoomId + '/messages').remove();
-  exitSelectMode();
+function deleteAllConvs() {
+  if (!confirm('Tüm sohbetler silinsin mi?')) return;
+  document.querySelectorAll('.msg-item[data-conv]').forEach(el => el.remove());
+  exitConvSelectMode();
 }
 
 function closeChat() {
   if (chatListener) { db.ref('chats/' + chatListener + '/messages').off(); chatListener = null; }
   currentRoomId = null;
   window._selectedMsgs = {};
-  if (_selectMode) exitSelectMode();
   document.getElementById('chat-screen').style.display = 'none';
   document.getElementById('msg-list-screen').style.display = 'flex';
 }
