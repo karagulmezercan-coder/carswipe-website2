@@ -1852,9 +1852,58 @@ function carPhotoUrl(car, photoIndex, w) {
 // ── İLAN VER SİSTEMİ ──
 let _ilanPhotos = []; // { file, dataUrl } listesi
 
+function initIlanVerSelects() {
+  // Filtre ekranıyla aynı veri dizilerini kullan
+  buildSelect('il-brand', MARKALAR, 'Seçiniz');
+  buildSelect('il-model', [], 'Önce marka seçin');
+  buildSelect('il-year', YILLAR, 'Seçiniz');
+  buildSelect('il-kasa', KASA_OPTS, 'Seçiniz');
+  buildSelect('il-fuel', YAKIT_OPTS, 'Seçiniz');
+  buildSelect('il-gear', VITES_OPTS, 'Seçiniz');
+  buildSelect('il-cekis', CEKIS_OPTS, 'Seçiniz');
+  buildSelect('il-durum', ARAC_DURUMU_OPTS, 'Seçiniz');
+  buildSelect('il-hacim', MOTOR_HACMI, 'Seçiniz');
+  buildSelect('il-hp', MOTOR_GUCU, 'Seçiniz');
+  buildSelect('il-color', RENK_OPTS, 'Seçiniz');
+  buildSelect('il-hasar', HASAR_OPTS, 'Seçiniz');
+  buildSelect('il-seller', ['Sahibinden','Galeriden'], 'Seçiniz');
+  buildSelect('il-sehir', SEHIRLER, 'Şehir seçin');
+  buildSelect('il-ilce', [], 'İlçe seçin');
+  // Sıfırla
+  document.getElementById('il-vasita').value = '';
+  document.querySelectorAll('.il-vcard').forEach(c => c.classList.remove('selected'));
+  document.getElementById('il-takas').value = '';
+  document.querySelectorAll('.il-takas-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('il-color-diger').style.display = 'none';
+  ['il-km','il-price','il-trim','il-desc'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+}
+
+function ilanModelUpdate() {
+  const marka = document.getElementById('il-brand').value;
+  buildSelect('il-model', MODELLER[marka] || [], 'Model seçin');
+}
+
+function ilanIlceUpdate() {
+  const sehir = document.getElementById('il-sehir').value;
+  buildSelect('il-ilce', ILCELER[sehir] || [], 'İlçe seçin');
+}
+
+function selectVasita(el, val) {
+  document.querySelectorAll('.il-vcard').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('il-vasita').value = val;
+}
+
+function selectTakas(val) {
+  document.getElementById('il-takas').value = val;
+  document.getElementById('il-takas-evet').classList.toggle('selected', val === 'Evet');
+  document.getElementById('il-takas-hayir').classList.toggle('selected', val === 'Hayır');
+}
+
 function openIlanVer() {
   if (!auth.currentUser) { alert('İlan vermek için giriş yapmalısın.'); return; }
   _ilanPhotos = [];
+  initIlanVerSelects();
   ilanNextStep(1);
   const overlay = document.getElementById('ilan-ver-overlay');
   overlay.style.display = 'flex';
@@ -1913,20 +1962,23 @@ function renderPhotoGrid() {
 function buildIlanPreview() {
   const brand = document.getElementById('il-brand').value;
   const model = document.getElementById('il-model').value;
-  const year = document.getElementById('il-year').value;
+  const trim  = document.getElementById('il-trim').value;
+  const year  = document.getElementById('il-year').value;
   const price = document.getElementById('il-price').value;
-  const km = document.getElementById('il-km').value;
-  const fuel = document.getElementById('il-fuel').value;
-  const gear = document.getElementById('il-gear').value;
-  const kasa = document.getElementById('il-kasa').value;
-  const color = document.getElementById('il-color').value;
-  const location = document.getElementById('il-location').value;
-  const seller = document.getElementById('il-seller').value;
+  const km    = document.getElementById('il-km').value;
+  const fuel  = document.getElementById('il-fuel').value;
+  const gear  = document.getElementById('il-gear').value;
+  const kasa  = document.getElementById('il-kasa').value;
+  const colorVal = document.getElementById('il-color').value;
+  const color = colorVal === 'Diğer' ? document.getElementById('il-color-diger').value : colorVal;
+  const sehir = document.getElementById('il-sehir').value;
+  const ilce  = document.getElementById('il-ilce').value;
+  const location = [sehir, ilce].filter(Boolean).join(' / ');
   const priceStr = price ? parseInt(price).toLocaleString('tr-TR') + ' ₺' : '—';
-  document.getElementById('ilan-preview-title').textContent = `${brand} ${model} ${year}`;
+  document.getElementById('ilan-preview-title').textContent = `${brand} ${model}${trim?' '+trim:''} ${year}`;
   document.getElementById('ilan-preview-price').textContent = priceStr;
   document.getElementById('ilan-preview-meta').innerHTML =
-    `📍 ${location}<br>🔢 ${km ? parseInt(km).toLocaleString('tr-TR') + ' km' : '—'} · ${fuel} · ${gear} · ${kasa}${color?' · '+color:''}`;
+    `📍 ${location||'—'}<br>🔢 ${km ? parseInt(km).toLocaleString('tr-TR') + ' km' : '—'} · ${fuel} · ${gear} · ${kasa}${color?' · '+color:''}`;
   if (_ilanPhotos.length > 0) {
     document.getElementById('ilan-preview-img').innerHTML =
       `<img src="${_ilanPhotos[0].dataUrl}" style="width:100%;height:100%;object-fit:cover;">`;
@@ -1937,14 +1989,17 @@ async function submitListing() {
   const user = auth.currentUser;
   if (!user) return;
   // Validasyon
-  const brand = document.getElementById('il-brand').value;
-  const model = document.getElementById('il-model').value.trim();
-  const year = document.getElementById('il-year').value;
-  const price = document.getElementById('il-price').value;
-  const km = document.getElementById('il-km').value;
-  const location = document.getElementById('il-location').value.trim();
-  if (!brand || !model || !price || !km || !location) {
-    alert('Lütfen zorunlu alanları doldurun (Marka, Model, Fiyat, KM, Şehir).'); ilanNextStep(1); return;
+  const brand  = document.getElementById('il-brand').value;
+  const model  = document.getElementById('il-model').value;
+  const trim   = document.getElementById('il-trim').value;
+  const year   = document.getElementById('il-year').value;
+  const price  = document.getElementById('il-price').value;
+  const km     = document.getElementById('il-km').value;
+  const sehir  = document.getElementById('il-sehir').value;
+  const ilce   = document.getElementById('il-ilce').value;
+  const location = [sehir, ilce].filter(Boolean).join(' / ');
+  if (!brand || !model || !year || !price || !km || !sehir) {
+    alert('Lütfen zorunlu alanları doldurun (Marka, Model, Yıl, Fiyat, KM, Şehir).'); ilanNextStep(1); return;
   }
   const btn = document.getElementById('ilan-submit-btn');
   btn.disabled = true; btn.textContent = 'Gönderiliyor...';
@@ -1988,14 +2043,24 @@ async function submitListing() {
       price: priceStr,
       priceNum,
       km: kmStr,
-      fuel: document.getElementById('il-fuel').value,
-      gear: document.getElementById('il-gear').value,
-      kasa: document.getElementById('il-kasa').value,
-      color: document.getElementById('il-color').value || '',
+      trim,
+      fuel:   document.getElementById('il-fuel').value,
+      gear:   document.getElementById('il-gear').value,
+      kasa:   document.getElementById('il-kasa').value,
+      cekis:  document.getElementById('il-cekis').value,
+      durum:  document.getElementById('il-durum').value,
+      hacim:  document.getElementById('il-hacim').value,
+      hp:     document.getElementById('il-hp').value,
+      color:  document.getElementById('il-color').value === 'Diğer'
+                ? document.getElementById('il-color-diger').value
+                : document.getElementById('il-color').value,
+      hasar:  document.getElementById('il-hasar').value,
+      takas:  document.getElementById('il-takas').value,
+      vasita: document.getElementById('il-vasita').value,
       location,
       meta: `📍 ${location} · ${kmStr}`,
       seller: document.getElementById('il-seller').value,
-      desc: document.getElementById('il-desc').value || '',
+      desc:   document.getElementById('il-desc').value || '',
       photos: photoUrls,
       status: 'pending',
       time: Date.now()
@@ -2728,80 +2793,162 @@ document.addEventListener('keydown', e => {
   </div>
 
   <!-- ADIM 1: Araç Bilgileri -->
-  <div id="ilan-step-1" style="flex:1;overflow-y:auto;padding:16px;">
-    <div style="font-size:13px;font-weight:700;color:#E53935;margin-bottom:16px;letter-spacing:.5px;">ARAÇ BİLGİLERİ</div>
-    <div style="display:grid;gap:12px;">
+  <div id="ilan-step-1" style="flex:1;overflow-y:auto;padding:16px 16px 32px;">
+    <style>
+      .il-label { font-size:11px;color:#888;font-weight:700;display:block;margin-bottom:5px;letter-spacing:.4px; }
+      .il-select { width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;background:#fff;color:#333;outline:none;box-sizing:border-box; }
+      .il-input  { width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:13px;outline:none;box-sizing:border-box; }
+      .il-section { margin-bottom:14px; }
+      .il-row2   { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
+      .il-vasita-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px; }
+      .il-vcard  { border:1.5px solid #e0e0e0;border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;background:#fff;transition:.15s; }
+      .il-vcard.selected { border-color:#E53935;background:#fff5f5; }
+      .il-vcard-icon { font-size:20px; }
+      .il-vcard-lbl  { font-size:10px;color:#555;margin-top:3px;font-weight:600; }
+      .il-takas-btn  { flex:1;padding:10px;border:1.5px solid #e0e0e0;border-radius:10px;background:#fff;font-size:13px;cursor:pointer;font-weight:600;color:#555; }
+      .il-takas-btn.selected { border-color:#E53935;background:#fff5f5;color:#E53935; }
+    </style>
+
+    <!-- Vasıta Türü -->
+    <div class="il-section">
+      <span class="il-label">🚗 VASITA TÜRÜ *</span>
+      <div class="il-vasita-grid" id="il-vasita-grid">
+        <div class="il-vcard" onclick="selectVasita(this,'Otomobil')"><div class="il-vcard-icon">🚗</div><div class="il-vcard-lbl">Otomobil</div></div>
+        <div class="il-vcard" onclick="selectVasita(this,'Arazi / SUV')"><div class="il-vcard-icon">🚙</div><div class="il-vcard-lbl">Arazi / SUV</div></div>
+        <div class="il-vcard" onclick="selectVasita(this,'Elektrikli')"><div class="il-vcard-icon">⚡</div><div class="il-vcard-lbl">Elektrikli</div></div>
+        <div class="il-vcard" onclick="selectVasita(this,'Minivan')"><div class="il-vcard-icon">🚐</div><div class="il-vcard-lbl">Minivan</div></div>
+        <div class="il-vcard" onclick="selectVasita(this,'Ticari')"><div class="il-vcard-icon">🚚</div><div class="il-vcard-lbl">Ticari</div></div>
+        <div class="il-vcard" onclick="selectVasita(this,'Hasarlı')"><div class="il-vcard-icon">🔧</div><div class="il-vcard-lbl">Hasarlı</div></div>
+      </div>
+      <input type="hidden" id="il-vasita" value="">
+    </div>
+
+    <!-- Marka & Model -->
+    <div class="il-row2 il-section">
       <div>
-        <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">MARKA *</label>
-        <select id="il-brand" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff;outline:none;" onchange="updateModelOptions()">
-          <option value="">Marka seçin</option>
-          ${['Toyota','Volkswagen','BMW','Mercedes','Audi','Honda','Hyundai','Ford','Renault','Fiat','Opel','Peugeot','Citroen','Volvo','Skoda','Seat','Kia','Nissan','Mazda','Mitsubishi','Dacia','Porsche','Land Rover','Jeep','Chevrolet','Subaru'].map(b=>`<option>${b}</option>`).join('')}
-        </select>
-      </div>
-      <div>
-        <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">MODEL *</label>
-        <input id="il-model" type="text" placeholder="Örn: Corolla, Golf, 3 Serisi" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;">
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div>
-          <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">YIL *</label>
-          <select id="il-year" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff;outline:none;">
-            ${Array.from({length:16},(_,i)=>2025-i).map(y=>`<option>${y}</option>`).join('')}
-          </select>
-        </div>
-        <div>
-          <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">KASA TİPİ *</label>
-          <select id="il-kasa" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff;outline:none;">
-            ${['Sedan','Hatchback','SUV','Crossover','Station Wagon','Coupe','Cabrio','Minivan','Pickup'].map(k=>`<option>${k}</option>`).join('')}
-          </select>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div>
-          <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">YAKIT *</label>
-          <select id="il-fuel" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff;outline:none;">
-            ${['Benzin','Dizel','LPG','Hibrit','Elektrik'].map(f=>`<option>${f}</option>`).join('')}
-          </select>
-        </div>
-        <div>
-          <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">VİTES *</label>
-          <select id="il-gear" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff;outline:none;">
-            <option>Otomatik</option><option>Manuel</option><option>Yarı Otomatik</option>
-          </select>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div>
-          <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">KİLOMETRE *</label>
-          <input id="il-km" type="number" placeholder="Örn: 45000" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;">
-        </div>
-        <div>
-          <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">RENK</label>
-          <input id="il-color" type="text" placeholder="Örn: Beyaz" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;">
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div>
-          <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">FİYAT (₺) *</label>
-          <input id="il-price" type="number" placeholder="Örn: 895000" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;">
-        </div>
-        <div>
-          <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">SATICI TİPİ *</label>
-          <select id="il-seller" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff;outline:none;">
-            <option>Sahibinden</option><option>Galeriden</option>
-          </select>
-        </div>
+        <span class="il-label">MARKA *</span>
+        <select id="il-brand" class="il-select" onchange="ilanModelUpdate()"><option value="">Seçiniz</option></select>
       </div>
       <div>
-        <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">ŞEHİR / İLÇE *</label>
-        <input id="il-location" type="text" placeholder="Örn: İstanbul / Kadıköy" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;">
-      </div>
-      <div>
-        <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">AÇIKLAMA</label>
-        <textarea id="il-desc" rows="3" placeholder="Araç hakkında ek bilgi..." style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;resize:none;font-family:inherit;"></textarea>
+        <span class="il-label">MODEL *</span>
+        <select id="il-model" class="il-select"><option value="">Önce marka seçin</option></select>
       </div>
     </div>
-    <button onclick="ilanNextStep(2)" style="width:100%;margin-top:20px;background:#E53935;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;">Devam Et →</button>
+
+    <!-- Trim / Versiyon -->
+    <div class="il-section">
+      <span class="il-label">TRİM / VERSİYON</span>
+      <input id="il-trim" type="text" class="il-input" placeholder="Örn: Executive, Sport, Comfort...">
+    </div>
+
+    <!-- Yıl & Kasa -->
+    <div class="il-row2 il-section">
+      <div>
+        <span class="il-label">YIL *</span>
+        <select id="il-year" class="il-select"><option value="">Seçiniz</option></select>
+      </div>
+      <div>
+        <span class="il-label">KASA TİPİ *</span>
+        <select id="il-kasa" class="il-select"><option value="">Seçiniz</option></select>
+      </div>
+    </div>
+
+    <!-- Yakıt & Vites -->
+    <div class="il-row2 il-section">
+      <div>
+        <span class="il-label">YAKIT *</span>
+        <select id="il-fuel" class="il-select"><option value="">Seçiniz</option></select>
+      </div>
+      <div>
+        <span class="il-label">VİTES *</span>
+        <select id="il-gear" class="il-select"><option value="">Seçiniz</option></select>
+      </div>
+    </div>
+
+    <!-- Çekiş & Araç Durumu -->
+    <div class="il-row2 il-section">
+      <div>
+        <span class="il-label">ÇEKİŞ</span>
+        <select id="il-cekis" class="il-select"><option value="">Seçiniz</option></select>
+      </div>
+      <div>
+        <span class="il-label">ARAÇ DURUMU *</span>
+        <select id="il-durum" class="il-select"><option value="">Seçiniz</option></select>
+      </div>
+    </div>
+
+    <!-- Motor Hacmi & Motor Gücü -->
+    <div class="il-row2 il-section">
+      <div>
+        <span class="il-label">MOTOR HACMİ</span>
+        <select id="il-hacim" class="il-select"><option value="">Seçiniz</option></select>
+      </div>
+      <div>
+        <span class="il-label">MOTOR GÜCÜ (HP)</span>
+        <select id="il-hp" class="il-select"><option value="">Seçiniz</option></select>
+      </div>
+    </div>
+
+    <!-- Kilometre & Renk -->
+    <div class="il-row2 il-section">
+      <div>
+        <span class="il-label">KİLOMETRE *</span>
+        <input id="il-km" type="number" class="il-input" placeholder="Örn: 45000">
+      </div>
+      <div>
+        <span class="il-label">RENK *</span>
+        <select id="il-color" class="il-select" onchange="document.getElementById('il-color-diger').style.display=this.value==='Diğer'?'block':'none'"><option value="">Seçiniz</option></select>
+        <input id="il-color-diger" type="text" class="il-input" placeholder="Renk yazın..." style="display:none;margin-top:6px;">
+      </div>
+    </div>
+
+    <!-- Hasar & Takas -->
+    <div class="il-row2 il-section">
+      <div>
+        <span class="il-label">HASAR DURUMU</span>
+        <select id="il-hasar" class="il-select"><option value="">Seçiniz</option></select>
+      </div>
+      <div>
+        <span class="il-label">TAKAS</span>
+        <div style="display:flex;gap:8px;margin-top:2px;">
+          <button class="il-takas-btn" id="il-takas-evet" onclick="selectTakas('Evet')">Evet</button>
+          <button class="il-takas-btn" id="il-takas-hayir" onclick="selectTakas('Hayır')">Hayır</button>
+        </div>
+        <input type="hidden" id="il-takas" value="">
+      </div>
+    </div>
+
+    <!-- Fiyat & Kimden -->
+    <div class="il-row2 il-section">
+      <div>
+        <span class="il-label">FİYAT (₺) *</span>
+        <input id="il-price" type="number" class="il-input" placeholder="Örn: 895000">
+      </div>
+      <div>
+        <span class="il-label">SATICI TİPİ *</span>
+        <select id="il-seller" class="il-select"><option value="">Seçiniz</option></select>
+      </div>
+    </div>
+
+    <!-- Şehir & İlçe -->
+    <div class="il-row2 il-section">
+      <div>
+        <span class="il-label">ŞEHİR *</span>
+        <select id="il-sehir" class="il-select" onchange="ilanIlceUpdate()"><option value="">Şehir seçin</option></select>
+      </div>
+      <div>
+        <span class="il-label">İLÇE</span>
+        <select id="il-ilce" class="il-select"><option value="">İlçe seçin</option></select>
+      </div>
+    </div>
+
+    <!-- Açıklama -->
+    <div class="il-section">
+      <span class="il-label">AÇIKLAMA</span>
+      <textarea id="il-desc" rows="4" class="il-input" placeholder="Araç hakkında ek bilgi, özellikler, bakım geçmişi..." style="resize:none;font-family:inherit;"></textarea>
+    </div>
+
+    <button onclick="ilanNextStep(2)" style="width:100%;margin-top:8px;background:#E53935;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;">Devam Et →</button>
   </div>
 
   <!-- ADIM 2: Fotoğraflar -->
