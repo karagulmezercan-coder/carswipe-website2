@@ -499,10 +499,16 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
     .mobile-nav-item.active { color: #E53935; }
     .mobile-nav-icon { font-size: 20px; }
 
+    .amnav-item { display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:2px 8px;color:#aaa;font-size:10px;font-weight:600;min-width:48px; }
+    .amnav-item.amnav-active { color:#E53935; }
+    .amnav-label { font-size:10px; }
+
     @media (max-width: 700px) {
       .sidebar { display: none; }
       .features { grid-template-columns: 1fr; }
       .mobile-nav { display: block; }
+      #app-mobile-nav { display: block !important; }
+      .main { padding-bottom: 72px; }
       
       .phone-frame { width: 260px; height: 520px; }
       .content-page { padding: 24px 16px; gap: 24px; }
@@ -1109,7 +1115,7 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
       <div class="footer-col">
         <h4>Destek</h4>
         <ul>
-          <li><a href="mailto:destek@carswipe.com.tr">destek@carswipe.com.tr</a></li>
+          <li><a href="mailto:info@getcarswipe.com">info@getcarswipe.com</a></li>
           <li><a href="#faq">Sık Sorulan Sorular</a></li>
           <li><a href="#trust-section">Güvenlik</a></li>
           <li><a href="#seller-section">Satıcılar İçin</a></li>
@@ -1527,7 +1533,7 @@ function openProfileScreen(page) {
       <div style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:12px;">
         <div style="font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:12px;">Veri & Gizlilik</div>
         <p style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px;">CarSwipe, kişisel verilerini yalnızca hizmet sunmak amacıyla işler. Verilerinin nasıl kullanıldığını KVKK Aydınlatma Metni'nde öğrenebilirsin.</p>
-        <p style="font-size:13px;color:#666;line-height:1.6;">Hesabını silmek veya verilerini talep etmek için <strong>destek@carswipe.com.tr</strong> adresine yazabilirsin.</p>
+        <p style="font-size:13px;color:#666;line-height:1.6;">Hesabını silmek veya verilerini talep etmek için <strong>info@getcarswipe.com</strong> adresine yazabilirsin.</p>
       </div>
       <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);">
         <div style="padding:16px;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;justify-content:space-between;">
@@ -1538,14 +1544,14 @@ function openProfileScreen(page) {
             <span style="position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;"></span>
           </label>
         </div>
-        <div style="padding:16px;color:#E53935;font-size:14px;font-weight:600;cursor:pointer;" onclick="if(confirm('Hesabını silmek istediğine emin misin?'))alert('Hesap silme talebini destek@carswipe.com.tr adresine ilet.')">Hesabımı Sil</div>
+        <div style="padding:16px;color:#E53935;font-size:14px;font-weight:600;cursor:pointer;" onclick="if(confirm('Hesabını silmek istediğine emin misin?'))alert('Hesap silme talebini info@getcarswipe.com adresine ilet.')">Hesabımı Sil</div>
       </div>`;
   } else if (page === 'yardim') {
     body.innerHTML = `
       <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:12px;">
         <div style="padding:16px;border-bottom:1px solid #f5f5f5;">
           <div style="font-size:12px;color:#aaa;font-weight:600;margin-bottom:4px;">DESTEK E-POSTASI</div>
-          <a href="mailto:destek@carswipe.com.tr" style="font-size:15px;color:#E53935;font-weight:600;">destek@carswipe.com.tr</a>
+          <a href="mailto:info@getcarswipe.com" style="font-size:15px;color:#E53935;font-weight:600;">info@getcarswipe.com</a>
         </div>
         <div style="padding:16px;border-bottom:1px solid #f5f5f5;">
           <div style="font-size:12px;color:#aaa;font-weight:600;margin-bottom:4px;">YANIT SÜRESİ</div>
@@ -2083,8 +2089,12 @@ document.addEventListener('keydown', e => {
   <a class="nav-item" onclick="showView('mesajlar', this)"><div class="nav-icon">💬</div>Mesajlar</a>
   <a class="nav-item" onclick="showView('begeniler', this)"><div class="nav-icon">♥</div>Beğenilenler</a>
   <a class="nav-item" onclick="showView('profil', this)"><div class="nav-icon">👤</div>Profil</a>
+  <div style="margin:12px 8px;">
+    <button onclick="openIlanVer()" style="width:100%;background:#E53935;color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+      <span style="font-size:18px;">+</span> İlan Ver
+    </button>
+  </div>
   <div style="flex:1"></div>
-  <a class="nav-item" onclick="openIlanVer()" style="background:#E53935;color:#fff;border-radius:10px;margin:0 8px 8px;"><div class="nav-icon" style="color:#fff;">+</div>İlan Ver</a>
   <a class="nav-item" onclick="doSignOut()" style="color:#E53935"><div class="nav-icon" style="color:#E53935">⏻</div>Çıkış Yap</a>
 </div>
 
@@ -2845,6 +2855,27 @@ document.addEventListener('keydown', e => {
     <button onclick="closeIlanVer()" style="background:#E53935;color:#fff;border:none;border-radius:12px;padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer;">Tamam</button>
   </div>
 </div>
+
+<!-- APP MOBİL ALT NAV -->
+<nav id="app-mobile-nav" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:900;background:#fff;border-top:1px solid #eee;padding:6px 0 max(6px,env(safe-area-inset-bottom));box-shadow:0 -2px 12px rgba(0,0,0,.07);">
+  <div style="display:flex;justify-content:space-around;align-items:center;">
+    <div onclick="showView('kesfet',this)" id="amnav-kesfet" class="amnav-item amnav-active">
+      <div style="font-size:22px;">🔍</div><div class="amnav-label">Keşfet</div>
+    </div>
+    <div onclick="showView('mesajlar',this)" id="amnav-mesajlar" class="amnav-item">
+      <div style="font-size:22px;">💬</div><div class="amnav-label">Mesajlar</div>
+    </div>
+    <div onclick="openIlanVer()" style="flex:0 0 auto;">
+      <div style="width:52px;height:52px;background:#E53935;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;box-shadow:0 4px 12px rgba(229,57,53,.4);margin-top:-12px;">+</div>
+    </div>
+    <div onclick="showView('begeniler',this)" id="amnav-begeniler" class="amnav-item">
+      <div style="font-size:22px;">♥</div><div class="amnav-label">Beğenilenler</div>
+    </div>
+    <div onclick="showView('profil',this)" id="amnav-profil" class="amnav-item">
+      <div style="font-size:22px;">👤</div><div class="amnav-label">Profil</div>
+    </div>
+  </div>
+</nav>
 
 </div><!-- /app-view -->
 
