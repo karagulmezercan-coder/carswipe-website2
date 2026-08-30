@@ -1104,7 +1104,7 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
       <div class="footer-col">
         <h4>Yasal</h4>
         <ul>
-          <li><a href="#">KVKK Aydınlatma Metni</a></li>
+          <li><a href="#" onclick="showKvkk();return false;">KVKK Aydınlatma Metni</a></li>
           <li><a href="#">Gizlilik Politikası</a></li>
           <li><a href="#">Kullanım Koşulları</a></li>
           <li><a href="#">Çerez Politikası</a></li>
@@ -1532,19 +1532,7 @@ function openProfileScreen(page) {
     body.innerHTML = `
       <div style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:12px;">
         <div style="font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:12px;">Veri & Gizlilik</div>
-        <p style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px;">CarSwipe, kişisel verilerini yalnızca hizmet sunmak amacıyla işler. Verilerinin nasıl kullanıldığını KVKK Aydınlatma Metni'nde öğrenebilirsin.</p>
-        <p style="font-size:13px;color:#666;line-height:1.6;">Hesabını silmek veya verilerini talep etmek için <strong>info@getcarswipe.com</strong> adresine yazabilirsin.</p>
-      </div>
-      <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);">
-        <div style="padding:16px;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-size:14px;color:#1a1a1a;">Profilimi gizle</span>
-          <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer;">
-            <input type="checkbox" style="opacity:0;width:0;height:0;">
-            <span style="position:absolute;inset:0;background:#ccc;border-radius:24px;"></span>
-            <span style="position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;"></span>
-          </label>
-        </div>
-        <div style="padding:16px;color:#E53935;font-size:14px;font-weight:600;cursor:pointer;" onclick="if(confirm('Hesabını silmek istediğine emin misin?'))alert('Hesap silme talebini info@getcarswipe.com adresine ilet.')">Hesabımı Sil</div>
+        <p style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px;">CarSwipe, kişisel verilerini yalnızca hizmet sunmak amacıyla işler. Verilerinin nasıl kullanıldığını <a href="#" onclick="showKvkk();return false;" style="color:#E53935;font-weight:600;">KVKK Aydınlatma Metni</a>'nde öğrenebilirsin.</p>
       </div>`;
   } else if (page === 'yardim') {
     body.innerHTML = `
@@ -2035,7 +2023,7 @@ function ilanNextStep(step) {
 }
 
 function handlePhotoPreview(input) {
-  const files = Array.from(input.files).slice(0, 6 - _ilanPhotos.length);
+  const files = Array.from(input.files).slice(0, 10 - _ilanPhotos.length);
   const grid = document.getElementById('il-photo-grid');
   files.forEach(file => {
     if (_ilanPhotos.length >= 6) return;
@@ -2209,6 +2197,11 @@ function loadFirebaseListings() {
       loadCard(0, false);
     }
   }).catch(() => {});
+}
+
+function showKvkk() {
+  const el = document.getElementById('kvkk-overlay');
+  el.style.display = 'flex';
 }
 
 function doSignOut() {
@@ -2884,6 +2877,70 @@ document.addEventListener('keydown', e => {
   </div>
 </nav>
 
+<!-- ═══ KVKK OVERLAY ═══ -->
+<div id="kvkk-overlay" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.5);align-items:center;justify-content:center;">
+  <div style="width:min(620px,95vw);max-height:90vh;background:#fff;border-radius:18px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.25);">
+    <div style="display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid #eee;flex-shrink:0;">
+      <button onclick="document.getElementById('kvkk-overlay').style.display='none'" style="background:none;border:none;font-size:22px;color:#333;cursor:pointer;padding:0;line-height:1;">✕</button>
+      <div style="font-size:16px;font-weight:700;color:#1a1a1a;">KVKK Aydınlatma Metni</div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:24px 24px 32px;font-size:13px;color:#444;line-height:1.8;">
+      <p style="font-size:11px;color:#aaa;margin-bottom:20px;">Son güncelleme: Ağustos 2026</p>
+
+      <h3 style="font-size:14px;font-weight:700;color:#1a1a1a;margin:0 0 8px;">1. Veri Sorumlusu</h3>
+      <p>6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") kapsamında kişisel verileriniz, veri sorumlusu sıfatıyla <strong>CarSwipe</strong> (info@getcarswipe.com) tarafından aşağıda açıklanan amaç ve kapsamda işlenmektedir.</p>
+
+      <h3 style="font-size:14px;font-weight:700;color:#1a1a1a;margin:20px 0 8px;">2. İşlenen Kişisel Veriler</h3>
+      <p>Hizmetlerimiz kapsamında aşağıdaki kişisel verileriniz işlenmektedir:</p>
+      <ul style="margin:8px 0 8px 20px;">
+        <li>Ad, soyad</li>
+        <li>E-posta adresi</li>
+        <li>Profil fotoğrafı (Google ile girişte)</li>
+        <li>İlan bilgileri (araç bilgileri, fotoğraflar, konum)</li>
+        <li>Mesajlaşma içerikleri</li>
+        <li>Uygulama kullanım verileri</li>
+      </ul>
+
+      <h3 style="font-size:14px;font-weight:700;color:#1a1a1a;margin:20px 0 8px;">3. Kişisel Verilerin İşlenme Amaçları</h3>
+      <ul style="margin:8px 0 8px 20px;">
+        <li>Üyelik ve kimlik doğrulama işlemlerinin yürütülmesi</li>
+        <li>Araç ilanlarının oluşturulması ve yönetilmesi</li>
+        <li>Kullanıcılar arası mesajlaşma hizmetinin sağlanması</li>
+        <li>Bildirim gönderilmesi (beğeni, fiyat düşüşü, öneri)</li>
+        <li>Hizmet kalitesinin iyileştirilmesi</li>
+        <li>Yasal yükümlülüklerin yerine getirilmesi</li>
+      </ul>
+
+      <h3 style="font-size:14px;font-weight:700;color:#1a1a1a;margin:20px 0 8px;">4. Hukuki Sebepler</h3>
+      <p>Kişisel verileriniz; sözleşmenin ifası, meşru menfaat ve açık rızanız hukuki sebeplerine dayanılarak işlenmektedir.</p>
+
+      <h3 style="font-size:14px;font-weight:700;color:#1a1a1a;margin:20px 0 8px;">5. Üçüncü Taraflarla Paylaşım</h3>
+      <p>Kişisel verileriniz; Firebase (Google LLC) ve Cloudinary gibi altyapı hizmet sağlayıcılarıyla, yalnızca hizmetin sunulması amacıyla ve gerekli güvenlik önlemleri alınarak paylaşılmaktadır. Verileriniz ticari amaçla üçüncü taraflarla satılmaz veya kiralanmaz.</p>
+
+      <h3 style="font-size:14px;font-weight:700;color:#1a1a1a;margin:20px 0 8px;">6. Haklarınız</h3>
+      <p>KVKK'nın 11. maddesi uyarınca aşağıdaki haklara sahipsiniz:</p>
+      <ul style="margin:8px 0 8px 20px;">
+        <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
+        <li>İşlenmişse buna ilişkin bilgi talep etme</li>
+        <li>İşlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme</li>
+        <li>Yurt içinde/dışında aktarıldığı üçüncü kişileri bilme</li>
+        <li>Eksik veya yanlış işlenmişse düzeltilmesini isteme</li>
+        <li>KVKK'nın 7. maddesinde öngörülen şartlar çerçevesinde silinmesini isteme</li>
+        <li>İşlemenin sona ermesi halinde yurt içi/yurt dışındaki üçüncü kişilere bildirilmesini isteme</li>
+        <li>Münhasıran otomatik sistemler ile analiz edilmesi suretiyle aleyhinize bir sonucun ortaya çıkmasına itiraz etme</li>
+        <li>Kanuna aykırı işlenmesi sebebiyle zarara uğramanız halinde zararın giderilmesini talep etme</li>
+      </ul>
+
+      <h3 style="font-size:14px;font-weight:700;color:#1a1a1a;margin:20px 0 8px;">7. İletişim</h3>
+      <p>Haklarınızı kullanmak veya kişisel verilerinizle ilgili her türlü soru için:<br>
+      <strong>E-posta:</strong> <a href="mailto:info@getcarswipe.com" style="color:#E53935;">info@getcarswipe.com</a></p>
+    </div>
+    <div style="padding:16px 20px;border-top:1px solid #eee;flex-shrink:0;">
+      <button onclick="document.getElementById('kvkk-overlay').style.display='none'" style="width:100%;background:#E53935;color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">Anladım</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ İLAN VER OVERLAY ═══ -->
 <div id="ilan-ver-overlay" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.45);flex-direction:column;align-items:center;justify-content:center;">
 <div style="width:min(520px,95vw);max-height:92vh;background:#f5f5f5;border-radius:18px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.25);">
@@ -3060,7 +3117,7 @@ document.addEventListener('keydown', e => {
   <!-- ADIM 2: Fotoğraflar -->
   <div id="ilan-step-2" style="display:none;flex:1;overflow-y:auto;padding:16px;">
     <div style="font-size:13px;font-weight:700;color:#E53935;margin-bottom:8px;letter-spacing:.5px;">FOTOĞRAFLAR</div>
-    <p style="font-size:13px;color:#888;margin-bottom:16px;">En fazla 6 fotoğraf yükleyebilirsin. İlk fotoğraf kapak olarak görünür.</p>
+    <p style="font-size:13px;color:#888;margin-bottom:16px;">En fazla 10 fotoğraf yükleyebilirsin. İlk fotoğraf kapak olarak görünür.</p>
     <input id="il-photos-input" type="file" accept="image/*" multiple style="display:none;" onchange="handlePhotoPreview(this)">
     <div id="il-photo-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
       <div onclick="document.getElementById('il-photos-input').click()" style="aspect-ratio:1;background:#f0f0f0;border:2px dashed #ddd;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:24px;color:#ccc;">
