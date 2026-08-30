@@ -1222,6 +1222,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+<!-- Firebase Storage kaldırıldı, Cloudinary kullanılıyor -->
 
 <!-- ── AUTH MODAL HTML ── -->
 </div><!-- /landing-view -->
@@ -1286,6 +1287,9 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
+// Cloudinary config — Dashboard'dan doldur
+const CLOUDINARY_CLOUD = 'mlukek2e';
+const CLOUDINARY_PRESET = 'carswipe_upload';
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
 let currentTab = 'login';
@@ -1830,6 +1834,207 @@ function initNotifications() {
   }, 2000); // Uygulama tam yüklendikten sonra
 }
 
+// Fotoğraf URL yardımcısı — Firebase Storage URL veya Unsplash
+function carPhotoUrl(car, photoIndex, w) {
+  const p = car.photos && car.photos[photoIndex];
+  if (!p) return `https://images.unsplash.com/${(car.photos && car.photos[0]) || 'photo-1492144534655-ae79c964c9d7'}?w=${w||700}&q=80`;
+  if (typeof p === 'object' && p.isUrl) return p.url;
+  if (typeof p === 'string' && (p.startsWith('http') || p.startsWith('blob'))) return p;
+  return `https://images.unsplash.com/${p}?w=${w||700}&q=80`;
+}
+
+// ── İLAN VER SİSTEMİ ──
+let _ilanPhotos = []; // { file, dataUrl } listesi
+
+function openIlanVer() {
+  if (!auth.currentUser) { alert('İlan vermek için giriş yapmalısın.'); return; }
+  _ilanPhotos = [];
+  ilanNextStep(1);
+  const overlay = document.getElementById('ilan-ver-overlay');
+  overlay.style.display = 'flex';
+}
+
+function closeIlanVer() {
+  document.getElementById('ilan-ver-overlay').style.display = 'none';
+}
+
+function ilanNextStep(step) {
+  [1,2,3,'success'].forEach(s => {
+    const el = document.getElementById('ilan-step-' + s);
+    if (el) el.style.display = 'none';
+  });
+  const progress = { 1:'33%', 2:'66%', 3:'100%', success:'100%' };
+  const indicators = { 1:'1 / 3', 2:'2 / 3', 3:'3 / 3', success:'' };
+  document.getElementById('ilan-progress').style.width = progress[step] || '33%';
+  document.getElementById('ilan-step-indicator').textContent = indicators[step] || '';
+
+  if (step === 3) buildIlanPreview();
+
+  const el = document.getElementById('ilan-step-' + step);
+  if (el) el.style.display = step === 'success' ? 'flex' : 'block';
+}
+
+function handlePhotoPreview(input) {
+  const files = Array.from(input.files).slice(0, 6 - _ilanPhotos.length);
+  const grid = document.getElementById('il-photo-grid');
+  files.forEach(file => {
+    if (_ilanPhotos.length >= 6) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      _ilanPhotos.push({ file, dataUrl: e.target.result });
+      renderPhotoGrid();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function renderPhotoGrid() {
+  const grid = document.getElementById('il-photo-grid');
+  let html = _ilanPhotos.map((p, i) => `
+    <div style="aspect-ratio:1;position:relative;border-radius:10px;overflow:hidden;">
+      <img src="${p.dataUrl}" style="width:100%;height:100%;object-fit:cover;">
+      ${i===0?'<div style="position:absolute;top:4px;left:4px;background:#E53935;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;">KAPAK</div>':''}
+      <button onclick="_ilanPhotos.splice(${i},1);renderPhotoGrid()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>`).join('');
+  if (_ilanPhotos.length < 6) {
+    html += `<div onclick="document.getElementById('il-photos-input').click()" style="aspect-ratio:1;background:#f0f0f0;border:2px dashed #ddd;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:24px;color:#ccc;">
+      <div>+</div><div style="font-size:11px;color:#bbb;margin-top:4px;">Ekle</div></div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function buildIlanPreview() {
+  const brand = document.getElementById('il-brand').value;
+  const model = document.getElementById('il-model').value;
+  const year = document.getElementById('il-year').value;
+  const price = document.getElementById('il-price').value;
+  const km = document.getElementById('il-km').value;
+  const fuel = document.getElementById('il-fuel').value;
+  const gear = document.getElementById('il-gear').value;
+  const kasa = document.getElementById('il-kasa').value;
+  const color = document.getElementById('il-color').value;
+  const location = document.getElementById('il-location').value;
+  const seller = document.getElementById('il-seller').value;
+  const priceStr = price ? parseInt(price).toLocaleString('tr-TR') + ' ₺' : '—';
+  document.getElementById('ilan-preview-title').textContent = `${brand} ${model} ${year}`;
+  document.getElementById('ilan-preview-price').textContent = priceStr;
+  document.getElementById('ilan-preview-meta').innerHTML =
+    `📍 ${location}<br>🔢 ${km ? parseInt(km).toLocaleString('tr-TR') + ' km' : '—'} · ${fuel} · ${gear} · ${kasa}${color?' · '+color:''}`;
+  if (_ilanPhotos.length > 0) {
+    document.getElementById('ilan-preview-img').innerHTML =
+      `<img src="${_ilanPhotos[0].dataUrl}" style="width:100%;height:100%;object-fit:cover;">`;
+  }
+}
+
+async function submitListing() {
+  const user = auth.currentUser;
+  if (!user) return;
+  // Validasyon
+  const brand = document.getElementById('il-brand').value;
+  const model = document.getElementById('il-model').value.trim();
+  const year = document.getElementById('il-year').value;
+  const price = document.getElementById('il-price').value;
+  const km = document.getElementById('il-km').value;
+  const location = document.getElementById('il-location').value.trim();
+  if (!brand || !model || !price || !km || !location) {
+    alert('Lütfen zorunlu alanları doldurun (Marka, Model, Fiyat, KM, Şehir).'); ilanNextStep(1); return;
+  }
+  const btn = document.getElementById('ilan-submit-btn');
+  btn.disabled = true; btn.textContent = 'Gönderiliyor...';
+
+  try {
+    // Fotoğrafları Cloudinary'ye yükle
+    const photoUrls = [];
+    const listingId = db.ref('listings').push().key;
+    if (_ilanPhotos.length > 0) {
+      document.getElementById('il-upload-progress').style.display = 'block';
+      for (let i = 0; i < _ilanPhotos.length; i++) {
+        document.getElementById('il-upload-text').textContent = `Fotoğraf yükleniyor ${i+1}/${_ilanPhotos.length}...`;
+        document.getElementById('il-upload-bar').style.width = ((i / _ilanPhotos.length) * 100) + '%';
+        const formData = new FormData();
+        formData.append('file', _ilanPhotos[i].file);
+        formData.append('upload_preset', CLOUDINARY_PRESET);
+        formData.append('folder', `carswipe/${user.uid}`);
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
+          method: 'POST', body: formData
+        });
+        if (!res.ok) throw new Error('Fotoğraf yüklenemedi.');
+        const data = await res.json();
+        photoUrls.push(data.secure_url);
+      }
+      document.getElementById('il-upload-bar').style.width = '100%';
+      document.getElementById('il-upload-progress').style.display = 'none';
+    }
+
+    // İlanı kaydet
+    const priceNum = parseInt(price);
+    const priceStr = priceNum.toLocaleString('tr-TR') + ' ₺';
+    const kmNum = parseInt(km);
+    const kmStr = kmNum.toLocaleString('tr-TR') + ' km';
+    const listing = {
+      uid: user.uid,
+      userName: user.displayName || user.email.split('@')[0],
+      brand,
+      model,
+      name: `${brand} ${model}`,
+      year,
+      price: priceStr,
+      priceNum,
+      km: kmStr,
+      fuel: document.getElementById('il-fuel').value,
+      gear: document.getElementById('il-gear').value,
+      kasa: document.getElementById('il-kasa').value,
+      color: document.getElementById('il-color').value || '',
+      location,
+      meta: `📍 ${location} · ${kmStr}`,
+      seller: document.getElementById('il-seller').value,
+      desc: document.getElementById('il-desc').value || '',
+      photos: photoUrls,
+      status: 'pending',
+      time: Date.now()
+    };
+    await db.ref('listings/' + listingId).set(listing);
+    ilanNextStep('success');
+  } catch(e) {
+    alert('Hata: ' + e.message);
+    btn.disabled = false; btn.textContent = 'İlanı Gönder ✓';
+  }
+}
+
+// Firebase'den aktif ilanları yükle ve cars[]'a ekle
+function loadFirebaseListings() {
+  db.ref('listings').orderByChild('status').equalTo('active').once('value').then(snap => {
+    const newCars = [];
+    snap.forEach(child => {
+      const l = child.val();
+      newCars.push({
+        id: child.key,
+        name: l.name || `${l.brand} ${l.model}`,
+        brand: l.brand,
+        model: l.model,
+        year: l.year,
+        price: l.price,
+        location: l.location,
+        meta: l.meta,
+        seller: l.seller,
+        km: l.km,
+        fuel: l.fuel,
+        gear: l.gear,
+        color: l.color,
+        kasa: l.kasa,
+        photos: l.photos && l.photos.length ? l.photos.map(u => ({ isUrl: true, url: u })) : [],
+        fromFirebase: true
+      });
+    });
+    if (newCars.length) {
+      // Mevcut cars[]'ın önüne ekle
+      activeCars = [...newCars, ...cars];
+      loadCard(0, false);
+    }
+  }).catch(() => {});
+}
+
 function doSignOut() {
   if (!confirm('Çıkış yapmak istediğine emin misin?')) return;
   auth.signOut().then(() => showLanding());
@@ -1848,8 +2053,9 @@ auth.onAuthStateChanged(user => {
     btn.onclick = () => showApp();
     btn.style.display = 'flex';
     btn.style.alignItems = 'center';
-    // Bildirimleri başlat
+    // Bildirimleri ve aktif ilanları başlat
     initNotifications();
+    loadFirebaseListings();
   } else {
     btn.innerHTML = 'Oturum Aç';
     btn.onclick = openAuth;
@@ -1878,6 +2084,7 @@ document.addEventListener('keydown', e => {
   <a class="nav-item" onclick="showView('begeniler', this)"><div class="nav-icon">♥</div>Beğenilenler</a>
   <a class="nav-item" onclick="showView('profil', this)"><div class="nav-icon">👤</div>Profil</a>
   <div style="flex:1"></div>
+  <a class="nav-item" onclick="openIlanVer()" style="background:#E53935;color:#fff;border-radius:10px;margin:0 8px 8px;"><div class="nav-icon" style="color:#fff;">+</div>İlan Ver</a>
   <a class="nav-item" onclick="doSignOut()" style="color:#E53935"><div class="nav-icon" style="color:#E53935">⏻</div>Çıkış Yap</a>
 </div>
 
@@ -2497,6 +2704,148 @@ document.addEventListener('keydown', e => {
   </div>
 </nav>
 
+<!-- ═══ İLAN VER OVERLAY ═══ -->
+<div id="ilan-ver-overlay" style="display:none;position:fixed;inset:0;z-index:2000;background:#f5f5f5;flex-direction:column;overflow:hidden;">
+  <!-- Header -->
+  <div class="app-header" style="display:flex;align-items:center;gap:10px;padding:12px 16px;flex-shrink:0;">
+    <button onclick="closeIlanVer()" style="background:none;border:none;font-size:22px;color:#333;cursor:pointer;">✕</button>
+    <div style="font-size:17px;font-weight:700;flex:1;">İlan Ver</div>
+    <div id="ilan-step-indicator" style="font-size:12px;color:#aaa;">1 / 3</div>
+  </div>
+  <!-- Progress bar -->
+  <div style="height:3px;background:#eee;flex-shrink:0;">
+    <div id="ilan-progress" style="height:100%;background:#E53935;width:33%;transition:width .3s;"></div>
+  </div>
+
+  <!-- ADIM 1: Araç Bilgileri -->
+  <div id="ilan-step-1" style="flex:1;overflow-y:auto;padding:16px;">
+    <div style="font-size:13px;font-weight:700;color:#E53935;margin-bottom:16px;letter-spacing:.5px;">ARAÇ BİLGİLERİ</div>
+    <div style="display:grid;gap:12px;">
+      <div>
+        <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">MARKA *</label>
+        <select id="il-brand" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff;outline:none;" onchange="updateModelOptions()">
+          <option value="">Marka seçin</option>
+          ${['Toyota','Volkswagen','BMW','Mercedes','Audi','Honda','Hyundai','Ford','Renault','Fiat','Opel','Peugeot','Citroen','Volvo','Skoda','Seat','Kia','Nissan','Mazda','Mitsubishi','Dacia','Porsche','Land Rover','Jeep','Chevrolet','Subaru'].map(b=>`<option>${b}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">MODEL *</label>
+        <input id="il-model" type="text" placeholder="Örn: Corolla, Golf, 3 Serisi" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">YIL *</label>
+          <select id="il-year" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff;outline:none;">
+            ${Array.from({length:16},(_,i)=>2025-i).map(y=>`<option>${y}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">KASA TİPİ *</label>
+          <select id="il-kasa" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff;outline:none;">
+            ${['Sedan','Hatchback','SUV','Crossover','Station Wagon','Coupe','Cabrio','Minivan','Pickup'].map(k=>`<option>${k}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">YAKIT *</label>
+          <select id="il-fuel" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff;outline:none;">
+            ${['Benzin','Dizel','LPG','Hibrit','Elektrik'].map(f=>`<option>${f}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">VİTES *</label>
+          <select id="il-gear" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff;outline:none;">
+            <option>Otomatik</option><option>Manuel</option><option>Yarı Otomatik</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">KİLOMETRE *</label>
+          <input id="il-km" type="number" placeholder="Örn: 45000" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;">
+        </div>
+        <div>
+          <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">RENK</label>
+          <input id="il-color" type="text" placeholder="Örn: Beyaz" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">FİYAT (₺) *</label>
+          <input id="il-price" type="number" placeholder="Örn: 895000" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;">
+        </div>
+        <div>
+          <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">SATICI TİPİ *</label>
+          <select id="il-seller" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;background:#fff;outline:none;">
+            <option>Sahibinden</option><option>Galeriden</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">ŞEHİR / İLÇE *</label>
+        <input id="il-location" type="text" placeholder="Örn: İstanbul / Kadıköy" style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;">
+      </div>
+      <div>
+        <label style="font-size:12px;color:#888;font-weight:600;display:block;margin-bottom:4px;">AÇIKLAMA</label>
+        <textarea id="il-desc" rows="3" placeholder="Araç hakkında ek bilgi..." style="width:100%;padding:11px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;outline:none;resize:none;font-family:inherit;"></textarea>
+      </div>
+    </div>
+    <button onclick="ilanNextStep(2)" style="width:100%;margin-top:20px;background:#E53935;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;">Devam Et →</button>
+  </div>
+
+  <!-- ADIM 2: Fotoğraflar -->
+  <div id="ilan-step-2" style="display:none;flex:1;overflow-y:auto;padding:16px;">
+    <div style="font-size:13px;font-weight:700;color:#E53935;margin-bottom:8px;letter-spacing:.5px;">FOTOĞRAFLAR</div>
+    <p style="font-size:13px;color:#888;margin-bottom:16px;">En fazla 6 fotoğraf yükleyebilirsin. İlk fotoğraf kapak olarak görünür.</p>
+    <input id="il-photos-input" type="file" accept="image/*" multiple style="display:none;" onchange="handlePhotoPreview(this)">
+    <div id="il-photo-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
+      <div onclick="document.getElementById('il-photos-input').click()" style="aspect-ratio:1;background:#f0f0f0;border:2px dashed #ddd;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:24px;color:#ccc;">
+        <div>+</div><div style="font-size:11px;color:#bbb;margin-top:4px;">Ekle</div>
+      </div>
+    </div>
+    <div id="il-upload-progress" style="display:none;background:#fff;border-radius:10px;padding:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+      <div style="font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:8px;" id="il-upload-text">Yükleniyor...</div>
+      <div style="height:6px;background:#eee;border-radius:6px;overflow:hidden;">
+        <div id="il-upload-bar" style="height:100%;background:#E53935;width:0%;transition:width .2s;border-radius:6px;"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="ilanNextStep(1)" style="flex:1;background:#f0f0f0;color:#666;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;">← Geri</button>
+      <button onclick="ilanNextStep(3)" style="flex:2;background:#E53935;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;">Devam Et →</button>
+    </div>
+  </div>
+
+  <!-- ADIM 3: Önizleme & Gönder -->
+  <div id="ilan-step-3" style="display:none;flex:1;overflow-y:auto;padding:16px;">
+    <div style="font-size:13px;font-weight:700;color:#E53935;margin-bottom:16px;letter-spacing:.5px;">ÖNIZLEME & GÖNDER</div>
+    <div id="ilan-preview-card" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:16px;">
+      <div id="ilan-preview-img" style="height:200px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:40px;color:#ccc;">🚗</div>
+      <div style="padding:16px;">
+        <div id="ilan-preview-title" style="font-size:18px;font-weight:800;color:#1a1a1a;margin-bottom:4px;"></div>
+        <div id="ilan-preview-price" style="font-size:16px;font-weight:700;color:#E53935;margin-bottom:8px;"></div>
+        <div id="ilan-preview-meta" style="font-size:13px;color:#888;line-height:1.6;"></div>
+      </div>
+    </div>
+    <div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:12px;padding:14px;margin-bottom:16px;">
+      <div style="font-size:13px;font-weight:700;color:#F57F17;margin-bottom:4px;">⏳ Admin Onayı Bekleniyor</div>
+      <p style="font-size:12px;color:#795548;margin:0;line-height:1.5;">İlanın gönderildikten sonra ekibimiz tarafından incelenir. Onaylandığında yayına girer ve sana bildirim gönderilir.</p>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="ilanNextStep(2)" style="flex:1;background:#f0f0f0;color:#666;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;">← Geri</button>
+      <button id="ilan-submit-btn" onclick="submitListing()" style="flex:2;background:#E53935;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;">İlanı Gönder ✓</button>
+    </div>
+  </div>
+
+  <!-- ADIM 4: Başarı -->
+  <div id="ilan-step-success" style="display:none;flex:1;align-items:center;justify-content:center;flex-direction:column;padding:32px;text-align:center;">
+    <div style="font-size:64px;margin-bottom:16px;">🎉</div>
+    <div style="font-size:22px;font-weight:800;color:#1a1a1a;margin-bottom:8px;">İlanın Alındı!</div>
+    <p style="font-size:14px;color:#888;line-height:1.6;margin-bottom:24px;">Ekibimiz inceledikten sonra yayına girecek. Onaylandığında sana bildirim göndereceğiz.</p>
+    <button onclick="closeIlanVer()" style="background:#E53935;color:#fff;border:none;border-radius:12px;padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer;">Tamam</button>
+  </div>
+</div>
+
 </div><!-- /app-view -->
 
 
@@ -2617,11 +2966,11 @@ function loadCard(i, transition) {
   if (transition) {
     img.style.opacity = '0';
     setTimeout(() => {
-      img.src = `https://images.unsplash.com/${c.photos[0]}?w=700&q=80`;
+      img.src = carPhotoUrl(c, 0, 700);
       img.style.opacity = '1';
     }, 200);
   } else {
-    img.src = `https://images.unsplash.com/${c.photos[0]}?w=700&q=80`;
+    img.src = carPhotoUrl(c, 0, 700);
   }
   document.getElementById('card-name').textContent = c.name + ' ' + c.year;
   document.getElementById('card-price').textContent = c.price;
@@ -2643,7 +2992,7 @@ function prevPhoto() {
   photoIdx = (photoIdx - 1 + c.photos.length) % c.photos.length;
   const img = document.getElementById('card-img');
   img.style.opacity = '0';
-  setTimeout(() => { img.src = `https://images.unsplash.com/${c.photos[photoIdx]}?w=700&q=80`; img.style.opacity = '1'; }, 150);
+  setTimeout(() => { img.src = carPhotoUrl(c, photoIdx, 700); img.style.opacity = '1'; }, 150);
   updateDots();
 }
 
@@ -2652,7 +3001,7 @@ function nextPhoto() {
   photoIdx = (photoIdx + 1) % c.photos.length;
   const img = document.getElementById('card-img');
   img.style.opacity = '0';
-  setTimeout(() => { img.src = `https://images.unsplash.com/${c.photos[photoIdx]}?w=700&q=80`; img.style.opacity = '1'; }, 150);
+  setTimeout(() => { img.src = carPhotoUrl(c, photoIdx, 700); img.style.opacity = '1'; }, 150);
   updateDots();
 }
 
@@ -2662,7 +3011,7 @@ let galleryPhotoIdx = 0;
 function openDetail() {
   const c = activeCars[idx];
   detailPhotoIdx = 0;
-  document.getElementById('detail-img').src = `https://images.unsplash.com/${c.photos[0]}?w=700&q=80`;
+  document.getElementById('detail-img').src = carPhotoUrl(c, 0, 700);
   document.getElementById('detail-name').textContent = c.name + ' ' + c.year;
   document.getElementById('detail-price').textContent = c.price;
   document.getElementById('detail-location').textContent = c.location;
@@ -2723,7 +3072,7 @@ function selectThumb(i) {
   detailPhotoIdx = i;
   const img = document.getElementById('detail-img');
   img.style.opacity = '0';
-  setTimeout(() => { img.src = `https://images.unsplash.com/${c.photos[i]}?w=700&q=80`; img.style.opacity = '1'; }, 150);
+  setTimeout(() => { img.src = carPhotoUrl(c, i, 700); img.style.opacity = '1'; }, 150);
   document.querySelectorAll('.thumb-img').forEach((t, j) => t.classList.toggle('active', j === i));
   updateDetailPhotoCount();
 }
@@ -2752,7 +3101,7 @@ function updateGalleryImg() {
   const c = activeCars[idx];
   const img = document.getElementById('gallery-img');
   img.style.opacity = '0';
-  setTimeout(() => { img.src = `https://images.unsplash.com/${c.photos[galleryPhotoIdx]}?w=1200&q=90`; img.style.opacity = '1'; }, 150);
+  setTimeout(() => { img.src = carPhotoUrl(c, galleryPhotoIdx, 1200); img.style.opacity = '1'; }, 150);
   document.getElementById('gallery-counter').textContent = `${galleryPhotoIdx + 1} / ${c.photos.length}`;
 }
 
@@ -2795,7 +3144,7 @@ function renderBugunEklenenler() {
   const body = document.getElementById('bugun-body');
   body.innerHTML = cars.map((c, i) => `
     <div class="liked-car-item" onclick="openDetailFromBugun(${i})" style="cursor:pointer;">
-      <img class="liked-car-thumb" src="https://images.unsplash.com/${c.photos[0]}?w=200&q=80" alt="">
+      <img class="liked-car-thumb" src="${carPhotoUrl(c, 0, 200)}" alt="">
       <div class="liked-car-info">
         <div class="liked-car-name">${c.name}</div>
         <div class="liked-car-price">${c.price}</div>
@@ -2942,7 +3291,7 @@ function goBack() {
 function goMessagesFromDetail() {
   if (!auth.currentUser) { alert('Sohbet için giriş yapmalısın.'); return; }
   const c = activeCars[idx];
-  const avatar = `https://images.unsplash.com/${c.photos[0]}?w=100&q=80`;
+  const avatar = carPhotoUrl(c, 0, 100);
   // Önce mesajlar view'ını aç
   const el = document.querySelector('.nav-item[onclick*="mesajlar"]');
   showView('mesajlar', el || document.querySelector('.nav-item'));
@@ -3350,7 +3699,7 @@ function renderBegeniler() {
     const c = cars[carIdx];
     return `<div class="liked-car-item" data-caridx="${carIdx}" onclick="begenItemClick(this, ${carIdx})" style="cursor:pointer;">
       <span class="begen-chk" style="display:none;color:#E53935;font-size:16px;flex-shrink:0;margin-right:4px;">○</span>
-      <img class="liked-car-thumb" src="https://images.unsplash.com/${c.photos[0]}?w=200&q=80" alt="">
+      <img class="liked-car-thumb" src="${carPhotoUrl(c, 0, 200)}" alt="">
       <div class="liked-car-info">
         <div class="liked-car-name">${c.name}</div>
         <div class="liked-car-price">${c.price}</div>
