@@ -2928,6 +2928,7 @@ document.addEventListener('keydown', e => {
       <!-- Normal header -->
       <div id="begen-header-normal" class="app-header" style="display:flex;align-items:center;padding:10px 14px;flex-shrink:0;">
         <div class="app-header-title" style="flex:1;">Beğeniler</div>
+        <button onclick="enterBegenCompareMode()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:5px 10px;border-radius:8px;font-size:11px;cursor:pointer;margin-right:6px;">⚖️ Karşılaştır</button>
         <button onclick="enterBegenSelectMode()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:5px 10px;border-radius:8px;font-size:11px;cursor:pointer;">Seç</button>
       </div>
 
@@ -4212,6 +4213,13 @@ function sendMsg() {
 // ── Beğeniler seçim/silme ──────────────────────────────
 let _begenSelectMode = false;
 let _selectedBegen = {};
+
+function enterBegenCompareMode() {
+  if (liked.length < 2) { alert('Karşılaştırmak için en az 2 beğenilen araç gerekli.'); return; }
+  enterBegenSelectMode();
+  const el = document.getElementById('begen-select-count');
+  if (el) el.textContent = 'Karşılaştırmak istediğin 2 aracı seç';
+}
 
 function enterBegenSelectMode() {
   if (liked.length === 0) return;
