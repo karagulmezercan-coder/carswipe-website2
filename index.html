@@ -2938,6 +2938,7 @@ document.addEventListener('keydown', e => {
         <button onclick="selectAllBegen()" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 9px;border-radius:8px;font-size:11px;cursor:pointer;">Tümünü Seç</button>
         <button onclick="deleteAllBegen()" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 9px;border-radius:8px;font-size:11px;cursor:pointer;">Tümünü Sil</button>
         <button onclick="deleteSelectedBegen()" style="background:#E53935;border:none;color:#fff;padding:5px 9px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">🗑 Sil</button>
+        <button id="begen-compare-btn" onclick="showComparison()" style="display:none;background:#1565C0;border:none;color:#fff;padding:5px 9px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">⚖️ Karşılaştır</button>
       </div>
 
       <div class="app-body" id="begeniler-body">
@@ -4244,6 +4245,8 @@ function _refreshBegenSelectUI() {
   const count = Object.keys(_selectedBegen).length;
   const el = document.getElementById('begen-select-count');
   if (el) el.textContent = count === 0 ? '0 seçildi' : count + ' ilan seçildi';
+  const cmpBtn = document.getElementById('begen-compare-btn');
+  if (cmpBtn) cmpBtn.style.display = count === 2 ? 'inline-block' : 'none';
 }
 
 function toggleBegenSelect(el, carIdx) {
@@ -4288,6 +4291,86 @@ function deleteAllBegen() {
   liked = [];
   exitBegenSelectMode();
   renderBegeniler();
+}
+
+function showComparison() {
+  const keys = Object.keys(_selectedBegen);
+  if (keys.length < 2) { alert('Karşılaştırmak için 2 araç seç.'); return; }
+  const c1 = cars[parseInt(keys[0])];
+  const c2 = cars[parseInt(keys[1])];
+  if (!c1 || !c2) return;
+
+  const fields = [
+    ['Fiyat', 'price'],
+    ['Yıl', 'year'],
+    ['Kilometre', 'km'],
+    ['Yakıt', 'fuel'],
+    ['Vites', 'gear'],
+    ['Kasa', 'kasa'],
+    ['Motor Hacmi', 'hacim'],
+    ['Motor Gücü', 'motor'],
+    ['Renk', 'color'],
+    ['Hasar', 'hasar'],
+    ['Çekiş', 'cekis'],
+    ['Satıcı', 'seller'],
+    ['Konum', 'location'],
+  ];
+
+  function rowHtml(label, v1, v2) {
+    const diff = v1 && v2 && v1 !== v2;
+    const style1 = diff ? 'color:#E53935;font-weight:700;' : 'color:#1a1a1a;';
+    const style2 = diff ? 'color:#E53935;font-weight:700;' : 'color:#1a1a1a;';
+    return `<tr style="border-bottom:1px solid #f0f0f0;">
+      <td style="padding:10px 8px;font-size:12px;color:#888;font-weight:600;width:30%;">${label}</td>
+      <td style="padding:10px 8px;font-size:13px;${style1}text-align:center;">${v1||'—'}</td>
+      <td style="padding:10px 8px;font-size:13px;${style2}text-align:center;">${v2||'—'}</td>
+    </tr>`;
+  }
+
+  const tableRows = fields.map(([label, key]) => rowHtml(label, c1[key], c2[key])).join('');
+
+  let ov = document.getElementById('compare-overlay');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'compare-overlay';
+    ov.style.cssText = 'display:none;position:fixed;inset:0;z-index:3500;background:#f5f5f5;overflow-y:auto;';
+    document.body.appendChild(ov);
+  }
+
+  ov.innerHTML = `
+    <div style="background:#E53935;padding:14px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:1;">
+      <button onclick="document.getElementById('compare-overlay').style.display='none'" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;">‹</button>
+      <div style="color:#fff;font-size:16px;font-weight:700;flex:1;">Araç Karşılaştırma</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px;">
+      <div style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.08);">
+        <img src="${carPhotoUrl(c1,0,400)}" style="width:100%;height:130px;object-fit:cover;">
+        <div style="padding:10px;">
+          <div style="font-size:13px;font-weight:700;color:#1a1a1a;line-height:1.3;">${c1.name}</div>
+          <div style="font-size:14px;font-weight:800;color:#E53935;margin-top:4px;">${c1.price}</div>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.08);">
+        <img src="${carPhotoUrl(c2,0,400)}" style="width:100%;height:130px;object-fit:cover;">
+        <div style="padding:10px;">
+          <div style="font-size:13px;font-weight:700;color:#1a1a1a;line-height:1.3;">${c2.name}</div>
+          <div style="font-size:14px;font-weight:800;color:#E53935;margin-top:4px;">${c2.price}</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin:0 14px 14px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.08);">
+      <div style="display:grid;grid-template-columns:30% 1fr 1fr;background:#f8f8f8;border-bottom:1px solid #eee;">
+        <div style="padding:10px 8px;font-size:11px;color:#aaa;font-weight:700;text-transform:uppercase;">Özellik</div>
+        <div style="padding:10px 8px;font-size:11px;color:#E53935;font-weight:700;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c1.name.split(' ').slice(0,2).join(' ')}</div>
+        <div style="padding:10px 8px;font-size:11px;color:#1565C0;font-weight:700;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c2.name.split(' ').slice(0,2).join(' ')}</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;">${tableRows}</table>
+    </div>
+    <div style="padding:0 14px 80px;text-align:center;">
+      <div style="font-size:11px;color:#bbb;">Kırmızı renkli değerler farklı özellikleri gösterir.</div>
+    </div>`;
+
+  ov.style.display = 'block';
 }
 
 function openDetailFromBegen(carIdx) {
