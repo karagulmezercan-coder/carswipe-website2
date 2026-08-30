@@ -4324,18 +4324,53 @@ function showComparison() {
     ['Konum', 'location'],
   ];
 
-  function rowHtml(label, v1, v2) {
+  function rowHtml(label, v1, v2, key) {
+    if (!v1 && !v2) return '';
     const diff = v1 && v2 && v1 !== v2;
-    const style1 = diff ? 'color:#E53935;font-weight:700;' : 'color:#1a1a1a;';
-    const style2 = diff ? 'color:#E53935;font-weight:700;' : 'color:#1a1a1a;';
+    let s1 = 'color:#1a1a1a;', s2 = 'color:#1a1a1a;';
+    if (diff) {
+      // Akıllı karşılaştırma
+      const numericBetter = { // lower is better
+        'km': true, 'price': true
+      };
+      const numericHigherBetter = { // higher is better
+        'year': true
+      };
+      const noBetterKeys = ['fuel','gear','kasa','color','cekis','seller','location','hacim','motor'];
+      const noHasarBetter = key === 'hasar';
+
+      if (noHasarBetter) {
+        const v1Good = v1 && v1.toLowerCase().includes('yok');
+        const v2Good = v2 && v2.toLowerCase().includes('yok');
+        if (v1Good && !v2Good) { s1='color:#2E7D32;font-weight:700;'; s2='color:#E53935;font-weight:700;'; }
+        else if (v2Good && !v1Good) { s2='color:#2E7D32;font-weight:700;'; s1='color:#E53935;font-weight:700;'; }
+        else { s1='color:#F57C00;font-weight:700;'; s2='color:#F57C00;font-weight:700;'; }
+      } else if (numericBetter[key]) {
+        const n1 = parseFloat((v1||'').replace(/[^\d.]/g,''));
+        const n2 = parseFloat((v2||'').replace(/[^\d.]/g,''));
+        if (!isNaN(n1) && !isNaN(n2)) {
+          if (n1 < n2) { s1='color:#2E7D32;font-weight:700;'; s2='color:#E53935;font-weight:700;'; }
+          else if (n2 < n1) { s2='color:#2E7D32;font-weight:700;'; s1='color:#E53935;font-weight:700;'; }
+        }
+      } else if (numericHigherBetter[key]) {
+        const n1 = parseFloat((v1||'').replace(/[^\d.]/g,''));
+        const n2 = parseFloat((v2||'').replace(/[^\d.]/g,''));
+        if (!isNaN(n1) && !isNaN(n2)) {
+          if (n1 > n2) { s1='color:#2E7D32;font-weight:700;'; s2='color:#E53935;font-weight:700;'; }
+          else if (n2 > n1) { s2='color:#2E7D32;font-weight:700;'; s1='color:#E53935;font-weight:700;'; }
+        }
+      } else {
+        s1='color:#F57C00;font-weight:700;'; s2='color:#F57C00;font-weight:700;';
+      }
+    }
     return `<tr style="border-bottom:1px solid #f0f0f0;">
       <td style="padding:10px 8px;font-size:12px;color:#888;font-weight:600;width:30%;">${label}</td>
-      <td style="padding:10px 8px;font-size:13px;${style1}text-align:center;">${v1||'—'}</td>
-      <td style="padding:10px 8px;font-size:13px;${style2}text-align:center;">${v2||'—'}</td>
+      <td style="padding:10px 8px;font-size:13px;${s1}text-align:center;">${v1||'—'}</td>
+      <td style="padding:10px 8px;font-size:13px;${s2}text-align:center;">${v2||'—'}</td>
     </tr>`;
   }
 
-  const tableRows = fields.map(([label, key]) => rowHtml(label, c1[key], c2[key])).join('');
+  const tableRows = fields.map(([label, key]) => rowHtml(label, c1[key], c2[key], key)).join('');
 
   let ov = document.getElementById('compare-overlay');
   if (!ov) {
