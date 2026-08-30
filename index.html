@@ -2948,7 +2948,7 @@ document.addEventListener('keydown', e => {
       <!-- Normal header -->
       <div id="begen-header-normal" class="app-header" style="display:flex;align-items:center;padding:10px 14px;flex-shrink:0;">
         <div class="app-header-title" style="flex:1;">Beğeniler</div>
-        <button onclick="enterBegenCompareMode()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:5px 10px;border-radius:8px;font-size:11px;cursor:pointer;margin-right:6px;">⚖️ Karşılaştır</button>
+        <button id="begen-compare-toggle" onclick="enterBegenCompareMode()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:5px 10px;border-radius:8px;font-size:11px;cursor:pointer;margin-right:6px;">⚖️ Karşılaştır</button>
         <button onclick="enterBegenSelectMode()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:5px 10px;border-radius:8px;font-size:11px;cursor:pointer;">Seç</button>
       </div>
 
@@ -3908,7 +3908,20 @@ function showView(id, el) {
   const mnav = document.getElementById(mnavId);
   if (mnav) mnav.classList.add('active');
   // Refresh data screens
-  if (id === 'begeniler') renderBegeniler();
+  if (id === 'begeniler') {
+    renderBegeniler();
+    // Satıcı kontrolü: ilanı olan kullanıcılar Karşılaştır butonunu göremez
+    const compareBtn = document.getElementById('begen-compare-toggle');
+    if (compareBtn) {
+      if (user) {
+        db.ref('listings').orderByChild('uid').equalTo(user.uid).limitToFirst(1).once('value', snap => {
+          compareBtn.style.display = snap.exists() ? 'none' : '';
+        });
+      } else {
+        compareBtn.style.display = 'none';
+      }
+    }
+  }
   if (id === 'profil') { renderProfile(); }
   if (id === 'filtrele') initFilters();
   // Mesajlar sayfasına geçilince chat ekranını kapat, listeyi göster
@@ -4552,15 +4565,6 @@ function renderBegeniler() {
   _selectedBegen = {};
   document.getElementById('begen-header-normal').style.display = 'flex';
   document.getElementById('begen-header-select').style.display = 'none';
-  // Satıcı kontrolü: ilanı olan kullanıcılar Karşılaştır butonunu göremez
-  const compareBtn = document.querySelector('#begen-header-normal button[onclick="enterBegenCompareMode()"]');
-  if (compareBtn && user) {
-    db.ref('listings').orderByChild('uid').equalTo(user.uid).limitToFirst(1).once('value', snap => {
-      if (compareBtn) compareBtn.style.display = snap.exists() ? 'none' : 'inline-block';
-    });
-  } else if (compareBtn && !user) {
-    compareBtn.style.display = 'none';
-  }
   const body = document.getElementById('begeniler-body');
   const stat = document.getElementById('stat-liked');
   if (stat) stat.textContent = liked.length;
