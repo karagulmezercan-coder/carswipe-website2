@@ -1411,24 +1411,19 @@ function renderProfile() {
   const statViews = document.getElementById('stat-views');
 
   if (statLiked) statLiked.textContent = liked.length;
-  if (statViews) statViews.textContent = idx + 1; // kaç ilanı inceledi
+  if (statViews) statViews.textContent = idx + 1;
 
   if (!user) return;
 
-  // Ad
   const displayName = user.displayName || user.email.split('@')[0];
   if (nameEl) nameEl.textContent = displayName;
-
-  // Email
   if (emailEl) emailEl.textContent = user.email;
 
-  // Üyelik tarihi
   const creationTime = user.metadata && user.metadata.creationTime
     ? new Date(user.metadata.creationTime).toLocaleDateString('tr-TR', {month:'long', year:'numeric'})
     : '';
   if (subEl) subEl.textContent = creationTime ? 'Üye: ' + creationTime : '';
 
-  // Avatar
   if (avatarEl) {
     if (user.photoURL) {
       avatarEl.innerHTML = `<img src="${user.photoURL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
@@ -1440,51 +1435,217 @@ function renderProfile() {
     }
   }
 
-  // Hesap paneli içerikleri
-  const hesapName = document.getElementById('hesap-name');
-  const hesapEmail = document.getElementById('hesap-email');
-  const hesapDate = document.getElementById('hesap-date');
-  if (hesapName) hesapName.textContent = user.displayName || '—';
-  if (hesapEmail) hesapEmail.textContent = user.email;
-  if (hesapDate && creationTime) hesapDate.textContent = creationTime;
-
-  // Mesaj sayısını Firebase'den çek
   if (statMsgs) {
-    db.ref('chats').orderByChild('uid').once('value').then(snap => {
+    db.ref('chats').once('value').then(snap => {
       let count = 0;
       snap.forEach(room => {
-        const msgs = room.child('messages');
-        msgs.forEach(m => { if (m.val().uid === user.uid) count++; });
+        room.child('messages').forEach(m => { if (m.val().uid === user.uid) count++; });
       });
       if (statMsgs) statMsgs.textContent = count;
     }).catch(() => {});
   }
 }
 
+function openProfileScreen(page) {
+  const sub = document.getElementById('profil-sub');
+  const main = document.getElementById('profil-main');
+  const title = document.getElementById('profil-sub-title');
+  const body = document.getElementById('profil-sub-body');
+  const user = auth.currentUser;
+
+  const titles = {
+    hesap: 'Hesap Bilgileri', bildirim: 'Bildirimler',
+    gizlilik: 'Gizlilik & Güvenlik', yardim: 'Yardım & Destek', degerlendir: 'Değerlendir'
+  };
+  title.textContent = titles[page] || page;
+
+  if (page === 'hesap') {
+    const displayName = user ? (user.displayName || '') : '';
+    const email = user ? user.email : '';
+    const creationTime = user && user.metadata && user.metadata.creationTime
+      ? new Date(user.metadata.creationTime).toLocaleDateString('tr-TR', {day:'numeric', month:'long', year:'numeric'})
+      : '—';
+    body.innerHTML = `
+      <div style="background:#fff;border-radius:14px;overflow:hidden;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+        <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
+          <div style="font-size:11px;color:#aaa;font-weight:600;letter-spacing:.5px;margin-bottom:6px;">AD SOYAD</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span id="field-name-val" style="font-size:15px;color:#1a1a1a;font-weight:500;">${displayName || '—'}</span>
+            <button onclick="editProfileField('name')" style="background:none;border:none;color:#E53935;font-size:13px;font-weight:600;cursor:pointer;">Düzenle</button>
+          </div>
+          <div id="field-name-edit" style="display:none;margin-top:10px;">
+            <input id="inp-name" type="text" value="${displayName}" placeholder="Ad Soyad" style="width:100%;padding:10px 12px;border:1.5px solid #E53935;border-radius:8px;font-size:14px;outline:none;margin-bottom:8px;">
+            <div style="display:flex;gap:8px;">
+              <button onclick="saveProfileName()" style="flex:1;background:#E53935;color:#fff;border:none;border-radius:8px;padding:10px;font-weight:700;cursor:pointer;font-size:13px;">Kaydet</button>
+              <button onclick="cancelProfileEdit('name')" style="flex:1;background:#f0f0f0;color:#666;border:none;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;font-size:13px;">İptal</button>
+            </div>
+          </div>
+        </div>
+        <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
+          <div style="font-size:11px;color:#aaa;font-weight:600;letter-spacing:.5px;margin-bottom:6px;">E-POSTA</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span id="field-email-val" style="font-size:14px;color:#1a1a1a;font-weight:500;">${email}</span>
+            <button onclick="editProfileField('email')" style="background:none;border:none;color:#E53935;font-size:13px;font-weight:600;cursor:pointer;">Düzenle</button>
+          </div>
+          <div id="field-email-edit" style="display:none;margin-top:10px;">
+            <input id="inp-email" type="email" placeholder="Yeni e-posta" style="width:100%;padding:10px 12px;border:1.5px solid #E53935;border-radius:8px;font-size:14px;outline:none;margin-bottom:6px;">
+            <input id="inp-email-pass" type="password" placeholder="Mevcut şifren (doğrulama için)" style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;outline:none;margin-bottom:8px;">
+            <div id="email-edit-msg" style="font-size:12px;color:#888;margin-bottom:8px;">E-posta değiştirmek için mevcut şifreni girmen gerekiyor.</div>
+            <div style="display:flex;gap:8px;">
+              <button onclick="saveProfileEmail()" style="flex:1;background:#E53935;color:#fff;border:none;border-radius:8px;padding:10px;font-weight:700;cursor:pointer;font-size:13px;">Doğrulama Gönder</button>
+              <button onclick="cancelProfileEdit('email')" style="flex:1;background:#f0f0f0;color:#666;border:none;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;font-size:13px;">İptal</button>
+            </div>
+          </div>
+        </div>
+        <div style="padding:16px;">
+          <div style="font-size:11px;color:#aaa;font-weight:600;letter-spacing:.5px;margin-bottom:6px;">ÜYELİK TARİHİ</div>
+          <div style="font-size:14px;color:#1a1a1a;">${creationTime}</div>
+        </div>
+      </div>
+      <div id="hesap-msg" style="display:none;background:#E8F5E9;border-radius:10px;padding:12px 14px;font-size:13px;color:#2E7D32;font-weight:600;text-align:center;"></div>`;
+  } else if (page === 'bildirim') {
+    body.innerHTML = `
+      <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+        ${[['Yeni eşleşmeler','new_match'],['Mesajlar','messages'],['Fiyat düşüşleri','price_drop'],['Önerilen araçlar','suggestions']].map(([label, key]) => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid #f5f5f5;">
+          <span style="font-size:14px;color:#1a1a1a;">${label}</span>
+          <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer;">
+            <input type="checkbox" ${localStorage.getItem('notif_'+key)!=='0'?'checked':''} onchange="localStorage.setItem('notif_${key}',this.checked?'1':'0')" style="opacity:0;width:0;height:0;">
+            <span style="position:absolute;inset:0;background:${localStorage.getItem('notif_'+key)!=='0'?'#E53935':'#ccc'};border-radius:24px;transition:.2s;" onclick="this.style.background=this.previousElementSibling.checked?'#ccc':'#E53935'"></span>
+            <span style="position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.2s;"></span>
+          </label>
+        </div>`).join('')}
+      </div>
+      <p style="font-size:12px;color:#aaa;text-align:center;margin-top:14px;">Bildirim tercihleri bu cihaza kaydedilir.</p>`;
+  } else if (page === 'gizlilik') {
+    body.innerHTML = `
+      <div style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:12px;">
+        <div style="font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:12px;">Veri & Gizlilik</div>
+        <p style="font-size:13px;color:#666;line-height:1.6;margin-bottom:10px;">CarSwipe, kişisel verilerini yalnızca hizmet sunmak amacıyla işler. Verilerinin nasıl kullanıldığını KVKK Aydınlatma Metni'nde öğrenebilirsin.</p>
+        <p style="font-size:13px;color:#666;line-height:1.6;">Hesabını silmek veya verilerini talep etmek için <strong>destek@carswipe.com.tr</strong> adresine yazabilirsin.</p>
+      </div>
+      <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+        <div style="padding:16px;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:14px;color:#1a1a1a;">Profilimi gizle</span>
+          <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer;">
+            <input type="checkbox" style="opacity:0;width:0;height:0;">
+            <span style="position:absolute;inset:0;background:#ccc;border-radius:24px;"></span>
+            <span style="position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;"></span>
+          </label>
+        </div>
+        <div style="padding:16px;color:#E53935;font-size:14px;font-weight:600;cursor:pointer;" onclick="if(confirm('Hesabını silmek istediğine emin misin?'))alert('Hesap silme talebini destek@carswipe.com.tr adresine ilet.')">Hesabımı Sil</div>
+      </div>`;
+  } else if (page === 'yardim') {
+    body.innerHTML = `
+      <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:12px;">
+        <div style="padding:16px;border-bottom:1px solid #f5f5f5;">
+          <div style="font-size:12px;color:#aaa;font-weight:600;margin-bottom:4px;">DESTEK E-POSTASI</div>
+          <a href="mailto:destek@carswipe.com.tr" style="font-size:15px;color:#E53935;font-weight:600;">destek@carswipe.com.tr</a>
+        </div>
+        <div style="padding:16px;border-bottom:1px solid #f5f5f5;">
+          <div style="font-size:12px;color:#aaa;font-weight:600;margin-bottom:4px;">YANIT SÜRESİ</div>
+          <div style="font-size:14px;color:#1a1a1a;">Genellikle 24 saat içinde yanıt veriyoruz.</div>
+        </div>
+        <div style="padding:16px;">
+          <div style="font-size:12px;color:#aaa;font-weight:600;margin-bottom:4px;">VERSİYON</div>
+          <div style="font-size:14px;color:#1a1a1a;">CarSwipe v1.0.0 · Beta</div>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+        <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:10px;">Sık Sorulan Sorular</div>
+        ${[['Araç nasıl beğenirim?','Keşfet ekranında sağa kaydırarak veya ♥ butonuna basarak beğenebilirsin.'],['Satıcıyla nasıl iletişim kurarım?','Araç detay sayfasındaki Mesaj butonuna basarak doğrudan sohbet açabilirsin.'],['İlanlar gerçek mi?','Tüm ilanlar yayına alınmadan önce doğrulama sürecinden geçer.']].map(([q,a])=>`
+        <div style="border-bottom:1px solid #f5f5f5;padding:10px 0;">
+          <div style="font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:4px;">${q}</div>
+          <div style="font-size:12px;color:#666;line-height:1.5;">${a}</div>
+        </div>`).join('')}
+      </div>`;
+  } else if (page === 'degerlendir') {
+    body.innerHTML = `
+      <div style="background:#fff;border-radius:14px;padding:24px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+        <div style="font-size:40px;margin-bottom:12px;">⭐</div>
+        <div style="font-size:17px;font-weight:700;color:#1a1a1a;margin-bottom:8px;">CarSwipe'ı beğeniyor musun?</div>
+        <p style="font-size:13px;color:#888;margin-bottom:20px;line-height:1.5;">Değerlendirmen uygulamayı daha iyi yapmamıza yardımcı olur.</p>
+        <div id="star-rating" style="display:flex;justify-content:center;gap:12px;margin-bottom:20px;font-size:36px;">
+          ${[1,2,3,4,5].map(i=>`<span onclick="rateStar(${i})" style="cursor:pointer;color:#ddd;transition:.1s;" data-star="${i}">★</span>`).join('')}
+        </div>
+        <div id="rating-msg" style="display:none;color:#2E7D32;font-weight:600;font-size:14px;margin-bottom:16px;"></div>
+        <button id="rating-btn" onclick="submitRating()" style="background:#E53935;color:#fff;border:none;border-radius:10px;padding:12px 32px;font-size:15px;font-weight:700;cursor:pointer;width:100%;">Değerlendir</button>
+      </div>`;
+    window._selectedStar = 0;
+  }
+
+  main.style.transform = 'translateX(-100%)';
+  sub.style.transform = 'translateX(0)';
+}
+
+function closeProfileScreen() {
+  const sub = document.getElementById('profil-sub');
+  const main = document.getElementById('profil-main');
+  main.style.transform = 'translateX(0)';
+  sub.style.transform = 'translateX(100%)';
+}
+
+function editProfileField(field) {
+  document.getElementById('field-'+field+'-edit').style.display = 'block';
+}
+function cancelProfileEdit(field) {
+  document.getElementById('field-'+field+'-edit').style.display = 'none';
+}
+
+function saveProfileName() {
+  const user = auth.currentUser;
+  const newName = (document.getElementById('inp-name') || {}).value || '';
+  if (!newName.trim()) { alert('Ad Soyad boş olamaz.'); return; }
+  user.updateProfile({ displayName: newName.trim() }).then(() => {
+    document.getElementById('field-name-val').textContent = newName.trim();
+    document.getElementById('field-name-edit').style.display = 'none';
+    document.getElementById('profile-name-txt').textContent = newName.trim();
+    const msg = document.getElementById('hesap-msg');
+    if (msg) { msg.style.display='block'; msg.textContent='✓ Ad Soyad güncellendi.'; setTimeout(()=>msg.style.display='none',3000); }
+  }).catch(e => alert('Hata: ' + e.message));
+}
+
+function saveProfileEmail() {
+  const user = auth.currentUser;
+  const newEmail = (document.getElementById('inp-email') || {}).value || '';
+  const pass = (document.getElementById('inp-email-pass') || {}).value || '';
+  const msgEl = document.getElementById('email-edit-msg');
+  if (!newEmail || !newEmail.includes('@')) { if(msgEl) msgEl.style.color='#E53935', msgEl.textContent='Geçerli bir e-posta gir.'; return; }
+  if (!pass) { if(msgEl) msgEl.style.color='#E53935', msgEl.textContent='Şifreni gir.'; return; }
+  // Önce yeniden giriş yap
+  const credential = firebase.auth.EmailAuthProvider.credential(user.email, pass);
+  user.reauthenticateWithCredential(credential).then(() => {
+    return user.verifyBeforeUpdateEmail(newEmail);
+  }).then(() => {
+    if(msgEl) msgEl.style.color='#2E7D32', msgEl.textContent='✓ ' + newEmail + ' adresine doğrulama e-postası gönderildi. E-postayı onayladıktan sonra güncellenir.';
+    document.getElementById('inp-email-pass').value = '';
+    document.getElementById('inp-email').value = '';
+  }).catch(e => {
+    const errMap = {'auth/wrong-password':'Şifre hatalı.','auth/invalid-credential':'Şifre hatalı.','auth/email-already-in-use':'Bu e-posta zaten kullanımda.'};
+    if(msgEl) msgEl.style.color='#E53935', msgEl.textContent = errMap[e.code] || e.message;
+  });
+}
+
+function rateStar(n) {
+  window._selectedStar = n;
+  document.querySelectorAll('#star-rating span').forEach((s,i) => {
+    s.style.color = i < n ? '#FFC107' : '#ddd';
+  });
+}
+
+function submitRating() {
+  const n = window._selectedStar || 0;
+  if (!n) { alert('Lütfen bir puan seç.'); return; }
+  const msg = document.getElementById('rating-msg');
+  const btn = document.getElementById('rating-btn');
+  if (msg) { msg.style.display='block'; msg.textContent = ['','😞 Üzgünüz, geliştireceğiz!','😕 Daha iyisini yapacağız.','🙂 Teşekkürler!','😊 Harika, teşekkürler!','🎉 Muhteşem! Çok teşekkürler!'][n]; }
+  if (btn) { btn.disabled=true; btn.style.opacity='.5'; btn.textContent='Gönderildi'; }
+  try { db.ref('ratings').push({ uid: auth.currentUser ? auth.currentUser.uid : 'anon', stars: n, time: Date.now() }); } catch(e) {}
+}
+
 function doSignOut() {
   if (!confirm('Çıkış yapmak istediğine emin misin?')) return;
   auth.signOut().then(() => showLanding());
-}
-
-function showProfileSection(section) {
-  const panel = document.getElementById('profile-hesap-panel');
-  const toast = document.getElementById('profile-toast');
-  if (toast) toast.style.display = 'none';
-  if (section === 'hesap' && panel) {
-    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-  }
-}
-
-function showProfileToast(msg) {
-  const panel = document.getElementById('profile-hesap-panel');
-  const toast = document.getElementById('profile-toast');
-  if (panel) panel.style.display = 'none';
-  if (toast) {
-    toast.textContent = msg;
-    toast.style.display = 'block';
-    clearTimeout(toast._t);
-    toast._t = setTimeout(() => { toast.style.display = 'none'; }, 3000);
-  }
 }
 
 // ── AUTH STATE ──
@@ -2057,81 +2218,54 @@ document.addEventListener('keydown', e => {
 
   <!-- PROFİL -->
   <div class="view" id="view-profil">
-    <div class="app-screen">
-      <div class="app-body" style="overflow-y:auto;">
+    <div class="app-screen" style="position:relative;overflow:hidden;">
+      <!-- ANA PROFİL SAYFASI -->
+      <div id="profil-main" style="position:absolute;inset:0;overflow-y:auto;transition:transform .3s ease;">
         <div class="profile-hero">
-          <div class="profile-avatar-ring" style="position:relative;">
-            <div id="profile-avatar-inner" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#E53935;background:#fff;border-radius:50%;">?</div>
+          <div class="profile-avatar-ring">
+            <div id="profile-avatar-inner" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#E53935;background:#fff;border-radius:50%;">?</div>
           </div>
           <div class="profile-name" id="profile-name-txt">—</div>
-          <div class="profile-sub" id="profile-sub-txt" style="font-size:12px;opacity:.7;margin-top:4px;"></div>
-          <div id="profile-email-txt" style="font-size:11px;opacity:.45;margin-top:2px;"></div>
+          <div class="profile-sub" id="profile-sub-txt"></div>
+          <div id="profile-email-txt" style="font-size:11px;color:rgba(255,255,255,.5);margin-top:3px;"></div>
         </div>
         <div class="profile-stats" style="margin:12px;">
-          <div class="profile-stat">
-            <div class="profile-stat-num" id="stat-liked">0</div>
-            <div class="profile-stat-lbl">Beğeni</div>
-          </div>
-          <div class="profile-stat">
-            <div class="profile-stat-num" id="stat-msgs">0</div>
-            <div class="profile-stat-lbl">Mesaj</div>
-          </div>
-          <div class="profile-stat">
-            <div class="profile-stat-num" id="stat-views">0</div>
-            <div class="profile-stat-lbl">İnceleme</div>
-          </div>
+          <div class="profile-stat"><div class="profile-stat-num" id="stat-liked">0</div><div class="profile-stat-lbl">Beğeni</div></div>
+          <div class="profile-stat"><div class="profile-stat-num" id="stat-msgs">0</div><div class="profile-stat-lbl">Mesaj</div></div>
+          <div class="profile-stat"><div class="profile-stat-num" id="stat-views">0</div><div class="profile-stat-lbl">İnceleme</div></div>
         </div>
         <div class="profile-menu">
-          <div class="profile-menu-item" onclick="showProfileSection('hesap')">
-            <div class="profile-menu-icon">👤</div>
-            <div class="profile-menu-text">Hesap Bilgileri</div>
-            <div class="profile-menu-arrow">›</div>
+          <div class="profile-menu-item" onclick="openProfileScreen('hesap')">
+            <div class="profile-menu-icon">👤</div><div class="profile-menu-text">Hesap Bilgileri</div><div class="profile-menu-arrow">›</div>
           </div>
-          <div class="profile-menu-item" onclick="showProfileToast('Bildirim ayarları yakında aktif olacak.')">
-            <div class="profile-menu-icon">🔔</div>
-            <div class="profile-menu-text">Bildirimler</div>
-            <div class="profile-menu-arrow">›</div>
+          <div class="profile-menu-item" onclick="openProfileScreen('bildirim')">
+            <div class="profile-menu-icon">🔔</div><div class="profile-menu-text">Bildirimler</div><div class="profile-menu-arrow">›</div>
           </div>
-          <div class="profile-menu-item" onclick="showProfileToast('Gizlilik ayarları yakında aktif olacak.')">
-            <div class="profile-menu-icon">🔒</div>
-            <div class="profile-menu-text">Gizlilik & Güvenlik</div>
-            <div class="profile-menu-arrow">›</div>
+          <div class="profile-menu-item" onclick="openProfileScreen('gizlilik')">
+            <div class="profile-menu-icon">🔒</div><div class="profile-menu-text">Gizlilik & Güvenlik</div><div class="profile-menu-arrow">›</div>
           </div>
-          <div class="profile-menu-item" onclick="showProfileToast('Destek için: destek@carswipe.com.tr')">
-            <div class="profile-menu-icon">❓</div>
-            <div class="profile-menu-text">Yardım & Destek</div>
-            <div class="profile-menu-arrow">›</div>
+          <div class="profile-menu-item" onclick="openProfileScreen('yardim')">
+            <div class="profile-menu-icon">❓</div><div class="profile-menu-text">Yardım & Destek</div><div class="profile-menu-arrow">›</div>
           </div>
-          <div class="profile-menu-item" onclick="showProfileToast('Değerlendirme özelliği yakında geliyor.')">
-            <div class="profile-menu-icon">⭐</div>
-            <div class="profile-menu-text">Uygulamayı Değerlendir</div>
-            <div class="profile-menu-arrow">›</div>
+          <div class="profile-menu-item" onclick="openProfileScreen('degerlendir')">
+            <div class="profile-menu-icon">⭐</div><div class="profile-menu-text">Uygulamayı Değerlendir</div><div class="profile-menu-arrow">›</div>
           </div>
           <div class="profile-menu-item" onclick="doSignOut()" style="color:#E53935;">
-            <div class="profile-menu-icon">🚪</div>
-            <div class="profile-menu-text" style="color:#E53935;">Çıkış Yap</div>
-            <div class="profile-menu-arrow" style="color:#E53935;">›</div>
+            <div class="profile-menu-icon">🚪</div><div class="profile-menu-text" style="color:#E53935;">Çıkış Yap</div><div class="profile-menu-arrow" style="color:#E53935;">›</div>
           </div>
         </div>
-        <!-- Hesap Bilgileri paneli -->
-        <div id="profile-hesap-panel" style="display:none;margin:0 12px 16px;background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
-          <div style="font-size:13px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:14px;">HESAP BİLGİLERİ</div>
-          <div style="margin-bottom:12px;">
-            <div style="font-size:11px;color:#aaa;margin-bottom:3px;">AD SOYAD</div>
-            <div id="hesap-name" style="font-size:15px;font-weight:600;color:#1a1a1a;">—</div>
-          </div>
-          <div style="margin-bottom:12px;">
-            <div style="font-size:11px;color:#aaa;margin-bottom:3px;">E-POSTA</div>
-            <div id="hesap-email" style="font-size:15px;font-weight:600;color:#1a1a1a;">—</div>
-          </div>
-          <div>
-            <div style="font-size:11px;color:#aaa;margin-bottom:3px;">ÜYELİK TARİHİ</div>
-            <div id="hesap-date" style="font-size:15px;font-weight:600;color:#1a1a1a;">—</div>
-          </div>
-        </div>
-        <!-- Toast -->
-        <div id="profile-toast" style="display:none;margin:0 12px 12px;background:#333;color:#fff;border-radius:10px;padding:12px 16px;font-size:13px;text-align:center;"></div>
         <div class="profile-version">CarSwipe v1.0.0 · Beta</div>
+      </div>
+
+      <!-- ALT EKRANLAR KAPSAYICISI -->
+      <div id="profil-sub" style="position:absolute;inset:0;transform:translateX(100%);transition:transform .3s ease;background:#f5f5f5;display:flex;flex-direction:column;">
+        <!-- Header -->
+        <div class="app-header" style="display:flex;align-items:center;gap:10px;padding:10px 12px;flex-shrink:0;">
+          <button onclick="closeProfileScreen()" style="background:none;border:none;font-size:22px;color:#333;cursor:pointer;padding:4px 8px;">‹</button>
+          <div id="profil-sub-title" style="font-size:16px;font-weight:700;flex:1;"></div>
+        </div>
+        <!-- İçerik alanı -->
+        <div id="profil-sub-body" style="flex:1;overflow-y:auto;padding:16px;"></div>
       </div>
     </div>
   </div>
