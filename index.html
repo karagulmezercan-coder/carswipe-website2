@@ -4371,6 +4371,12 @@ function deleteAllBegen() {
   renderBegeniler();
 }
 
+function goToCarDetail(carIdx) {
+  const ov = document.getElementById('compare-overlay');
+  if (ov) ov.style.display = 'none';
+  openDetailFromBegen(carIdx);
+}
+
 function showComparison() {
   const keys = Object.keys(_selectedBegen);
   if (keys.length < 2) { alert('Karşılaştırmak için 2 araç seç.'); return; }
@@ -4493,11 +4499,6 @@ function showComparison() {
   const idx2 = parseInt(keys[1]);
   const winner = sc1 > sc2 ? c1 : sc2 > sc1 ? c2 : null;
   const winnerIdx = sc1 > sc2 ? idx1 : sc2 > sc1 ? idx2 : -1;
-
-  function goToCarDetail(carIdx) {
-    document.getElementById('compare-overlay').style.display = 'none';
-    openDetailFromBegen(carIdx);
-  }
 
   const scoreHtml = `
     <div style="margin:0 14px 14px;background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,.08);">
