@@ -4487,29 +4487,38 @@ function showComparison() {
     if (y1 > 0 && y2 > 0) score += y1 >= y2 ? 5 : 0;
     return score;
   }
-  const s1 = scoreCard(c1, c2);
-  const s2 = scoreCard(c2, c1);
-  const winner = s1 > s2 ? c1 : s2 > s1 ? c2 : null;
-  const winnerScore = Math.max(s1, s2);
-  const loserScore = Math.min(s1, s2);
+  const sc1 = scoreCard(c1, c2);
+  const sc2 = scoreCard(c2, c1);
+  const idx1 = parseInt(keys[0]);
+  const idx2 = parseInt(keys[1]);
+  const winner = sc1 > sc2 ? c1 : sc2 > sc1 ? c2 : null;
+  const winnerIdx = sc1 > sc2 ? idx1 : sc2 > sc1 ? idx2 : -1;
+
+  function goToCarDetail(carIdx) {
+    document.getElementById('compare-overlay').style.display = 'none';
+    openDetailFromBegen(carIdx);
+  }
+
   const scoreHtml = `
     <div style="margin:0 14px 14px;background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,.08);">
       <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:12px;">📊 Genel Değerlendirme</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-        <div style="text-align:center;padding:10px;background:#f8f8f8;border-radius:10px;${s1>=s2?'border:2px solid #2E7D32;background:#E8F5E9;':''}">
+        <div onclick="goToCarDetail(${idx1})" style="text-align:center;padding:10px;background:#f8f8f8;border-radius:10px;cursor:pointer;${sc1>=sc2?'border:2px solid #2E7D32;background:#E8F5E9;':''}">
           <div style="font-size:11px;color:#888;margin-bottom:4px;">${c1.name.split(' ').slice(0,2).join(' ')}</div>
-          <div style="font-size:28px;font-weight:900;color:${s1>=s2?'#2E7D32':'#E53935'};">${s1}</div>
+          <div style="font-size:28px;font-weight:900;color:${sc1>=sc2?'#2E7D32':'#E53935'};">${sc1}</div>
           <div style="font-size:10px;color:#aaa;">/ 100 puan</div>
+          ${sc1>=sc2 ? '<div style="font-size:10px;color:#2E7D32;margin-top:3px;">Detay için tıkla →</div>' : ''}
         </div>
-        <div style="text-align:center;padding:10px;background:#f8f8f8;border-radius:10px;${s2>s1?'border:2px solid #2E7D32;background:#E8F5E9;':''}">
+        <div onclick="goToCarDetail(${idx2})" style="text-align:center;padding:10px;background:#f8f8f8;border-radius:10px;cursor:pointer;${sc2>sc1?'border:2px solid #2E7D32;background:#E8F5E9;':''}">
           <div style="font-size:11px;color:#888;margin-bottom:4px;">${c2.name.split(' ').slice(0,2).join(' ')}</div>
-          <div style="font-size:28px;font-weight:900;color:${s2>s1?'#2E7D32':'#E53935'};">${s2}</div>
+          <div style="font-size:28px;font-weight:900;color:${sc2>sc1?'#2E7D32':'#E53935'};">${sc2}</div>
           <div style="font-size:10px;color:#aaa;">/ 100 puan</div>
+          ${sc2>sc1 ? '<div style="font-size:10px;color:#2E7D32;margin-top:3px;">Detay için tıkla →</div>' : ''}
         </div>
       </div>
-      ${winner ? `<div style="background:#E8F5E9;border-radius:10px;padding:12px;text-align:center;">
+      ${winner ? `<div onclick="goToCarDetail(${winnerIdx})" style="background:#E8F5E9;border-radius:10px;padding:12px;text-align:center;cursor:pointer;">
         <div style="font-size:13px;font-weight:700;color:#2E7D32;">🏆 ${winner.name.split(' ').slice(0,3).join(' ')} daha avantajlı görünüyor</div>
-        <div style="font-size:11px;color:#555;margin-top:4px;">Fiyat, km, hasar ve belge kriterlerine göre değerlendirilmiştir.</div>
+        <div style="font-size:11px;color:#555;margin-top:4px;">Detaya gitmek için tıkla →</div>
       </div>` : `<div style="background:#FFF8E1;border-radius:10px;padding:12px;text-align:center;">
         <div style="font-size:13px;font-weight:700;color:#F57C00;">⚖️ İki araç eşit puanda</div>
       </div>`}
