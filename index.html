@@ -1889,15 +1889,21 @@ function ilanIlceUpdate() {
 }
 
 function selectVasita(el, val) {
-  document.querySelectorAll('.il-vcard').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.il-vcard').forEach(c => { c.classList.remove('selected'); c.style.background=''; c.style.borderColor=''; });
   el.classList.add('selected');
+  el.style.background = '#f0fff4';
+  el.style.borderColor = '#81c784';
   document.getElementById('il-vasita').value = val;
 }
 
 function selectTakas(val) {
   document.getElementById('il-takas').value = val;
-  document.getElementById('il-takas-evet').classList.toggle('selected', val === 'Evet');
-  document.getElementById('il-takas-hayir').classList.toggle('selected', val === 'Hayır');
+  ['il-takas-evet','il-takas-hayir'].forEach(id => {
+    const b = document.getElementById(id);
+    b.classList.toggle('selected', b.id === 'il-takas-' + (val === 'Evet' ? 'evet' : 'hayir'));
+    b.style.background = b.classList.contains('selected') ? '#f0fff4' : '';
+    b.style.borderColor = b.classList.contains('selected') ? '#81c784' : '';
+  });
 }
 
 function openIlanVer() {
@@ -1913,7 +1919,109 @@ function closeIlanVer() {
   document.getElementById('ilan-ver-overlay').style.display = 'none';
 }
 
+// Zorunlu alanlar listesi
+const ILAN_REQUIRED = [
+  { id:'il-vasita',  type:'hidden',   label:'Vasıta Türü' },
+  { id:'il-brand',   type:'select',   label:'Marka' },
+  { id:'il-model',   type:'select',   label:'Model' },
+  { id:'il-year',    type:'select',   label:'Yıl' },
+  { id:'il-kasa',    type:'select',   label:'Kasa Tipi' },
+  { id:'il-fuel',    type:'select',   label:'Yakıt' },
+  { id:'il-gear',    type:'select',   label:'Vites' },
+  { id:'il-cekis',   type:'select',   label:'Çekiş' },
+  { id:'il-durum',   type:'select',   label:'Araç Durumu' },
+  { id:'il-hacim',   type:'select',   label:'Motor Hacmi' },
+  { id:'il-hp',      type:'select',   label:'Motor Gücü' },
+  { id:'il-km',      type:'input',    label:'Kilometre' },
+  { id:'il-color',   type:'select',   label:'Renk' },
+  { id:'il-hasar',   type:'select',   label:'Hasar Durumu' },
+  { id:'il-takas',   type:'hidden',   label:'Takas' },
+  { id:'il-price',   type:'input',    label:'Fiyat' },
+  { id:'il-seller',  type:'select',   label:'Satıcı Tipi' },
+  { id:'il-sehir',   type:'select',   label:'Şehir' },
+];
+
+function ilanFieldValue(f) {
+  const el = document.getElementById(f.id);
+  if (!el) return '';
+  return el.value ? el.value.trim() : '';
+}
+
+function ilanUpdateFieldStyle(id, filled) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  // hidden alanlar için görsel kontrol — vasıta kartları ve takas butonları
+  if (id === 'il-vasita') {
+    document.querySelectorAll('.il-vcard').forEach(c =>
+      c.style.background = filled ? '#f0fff4' : (c.classList.contains('selected') ? '#f0fff4' : ''));
+    return;
+  }
+  if (id === 'il-takas') {
+    ['il-takas-evet','il-takas-hayir'].forEach(bid => {
+      const b = document.getElementById(bid);
+      if (b && b.classList.contains('selected')) b.style.background = '#f0fff4';
+    });
+    return;
+  }
+  el.style.background = filled ? '#f0fff4' : '#fff5f5';
+  el.style.borderColor = filled ? '#81c784' : '#ef9a9a';
+}
+
+function ilanValidateStep1() {
+  let valid = true;
+  const missing = [];
+  ILAN_REQUIRED.forEach(f => {
+    const val = ilanFieldValue(f);
+    const filled = !!val && val !== 'Seçiniz' && val !== 'Önce marka seçin' && val !== 'Model seçin' && val !== 'Şehir seçin';
+    ilanUpdateFieldStyle(f.id, filled);
+    if (!filled) { valid = false; missing.push(f.label); }
+  });
+  // Renk "Diğer" seçildiyse text kontrolü
+  if (document.getElementById('il-color').value === 'Diğer') {
+    const d = document.getElementById('il-color-diger');
+    const ok = d.value.trim().length > 0;
+    d.style.background = ok ? '#f0fff4' : '#fff5f5';
+    d.style.borderColor = ok ? '#81c784' : '#ef9a9a';
+    if (!ok) { valid = false; }
+  }
+  if (!valid) {
+    // Eksik ilk alana kaydır
+    const firstMissing = ILAN_REQUIRED.find(f => {
+      const val = ilanFieldValue(f);
+      return !val || val === 'Seçiniz' || val === 'Önce marka seçin' || val === 'Model seçin' || val === 'Şehir seçin';
+    });
+    if (firstMissing && firstMissing.type !== 'hidden') {
+      const el = document.getElementById(firstMissing.id);
+      if (el) el.scrollIntoView({ behavior:'smooth', block:'center' });
+    } else {
+      document.getElementById('ilan-step-1').scrollTo({ top: 0, behavior:'smooth' });
+    }
+  }
+  return valid;
+}
+
+// Gerçek zamanlı yeşil/kırmızı güncelleme
+function ilanFieldChanged(id) {
+  const f = ILAN_REQUIRED.find(x => x.id === id);
+  if (!f) return;
+  const val = ilanFieldValue(f);
+  const filled = !!val && val !== 'Seçiniz' && val !== 'Önce marka seçin' && val !== 'Model seçin' && val !== 'Şehir seçin';
+  ilanUpdateFieldStyle(id, filled);
+}
+
 function ilanNextStep(step) {
+  // Adım 1'den 2'ye geçerken validasyon
+  if (step === 2) {
+    if (!ilanValidateStep1()) return;
+  }
+  // Adım 2'den 3'e geçerken fotoğraf kontrolü
+  if (step === 3) {
+    if (_ilanPhotos.length === 0) {
+      alert('En az 1 fotoğraf eklemelisin.');
+      return;
+    }
+    buildIlanPreview();
+  }
   [1,2,3,'success'].forEach(s => {
     const el = document.getElementById('ilan-step-' + s);
     if (el) el.style.display = 'none';
@@ -1922,9 +2030,6 @@ function ilanNextStep(step) {
   const indicators = { 1:'1 / 3', 2:'2 / 3', 3:'3 / 3', success:'' };
   document.getElementById('ilan-progress').style.width = progress[step] || '33%';
   document.getElementById('ilan-step-indicator').textContent = indicators[step] || '';
-
-  if (step === 3) buildIlanPreview();
-
   const el = document.getElementById('ilan-step-' + step);
   if (el) el.style.display = step === 'success' ? 'flex' : 'block';
 }
@@ -2828,11 +2933,11 @@ document.addEventListener('keydown', e => {
     <div class="il-row2 il-section">
       <div>
         <span class="il-label">MARKA *</span>
-        <select id="il-brand" class="il-select" onchange="ilanModelUpdate()"><option value="">Seçiniz</option></select>
+        <select id="il-brand" class="il-select" onchange="ilanModelUpdate();ilanFieldChanged('il-brand')"><option value="">Seçiniz</option></select>
       </div>
       <div>
         <span class="il-label">MODEL *</span>
-        <select id="il-model" class="il-select"><option value="">Önce marka seçin</option></select>
+        <select id="il-model" class="il-select" onchange="ilanFieldChanged('il-model')"><option value="">Önce marka seçin</option></select>
       </div>
     </div>
 
@@ -2846,11 +2951,11 @@ document.addEventListener('keydown', e => {
     <div class="il-row2 il-section">
       <div>
         <span class="il-label">YIL *</span>
-        <select id="il-year" class="il-select"><option value="">Seçiniz</option></select>
+        <select id="il-year" class="il-select" onchange="ilanFieldChanged('il-year')"><option value="">Seçiniz</option></select>
       </div>
       <div>
         <span class="il-label">KASA TİPİ *</span>
-        <select id="il-kasa" class="il-select"><option value="">Seçiniz</option></select>
+        <select id="il-kasa" class="il-select" onchange="ilanFieldChanged('il-kasa')"><option value="">Seçiniz</option></select>
       </div>
     </div>
 
@@ -2858,11 +2963,11 @@ document.addEventListener('keydown', e => {
     <div class="il-row2 il-section">
       <div>
         <span class="il-label">YAKIT *</span>
-        <select id="il-fuel" class="il-select"><option value="">Seçiniz</option></select>
+        <select id="il-fuel" class="il-select" onchange="ilanFieldChanged('il-fuel')"><option value="">Seçiniz</option></select>
       </div>
       <div>
         <span class="il-label">VİTES *</span>
-        <select id="il-gear" class="il-select"><option value="">Seçiniz</option></select>
+        <select id="il-gear" class="il-select" onchange="ilanFieldChanged('il-gear')"><option value="">Seçiniz</option></select>
       </div>
     </div>
 
@@ -2870,11 +2975,11 @@ document.addEventListener('keydown', e => {
     <div class="il-row2 il-section">
       <div>
         <span class="il-label">ÇEKİŞ</span>
-        <select id="il-cekis" class="il-select"><option value="">Seçiniz</option></select>
+        <select id="il-cekis" class="il-select" onchange="ilanFieldChanged('il-cekis')"><option value="">Seçiniz</option></select>
       </div>
       <div>
         <span class="il-label">ARAÇ DURUMU *</span>
-        <select id="il-durum" class="il-select"><option value="">Seçiniz</option></select>
+        <select id="il-durum" class="il-select" onchange="ilanFieldChanged('il-durum')"><option value="">Seçiniz</option></select>
       </div>
     </div>
 
@@ -2882,11 +2987,11 @@ document.addEventListener('keydown', e => {
     <div class="il-row2 il-section">
       <div>
         <span class="il-label">MOTOR HACMİ</span>
-        <select id="il-hacim" class="il-select"><option value="">Seçiniz</option></select>
+        <select id="il-hacim" class="il-select" onchange="ilanFieldChanged('il-hacim')"><option value="">Seçiniz</option></select>
       </div>
       <div>
         <span class="il-label">MOTOR GÜCÜ (HP)</span>
-        <select id="il-hp" class="il-select"><option value="">Seçiniz</option></select>
+        <select id="il-hp" class="il-select" onchange="ilanFieldChanged('il-hp')"><option value="">Seçiniz</option></select>
       </div>
     </div>
 
@@ -2894,11 +2999,11 @@ document.addEventListener('keydown', e => {
     <div class="il-row2 il-section">
       <div>
         <span class="il-label">KİLOMETRE *</span>
-        <input id="il-km" type="number" class="il-input" placeholder="Örn: 45000">
+        <input id="il-km" type="number" class="il-input" placeholder="Örn: 45000" oninput="ilanFieldChanged('il-km')">
       </div>
       <div>
         <span class="il-label">RENK *</span>
-        <select id="il-color" class="il-select" onchange="document.getElementById('il-color-diger').style.display=this.value==='Diğer'?'block':'none'"><option value="">Seçiniz</option></select>
+        <select id="il-color" class="il-select" onchange="document.getElementById('il-color-diger').style.display=this.value==='Diğer'?'block':'none';ilanFieldChanged('il-color')"><option value="">Seçiniz</option></select>
         <input id="il-color-diger" type="text" class="il-input" placeholder="Renk yazın..." style="display:none;margin-top:6px;">
       </div>
     </div>
@@ -2907,7 +3012,7 @@ document.addEventListener('keydown', e => {
     <div class="il-row2 il-section">
       <div>
         <span class="il-label">HASAR DURUMU</span>
-        <select id="il-hasar" class="il-select"><option value="">Seçiniz</option></select>
+        <select id="il-hasar" class="il-select" onchange="ilanFieldChanged('il-hasar')"><option value="">Seçiniz</option></select>
       </div>
       <div>
         <span class="il-label">TAKAS</span>
@@ -2923,11 +3028,11 @@ document.addEventListener('keydown', e => {
     <div class="il-row2 il-section">
       <div>
         <span class="il-label">FİYAT (₺) *</span>
-        <input id="il-price" type="number" class="il-input" placeholder="Örn: 895000">
+        <input id="il-price" type="number" class="il-input" placeholder="Örn: 895000" oninput="ilanFieldChanged('il-price')">
       </div>
       <div>
         <span class="il-label">SATICI TİPİ *</span>
-        <select id="il-seller" class="il-select"><option value="">Seçiniz</option></select>
+        <select id="il-seller" class="il-select" onchange="ilanFieldChanged('il-seller')"><option value="">Seçiniz</option></select>
       </div>
     </div>
 
@@ -2935,7 +3040,7 @@ document.addEventListener('keydown', e => {
     <div class="il-row2 il-section">
       <div>
         <span class="il-label">ŞEHİR *</span>
-        <select id="il-sehir" class="il-select" onchange="ilanIlceUpdate()"><option value="">Şehir seçin</option></select>
+        <select id="il-sehir" class="il-select" onchange="ilanIlceUpdate();ilanFieldChanged('il-sehir')"><option value="">Şehir seçin</option></select>
       </div>
       <div>
         <span class="il-label">İLÇE</span>
