@@ -1250,15 +1250,15 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     <div id="auth-error" style="display:none;background:#fff0f0;border:1px solid #fcc;border-radius:10px;padding:10px 14px;font-size:13px;color:#c62828;margin-bottom:16px"></div>
 
     <!-- Form -->
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <input id="auth-name" placeholder="Ad Soyad" type="text" style="display:none;padding:13px 16px;border-radius:12px;border:1.5px solid #e0e0e0;font-size:15px;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#E53935'" onblur="this.style.borderColor='#e0e0e0'">
-      <input id="auth-email" placeholder="E-posta adresi" type="email" autocomplete="email" name="email" style="padding:13px 16px;border-radius:12px;border:1.5px solid #e0e0e0;font-size:15px;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#E53935'" onblur="this.style.borderColor='#e0e0e0'">
+    <form id="auth-form" onsubmit="submitAuth();return false;" autocomplete="on" style="display:flex;flex-direction:column;gap:12px">
+      <input id="auth-name" placeholder="Ad Soyad" type="text" autocomplete="off" name="name" style="display:none;padding:13px 16px;border-radius:12px;border:1.5px solid #e0e0e0;font-size:15px;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#E53935'" onblur="this.style.borderColor='#e0e0e0'">
+      <input id="auth-email" placeholder="E-posta adresi" type="email" autocomplete="email" name="email" style="padding:13px 16px;border-radius:12px;border:1.5px solid #e0e0e0;font-size:15px;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#E53935'" onblur="this.style.borderColor='#e0e0e0';setTimeout(()=>document.getElementById('auth-pass').focus(),100)">
       <div style="position:relative">
         <input id="auth-pass" placeholder="Şifre" type="password" autocomplete="current-password" name="password" style="width:100%;box-sizing:border-box;padding:13px 44px 13px 16px;border-radius:12px;border:1.5px solid #e0e0e0;font-size:15px;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#E53935'" onblur="this.style.borderColor='#e0e0e0'">
         <button type="button" onclick="togglePass()" id="pass-eye" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#aaa;font-size:18px;padding:0;line-height:1" title="Şifreyi göster">👁</button>
       </div>
-      <button id="auth-submit" onclick="submitAuth()" style="background:#E53935;color:#fff;padding:14px;border-radius:12px;border:none;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s" onmouseover="this.style.background='#C62828'" onmouseout="this.style.background='#E53935'">Giriş Yap</button>
-    </div>
+      <button type="submit" id="auth-submit" style="background:#E53935;color:#fff;padding:14px;border-radius:12px;border:none;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s" onmouseover="this.style.background='#C62828'" onmouseout="this.style.background='#E53935'">Giriş Yap</button>
+    </form>
 
     <!-- Divider -->
     <div style="display:flex;align-items:center;gap:12px;margin:20px 0">
