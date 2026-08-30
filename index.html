@@ -4450,6 +4450,59 @@ function showComparison() {
     document.body.appendChild(ov);
   }
 
+  // Puanlama (araştırma bazlı ağırlıklar)
+  function scoreCard(c, other) {
+    let score = 0;
+    // Fiyat %25 — düşük daha iyi
+    const p1 = parseFloat((c.price||'').replace(/\./g,'').replace(/[^\d]/g,''));
+    const p2 = parseFloat((other.price||'').replace(/\./g,'').replace(/[^\d]/g,''));
+    if (!isNaN(p1) && !isNaN(p2) && p1 > 0 && p2 > 0) score += p1 <= p2 ? 25 : 0;
+    // Tramer %20 — Yok daha iyi
+    if (c.tramer === 'Yok') score += 20; else if (!c.tramer) score += 10;
+    // KM %20 — düşük daha iyi
+    const k1 = parseFloat((c.km||'').replace(/\./g,'').replace(/[^\d]/g,''));
+    const k2 = parseFloat((other.km||'').replace(/\./g,'').replace(/[^\d]/g,''));
+    if (!isNaN(k1) && !isNaN(k2) && k1 >= 0 && k2 >= 0) score += k1 <= k2 ? 20 : 0;
+    // Hasar %15 — Yok/Hasarsız daha iyi
+    if (c.hasar && (c.hasar.toLowerCase().includes('yok') || c.hasar.toLowerCase().includes('hasarsız'))) score += 15;
+    // Ekspertiz %10 — Var daha iyi
+    if (c.ekspertiz === 'Var') score += 10;
+    // Boya %5 — Yok daha iyi
+    if (c.boyaDurum === 'Yok' || !c.boyaDurum) score += 5;
+    // Yıl %5 — yüksek daha iyi
+    const y1 = parseInt(c.year||0); const y2 = parseInt(other.year||0);
+    if (y1 > 0 && y2 > 0) score += y1 >= y2 ? 5 : 0;
+    return score;
+  }
+  const s1 = scoreCard(c1, c2);
+  const s2 = scoreCard(c2, c1);
+  const winner = s1 > s2 ? c1 : s2 > s1 ? c2 : null;
+  const winnerScore = Math.max(s1, s2);
+  const loserScore = Math.min(s1, s2);
+  const scoreHtml = `
+    <div style="margin:0 14px 14px;background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,.08);">
+      <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:12px;">📊 Genel Değerlendirme</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div style="text-align:center;padding:10px;background:#f8f8f8;border-radius:10px;${s1>=s2?'border:2px solid #2E7D32;background:#E8F5E9;':''}">
+          <div style="font-size:11px;color:#888;margin-bottom:4px;">${c1.name.split(' ').slice(0,2).join(' ')}</div>
+          <div style="font-size:28px;font-weight:900;color:${s1>=s2?'#2E7D32':'#E53935'};">${s1}</div>
+          <div style="font-size:10px;color:#aaa;">/ 100 puan</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:#f8f8f8;border-radius:10px;${s2>s1?'border:2px solid #2E7D32;background:#E8F5E9;':''}">
+          <div style="font-size:11px;color:#888;margin-bottom:4px;">${c2.name.split(' ').slice(0,2).join(' ')}</div>
+          <div style="font-size:28px;font-weight:900;color:${s2>s1?'#2E7D32':'#E53935'};">${s2}</div>
+          <div style="font-size:10px;color:#aaa;">/ 100 puan</div>
+        </div>
+      </div>
+      ${winner ? `<div style="background:#E8F5E9;border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:13px;font-weight:700;color:#2E7D32;">🏆 ${winner.name.split(' ').slice(0,3).join(' ')} daha avantajlı görünüyor</div>
+        <div style="font-size:11px;color:#555;margin-top:4px;">Fiyat, km, hasar ve belge kriterlerine göre değerlendirilmiştir.</div>
+      </div>` : `<div style="background:#FFF8E1;border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:13px;font-weight:700;color:#F57C00;">⚖️ İki araç eşit puanda</div>
+      </div>`}
+      <div style="font-size:10px;color:#bbb;margin-top:8px;text-align:center;">Puan ağırlıkları: Fiyat %25 · Tramer %20 · KM %20 · Hasar %15 · Ekspertiz %10 · Boya %5 · Yıl %5</div>
+    </div>`;
+
   ov.innerHTML = `
     <div style="background:#E53935;padding:14px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:1;">
       <button onclick="document.getElementById('compare-overlay').style.display='none'" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;">‹</button>
@@ -4479,6 +4532,7 @@ function showComparison() {
       </div>
       <table style="width:100%;border-collapse:collapse;">${tableRows}</table>
     </div>
+    ${scoreHtml}
     <div style="padding:0 14px 80px;text-align:center;">
       <div style="font-size:11px;color:#bbb;">Kırmızı renkli değerler farklı özellikleri gösterir.</div>
     </div>`;
@@ -4498,6 +4552,15 @@ function renderBegeniler() {
   _selectedBegen = {};
   document.getElementById('begen-header-normal').style.display = 'flex';
   document.getElementById('begen-header-select').style.display = 'none';
+  // Satıcı kontrolü: ilanı olan kullanıcılar Karşılaştır butonunu göremez
+  const compareBtn = document.querySelector('#begen-header-normal button[onclick="enterBegenCompareMode()"]');
+  if (compareBtn && user) {
+    db.ref('listings').orderByChild('uid').equalTo(user.uid).limitToFirst(1).once('value', snap => {
+      if (compareBtn) compareBtn.style.display = snap.exists() ? 'none' : 'inline-block';
+    });
+  } else if (compareBtn && !user) {
+    compareBtn.style.display = 'none';
+  }
   const body = document.getElementById('begeniler-body');
   const stat = document.getElementById('stat-liked');
   if (stat) stat.textContent = liked.length;
