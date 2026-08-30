@@ -2106,7 +2106,9 @@ function initIlanVerSelects() {
   document.getElementById('il-takas').value = '';
   document.querySelectorAll('.il-takas-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('il-color-diger').style.display = 'none';
-  ['il-km','il-price','il-trim','il-desc'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  ['il-km','il-price','il-trim','il-desc','il-ekspertiz','il-tramer','il-boya-durum','il-boya-detail'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  ['il-ekspertiz-var','il-ekspertiz-yok','il-tramer-var','il-tramer-yok','il-boya-yok','il-boya-var'].forEach(id => { const el=document.getElementById(id); if(el) el.classList.remove('selected'); });
+  const bd = document.getElementById('il-boya-detail'); if(bd) bd.style.display='none';
 }
 
 function ilanModelUpdate() {
@@ -2125,6 +2127,17 @@ function selectVasita(el, val) {
   el.style.background = '#f0fff4';
   el.style.borderColor = '#81c784';
   document.getElementById('il-vasita').value = val;
+}
+
+function selectIlanBtn(hiddenId, val, btnA, btnB) {
+  document.getElementById(hiddenId).value = val;
+  document.getElementById(btnA).classList.toggle('selected', val === document.getElementById(btnA).textContent.trim() || (val === 'Var' && btnA.includes('var')) || (val === 'Yok' && btnA.includes('yok')));
+  document.getElementById(btnB).classList.toggle('selected', val === document.getElementById(btnB).textContent.trim() || (val === 'Var' && btnB.includes('var')) || (val === 'Yok' && btnB.includes('yok')));
+  // re-evaluate
+  document.getElementById(btnA).classList.remove('selected');
+  document.getElementById(btnB).classList.remove('selected');
+  if (val === 'Var') document.getElementById(btnA.includes('var') ? btnA : btnB).classList.add('selected');
+  else document.getElementById(btnA.includes('yok') ? btnA : btnB).classList.add('selected');
 }
 
 function selectTakas(val) {
@@ -2392,6 +2405,10 @@ async function submitListing() {
                 : document.getElementById('il-color').value,
       hasar:  document.getElementById('il-hasar').value,
       takas:  document.getElementById('il-takas').value,
+      ekspertiz: document.getElementById('il-ekspertiz').value || '',
+      tramer: document.getElementById('il-tramer').value || '',
+      boyaDurum: document.getElementById('il-boya-durum').value || '',
+      boyaDetay: document.getElementById('il-boya-detail').value || '',
       vasita: document.getElementById('il-vasita').value,
       location,
       meta: `📍 ${location} · ${kmStr}`,
@@ -2667,6 +2684,9 @@ document.addEventListener('keydown', e => {
           <div class="detail-row"><span class="detail-row-lbl">Motor Hacmi</span><span class="detail-row-val" id="detail-hacim"></span></div>
           <div class="detail-row"><span class="detail-row-lbl">Renk</span><span class="detail-row-val" id="detail-color"></span></div>
           <div class="detail-row"><span class="detail-row-lbl">Hasar Durumu</span><span class="detail-row-val" id="detail-hasar"></span></div>
+          <div class="detail-row"><span class="detail-row-lbl">Ekspertiz</span><span class="detail-row-val" id="detail-ekspertiz">—</span></div>
+          <div class="detail-row"><span class="detail-row-lbl">Tramer Kaydı</span><span class="detail-row-val" id="detail-tramer">—</span></div>
+          <div class="detail-row"><span class="detail-row-lbl">Boya/Değişen</span><span class="detail-row-val" id="detail-boya">—</span></div>
           <div class="detail-row"><span class="detail-row-lbl">Kimden</span><span class="detail-row-val" id="detail-seller"></span><span id="detail-seller-verified" style="display:none;margin-left:8px;background:#E8F5E9;color:#2E7D32;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;align-items:center;gap:3px;">✅ Doğrulandı</span></div>
           <div class="detail-row"><span class="detail-row-lbl">Konum</span><span class="detail-row-val" id="detail-loc2"></span></div>
         </div>
@@ -3354,6 +3374,37 @@ document.addEventListener('keydown', e => {
       </div>
     </div>
 
+    <!-- Ekspertiz & Tramer -->
+    <div class="il-row2 il-section">
+      <div>
+        <span class="il-label">EKSPERTİZ RAPORU</span>
+        <div style="display:flex;gap:8px;margin-top:2px;">
+          <button class="il-takas-btn" id="il-ekspertiz-var" onclick="selectIlanBtn('il-ekspertiz','Var','il-ekspertiz-var','il-ekspertiz-yok')">Var</button>
+          <button class="il-takas-btn" id="il-ekspertiz-yok" onclick="selectIlanBtn('il-ekspertiz','Yok','il-ekspertiz-var','il-ekspertiz-yok')">Yok</button>
+        </div>
+        <input type="hidden" id="il-ekspertiz" value="">
+      </div>
+      <div>
+        <span class="il-label">TRAMER KAYDI</span>
+        <div style="display:flex;gap:8px;margin-top:2px;">
+          <button class="il-takas-btn" id="il-tramer-var" onclick="selectIlanBtn('il-tramer','Var','il-tramer-var','il-tramer-yok')">Var</button>
+          <button class="il-takas-btn" id="il-tramer-yok" onclick="selectIlanBtn('il-tramer','Yok','il-tramer-var','il-tramer-yok')">Yok</button>
+        </div>
+        <input type="hidden" id="il-tramer" value="">
+      </div>
+    </div>
+
+    <!-- Boya & Değişen Parça -->
+    <div class="il-section">
+      <span class="il-label">BOYALI / DEĞİŞEN PARÇA</span>
+      <div style="display:flex;gap:8px;margin-top:2px;margin-bottom:8px;">
+        <button class="il-takas-btn" id="il-boya-yok" onclick="selectIlanBtn('il-boya-durum','Yok','il-boya-yok','il-boya-var');document.getElementById('il-boya-detail').style.display='none'">Yok</button>
+        <button class="il-takas-btn" id="il-boya-var" onclick="selectIlanBtn('il-boya-durum','Var','il-boya-yok','il-boya-var');document.getElementById('il-boya-detail').style.display='block'">Var</button>
+      </div>
+      <input type="hidden" id="il-boya-durum" value="">
+      <input id="il-boya-detail" type="text" class="il-input" placeholder="Hangi parçalar? (örn: Sol ön kapı, Tampon)" style="display:none;" oninput="ilanFieldChanged('il-boya-detail')">
+    </div>
+
     <!-- Açıklama -->
     <div class="il-section">
       <span class="il-label">AÇIKLAMA</span>
@@ -3624,6 +3675,12 @@ function openDetail() {
   document.getElementById('detail-color').textContent = c.color;
   document.getElementById('detail-hasar').textContent = c.hasar;
   document.getElementById('detail-seller').textContent = c.seller;
+  const eksEl = document.getElementById('detail-ekspertiz');
+  if (eksEl) eksEl.textContent = c.ekspertiz || '—';
+  const tramEl = document.getElementById('detail-tramer');
+  if (tramEl) tramEl.textContent = c.tramer || '—';
+  const boyaEl = document.getElementById('detail-boya');
+  if (boyaEl) boyaEl.textContent = c.boyaDurum ? (c.boyaDurum === 'Var' && c.boyaDetay ? `Var (${c.boyaDetay})` : c.boyaDurum) : '—';
   document.getElementById('detail-loc2').textContent = c.location;
   document.getElementById('detail-loc3').textContent = c.location;
   // Reset tabs
@@ -4320,6 +4377,9 @@ function showComparison() {
     ['Renk', 'color'],
     ['Hasar', 'hasar'],
     ['Çekiş', 'cekis'],
+    ['Ekspertiz', 'ekspertiz'],
+    ['Tramer Kaydı', 'tramer'],
+    ['Boya/Değişen', 'boyaDurum'],
     ['Satıcı', 'seller'],
     ['Konum', 'location'],
   ];
@@ -4337,24 +4397,32 @@ function showComparison() {
         'year': true
       };
       const noBetterKeys = ['fuel','gear','kasa','color','cekis','seller','location','hacim','motor'];
-      const noHasarBetter = key === 'hasar';
+      const noHasarBetter = key === 'hasar' || key === 'boyaDurum' || key === 'tramer';
+      const yokuBetter = key === 'ekspertiz'; // Var daha iyi
 
-      if (noHasarBetter) {
+      if (yokuBetter) {
+        // Ekspertiz: Var daha iyi
+        const v1Good = v1 && v1.toLowerCase() === 'var';
+        const v2Good = v2 && v2.toLowerCase() === 'var';
+        if (v1Good && !v2Good) { s1='color:#2E7D32;font-weight:700;'; s2='color:#E53935;font-weight:700;'; }
+        else if (v2Good && !v1Good) { s2='color:#2E7D32;font-weight:700;'; s1='color:#E53935;font-weight:700;'; }
+      } else if (noHasarBetter) {
+        // Hasar/Tramer/Boya: Yok daha iyi
         const v1Good = v1 && v1.toLowerCase().includes('yok');
         const v2Good = v2 && v2.toLowerCase().includes('yok');
         if (v1Good && !v2Good) { s1='color:#2E7D32;font-weight:700;'; s2='color:#E53935;font-weight:700;'; }
         else if (v2Good && !v1Good) { s2='color:#2E7D32;font-weight:700;'; s1='color:#E53935;font-weight:700;'; }
         else { s1='color:#F57C00;font-weight:700;'; s2='color:#F57C00;font-weight:700;'; }
       } else if (numericBetter[key]) {
-        const n1 = parseFloat((v1||'').replace(/[^\d.]/g,''));
-        const n2 = parseFloat((v2||'').replace(/[^\d.]/g,''));
+        const n1 = parseFloat((v1||'').replace(/\./g,'').replace(/[^\d]/g,''));
+        const n2 = parseFloat((v2||'').replace(/\./g,'').replace(/[^\d]/g,''));
         if (!isNaN(n1) && !isNaN(n2)) {
           if (n1 < n2) { s1='color:#2E7D32;font-weight:700;'; s2='color:#E53935;font-weight:700;'; }
           else if (n2 < n1) { s2='color:#2E7D32;font-weight:700;'; s1='color:#E53935;font-weight:700;'; }
         }
       } else if (numericHigherBetter[key]) {
-        const n1 = parseFloat((v1||'').replace(/[^\d.]/g,''));
-        const n2 = parseFloat((v2||'').replace(/[^\d.]/g,''));
+        const n1 = parseFloat((v1||'').replace(/\./g,'').replace(/[^\d]/g,''));
+        const n2 = parseFloat((v2||'').replace(/\./g,'').replace(/[^\d]/g,''));
         if (!isNaN(n1) && !isNaN(n2)) {
           if (n1 > n2) { s1='color:#2E7D32;font-weight:700;'; s2='color:#E53935;font-weight:700;'; }
           else if (n2 > n1) { s2='color:#2E7D32;font-weight:700;'; s1='color:#E53935;font-weight:700;'; }
@@ -4363,10 +4431,12 @@ function showComparison() {
         s1='color:#F57C00;font-weight:700;'; s2='color:#F57C00;font-weight:700;';
       }
     }
+    const bg1 = s1.includes('#2E7D32') ? 'background:#E8F5E9;' : s1.includes('#E53935') ? 'background:#FFEBEE;' : '';
+    const bg2 = s2.includes('#2E7D32') ? 'background:#E8F5E9;' : s2.includes('#E53935') ? 'background:#FFEBEE;' : '';
     return `<tr style="border-bottom:1px solid #f0f0f0;">
       <td style="padding:10px 8px;font-size:12px;color:#888;font-weight:600;width:30%;">${label}</td>
-      <td style="padding:10px 8px;font-size:13px;${s1}text-align:center;">${v1||'—'}</td>
-      <td style="padding:10px 8px;font-size:13px;${s2}text-align:center;">${v2||'—'}</td>
+      <td style="padding:10px 8px;font-size:13px;${s1}${bg1}text-align:center;">${v1||'—'}</td>
+      <td style="padding:10px 8px;font-size:13px;${s2}${bg2}text-align:center;">${v2||'—'}</td>
     </tr>`;
   }
 
@@ -4404,8 +4474,8 @@ function showComparison() {
     <div style="margin:0 14px 14px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.08);">
       <div style="display:grid;grid-template-columns:30% 1fr 1fr;background:#f8f8f8;border-bottom:1px solid #eee;">
         <div style="padding:10px 8px;font-size:11px;color:#aaa;font-weight:700;text-transform:uppercase;">Özellik</div>
-        <div style="padding:10px 8px;font-size:11px;color:#E53935;font-weight:700;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c1.name.split(' ').slice(0,2).join(' ')}</div>
-        <div style="padding:10px 8px;font-size:11px;color:#1565C0;font-weight:700;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c2.name.split(' ').slice(0,2).join(' ')}</div>
+        <div style="padding:10px 8px;font-size:11px;color:#1a1a1a;font-weight:700;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c1.name.split(' ').slice(0,2).join(' ')}</div>
+        <div style="padding:10px 8px;font-size:11px;color:#1a1a1a;font-weight:700;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c2.name.split(' ').slice(0,2).join(' ')}</div>
       </div>
       <table style="width:100%;border-collapse:collapse;">${tableRows}</table>
     </div>
