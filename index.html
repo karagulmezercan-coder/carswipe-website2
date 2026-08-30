@@ -1399,6 +1399,94 @@ function getErrMsg(code) {
   return msgs[code] || 'Bir hata oluştu. Lütfen tekrar deneyin.';
 }
 
+// ── PROFİL FONKSİYONLARI ──
+function renderProfile() {
+  const user = auth.currentUser;
+  const avatarEl = document.getElementById('profile-avatar-inner');
+  const nameEl = document.getElementById('profile-name-txt');
+  const subEl = document.getElementById('profile-sub-txt');
+  const emailEl = document.getElementById('profile-email-txt');
+  const statLiked = document.getElementById('stat-liked');
+  const statMsgs = document.getElementById('stat-msgs');
+  const statViews = document.getElementById('stat-views');
+
+  if (statLiked) statLiked.textContent = liked.length;
+  if (statViews) statViews.textContent = idx + 1; // kaç ilanı inceledi
+
+  if (!user) return;
+
+  // Ad
+  const displayName = user.displayName || user.email.split('@')[0];
+  if (nameEl) nameEl.textContent = displayName;
+
+  // Email
+  if (emailEl) emailEl.textContent = user.email;
+
+  // Üyelik tarihi
+  const creationTime = user.metadata && user.metadata.creationTime
+    ? new Date(user.metadata.creationTime).toLocaleDateString('tr-TR', {month:'long', year:'numeric'})
+    : '';
+  if (subEl) subEl.textContent = creationTime ? 'Üye: ' + creationTime : '';
+
+  // Avatar
+  if (avatarEl) {
+    if (user.photoURL) {
+      avatarEl.innerHTML = `<img src="${user.photoURL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    } else {
+      const initials = displayName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+      avatarEl.style.background = '#E53935';
+      avatarEl.style.color = '#fff';
+      avatarEl.textContent = initials;
+    }
+  }
+
+  // Hesap paneli içerikleri
+  const hesapName = document.getElementById('hesap-name');
+  const hesapEmail = document.getElementById('hesap-email');
+  const hesapDate = document.getElementById('hesap-date');
+  if (hesapName) hesapName.textContent = user.displayName || '—';
+  if (hesapEmail) hesapEmail.textContent = user.email;
+  if (hesapDate && creationTime) hesapDate.textContent = creationTime;
+
+  // Mesaj sayısını Firebase'den çek
+  if (statMsgs) {
+    db.ref('chats').orderByChild('uid').once('value').then(snap => {
+      let count = 0;
+      snap.forEach(room => {
+        const msgs = room.child('messages');
+        msgs.forEach(m => { if (m.val().uid === user.uid) count++; });
+      });
+      if (statMsgs) statMsgs.textContent = count;
+    }).catch(() => {});
+  }
+}
+
+function doSignOut() {
+  if (!confirm('Çıkış yapmak istediğine emin misin?')) return;
+  auth.signOut().then(() => showLanding());
+}
+
+function showProfileSection(section) {
+  const panel = document.getElementById('profile-hesap-panel');
+  const toast = document.getElementById('profile-toast');
+  if (toast) toast.style.display = 'none';
+  if (section === 'hesap' && panel) {
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  }
+}
+
+function showProfileToast(msg) {
+  const panel = document.getElementById('profile-hesap-panel');
+  const toast = document.getElementById('profile-toast');
+  if (panel) panel.style.display = 'none';
+  if (toast) {
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => { toast.style.display = 'none'; }, 3000);
+  }
+}
+
 // ── AUTH STATE ──
 auth.onAuthStateChanged(user => {
   const btn = document.querySelector('.btn-green');
@@ -1440,7 +1528,7 @@ document.addEventListener('keydown', e => {
   <a class="nav-item" onclick="showView('begeniler', this)"><div class="nav-icon">♥</div>Beğenilenler</a>
   <a class="nav-item" onclick="showView('profil', this)"><div class="nav-icon">👤</div>Profil</a>
   <div style="flex:1"></div>
-  <a class="nav-item" onclick="if(confirm('Çıkış yapılsın mı?'))auth.signOut().then(()=>showLanding())" style="color:#E53935"><div class="nav-icon" style="color:#E53935">⏻</div>Çıkış Yap</a>
+  <a class="nav-item" onclick="doSignOut()" style="color:#E53935"><div class="nav-icon" style="color:#E53935">⏻</div>Çıkış Yap</a>
 </div>
 
 <!-- MAIN -->
@@ -1972,11 +2060,12 @@ document.addEventListener('keydown', e => {
     <div class="app-screen">
       <div class="app-body" style="overflow-y:auto;">
         <div class="profile-hero">
-          <div class="profile-avatar-ring">
-            <img class="profile-avatar-img" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&q=80" alt="">
+          <div class="profile-avatar-ring" style="position:relative;">
+            <div id="profile-avatar-inner" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#E53935;background:#fff;border-radius:50%;">?</div>
           </div>
-          <div class="profile-name">Ercan Karagülmez</div>
-          <div class="profile-sub">İstanbul · Üye: Ağustos 2024</div>
+          <div class="profile-name" id="profile-name-txt">—</div>
+          <div class="profile-sub" id="profile-sub-txt" style="font-size:12px;opacity:.7;margin-top:4px;"></div>
+          <div id="profile-email-txt" style="font-size:11px;opacity:.45;margin-top:2px;"></div>
         </div>
         <div class="profile-stats" style="margin:12px;">
           <div class="profile-stat">
@@ -1984,47 +2073,65 @@ document.addEventListener('keydown', e => {
             <div class="profile-stat-lbl">Beğeni</div>
           </div>
           <div class="profile-stat">
-            <div class="profile-stat-num">4</div>
+            <div class="profile-stat-num" id="stat-msgs">0</div>
             <div class="profile-stat-lbl">Mesaj</div>
           </div>
           <div class="profile-stat">
-            <div class="profile-stat-num">12</div>
+            <div class="profile-stat-num" id="stat-views">0</div>
             <div class="profile-stat-lbl">İnceleme</div>
           </div>
         </div>
         <div class="profile-menu">
-          <div class="profile-menu-item">
+          <div class="profile-menu-item" onclick="showProfileSection('hesap')">
             <div class="profile-menu-icon">👤</div>
             <div class="profile-menu-text">Hesap Bilgileri</div>
             <div class="profile-menu-arrow">›</div>
           </div>
-          <div class="profile-menu-item">
+          <div class="profile-menu-item" onclick="showProfileToast('Bildirim ayarları yakında aktif olacak.')">
             <div class="profile-menu-icon">🔔</div>
             <div class="profile-menu-text">Bildirimler</div>
             <div class="profile-menu-arrow">›</div>
           </div>
-          <div class="profile-menu-item">
+          <div class="profile-menu-item" onclick="showProfileToast('Gizlilik ayarları yakında aktif olacak.')">
             <div class="profile-menu-icon">🔒</div>
             <div class="profile-menu-text">Gizlilik & Güvenlik</div>
             <div class="profile-menu-arrow">›</div>
           </div>
-          <div class="profile-menu-item">
+          <div class="profile-menu-item" onclick="showProfileToast('Destek için: destek@carswipe.com.tr')">
             <div class="profile-menu-icon">❓</div>
             <div class="profile-menu-text">Yardım & Destek</div>
             <div class="profile-menu-arrow">›</div>
           </div>
-          <div class="profile-menu-item">
+          <div class="profile-menu-item" onclick="showProfileToast('Değerlendirme özelliği yakında geliyor.')">
             <div class="profile-menu-icon">⭐</div>
             <div class="profile-menu-text">Uygulamayı Değerlendir</div>
             <div class="profile-menu-arrow">›</div>
           </div>
-          <div class="profile-menu-item" style="color:#E53935;">
+          <div class="profile-menu-item" onclick="doSignOut()" style="color:#E53935;">
             <div class="profile-menu-icon">🚪</div>
             <div class="profile-menu-text" style="color:#E53935;">Çıkış Yap</div>
             <div class="profile-menu-arrow" style="color:#E53935;">›</div>
           </div>
         </div>
-        <div class="profile-version">CarSwipe v1.0.0</div>
+        <!-- Hesap Bilgileri paneli -->
+        <div id="profile-hesap-panel" style="display:none;margin:0 12px 16px;background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+          <div style="font-size:13px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:14px;">HESAP BİLGİLERİ</div>
+          <div style="margin-bottom:12px;">
+            <div style="font-size:11px;color:#aaa;margin-bottom:3px;">AD SOYAD</div>
+            <div id="hesap-name" style="font-size:15px;font-weight:600;color:#1a1a1a;">—</div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <div style="font-size:11px;color:#aaa;margin-bottom:3px;">E-POSTA</div>
+            <div id="hesap-email" style="font-size:15px;font-weight:600;color:#1a1a1a;">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#aaa;margin-bottom:3px;">ÜYELİK TARİHİ</div>
+            <div id="hesap-date" style="font-size:15px;font-weight:600;color:#1a1a1a;">—</div>
+          </div>
+        </div>
+        <!-- Toast -->
+        <div id="profile-toast" style="display:none;margin:0 12px 12px;background:#333;color:#fff;border-radius:10px;padding:12px 16px;font-size:13px;text-align:center;"></div>
+        <div class="profile-version">CarSwipe v1.0.0 · Beta</div>
       </div>
     </div>
   </div>
@@ -2442,7 +2549,7 @@ function showView(id, el) {
   if (mnav) mnav.classList.add('active');
   // Refresh data screens
   if (id === 'begeniler') renderBegeniler();
-  if (id === 'profil') { const s = document.getElementById('stat-liked'); if(s) s.textContent = liked.length; }
+  if (id === 'profil') { renderProfile(); }
   if (id === 'filtrele') initFilters();
   // Mesajlar sayfasına geçilince chat ekranını kapat, listeyi göster
   if (id === 'mesajlar') {
