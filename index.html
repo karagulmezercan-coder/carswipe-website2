@@ -1221,6 +1221,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 
 <!-- ── AUTH MODAL HTML ── -->
 </div><!-- /landing-view -->
@@ -1629,11 +1630,24 @@ function saveProfileEmail() {
 function toggleNotif(el, key) {
   const on = el.dataset.on === '1';
   const newOn = !on;
-  el.dataset.on = newOn ? '1' : '0';
-  el.style.background = newOn ? '#E53935' : '#ddd';
-  const circle = el.querySelector('div');
-  circle.style.left = newOn ? '23px' : '3px';
-  localStorage.setItem('notif_' + key, newOn ? '1' : '0');
+  if (newOn) {
+    // Bildirim izni iste
+    requestNotifPermission().then(granted => {
+      if (!granted && Notification.permission === 'denied') {
+        showInAppBanner('İzin Gerekli', 'Tarayıcı ayarlarından bildirim iznini aç.', '⚠️');
+        return;
+      }
+      el.dataset.on = '1';
+      el.style.background = '#E53935';
+      el.querySelector('div').style.left = '23px';
+      localStorage.setItem('notif_' + key, '1');
+    });
+  } else {
+    el.dataset.on = '0';
+    el.style.background = '#ddd';
+    el.querySelector('div').style.left = '3px';
+    localStorage.setItem('notif_' + key, '0');
+  }
 }
 
 function rateStar(n) {
@@ -1651,6 +1665,169 @@ function submitRating() {
   if (msg) { msg.style.display='block'; msg.textContent = ['','😞 Üzgünüz, geliştireceğiz!','😕 Daha iyisini yapacağız.','🙂 Teşekkürler!','😊 Harika, teşekkürler!','🎉 Muhteşem! Çok teşekkürler!'][n]; }
   if (btn) { btn.disabled=true; btn.style.opacity='.5'; btn.textContent='Gönderildi'; }
   try { db.ref('ratings').push({ uid: auth.currentUser ? auth.currentUser.uid : 'anon', stars: n, time: Date.now() }); } catch(e) {}
+}
+
+// ── BİLDİRİM SİSTEMİ ──
+let _messaging = null;
+
+function parseCarPrice(priceStr) {
+  return parseInt((priceStr || '0').replace(/\./g,'').replace(/[^0-9]/g,'')) || 0;
+}
+
+function showInAppBanner(title, body, icon) {
+  const banner = document.getElementById('notif-banner');
+  const tEl = document.getElementById('notif-banner-title');
+  const bEl = document.getElementById('notif-banner-body');
+  const iEl = document.getElementById('notif-banner-icon');
+  if (!banner) return;
+  if (tEl) tEl.textContent = title;
+  if (bEl) bEl.textContent = body;
+  if (iEl) iEl.textContent = icon || '🔔';
+  banner.style.display = 'block';
+  clearTimeout(banner._t);
+  banner._t = setTimeout(() => { banner.style.display = 'none'; }, 5000);
+}
+
+function showOSNotif(title, body, icon) {
+  if (Notification.permission === 'granted') {
+    try { new Notification(title, { body, icon: icon || '' }); } catch(e) {}
+  } else {
+    showInAppBanner(title, body, icon);
+  }
+}
+
+async function requestNotifPermission() {
+  if (!('Notification' in window)) return false;
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    await registerFCMToken();
+    return true;
+  }
+  return false;
+}
+
+async function registerFCMToken() {
+  const user = auth.currentUser;
+  if (!user) return;
+  try {
+    if (!_messaging) _messaging = firebase.messaging();
+    // SW olmadan token alınamaz — önce SW kaydı dene
+    await registerServiceWorker();
+    const VAPID_KEY = 'BDKIhwm4j8bGKr5J3e6z9iGKvN1fBqzFwRSZxCfH8g9mNJe3VGGqKQzZZnB7FWqUh3CkXdmJ5V8jJKzP1E0hH30'; // Firebase Console > Project Settings > Cloud Messaging'den alınacak
+    const token = await _messaging.getToken({ vapidKey: VAPID_KEY });
+    if (token) {
+      await db.ref('fcmTokens/' + user.uid).set({ token, platform: 'web', time: Date.now() });
+    }
+  } catch(e) {
+    // SW yoksa veya VAPID key hatalıysa sessizce geç
+  }
+}
+
+async function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  // SW kodu inline blob olarak kaydet
+  const swCode = `
+importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
+firebase.initializeApp({
+  apiKey:"AIzaSyCZS7Y1S-4wNxmickZEUxncuF9gTZgt_Nc",
+  authDomain:"carswipe-33030.firebaseapp.com",
+  projectId:"carswipe-33030",
+  messagingSenderId:"588954344790",
+  appId:"1:588954344790:web:89d2401cb18ca895df8af7",
+  databaseURL:"https://carswipe-33030-default-rtdb.europe-west1.firebasedatabase.app"
+});
+const messaging = firebase.messaging();
+messaging.onBackgroundMessage(payload => {
+  self.registration.showNotification(
+    payload.notification.title,
+    { body: payload.notification.body, icon: '/icon.png' }
+  );
+});`;
+  try {
+    const blob = new Blob([swCode], { type: 'application/javascript' });
+    const url = URL.createObjectURL(blob);
+    await navigator.serviceWorker.register(url);
+  } catch(e) {}
+}
+
+// Fiyat düşüşü kontrolü
+function checkPriceDrops() {
+  const user = auth.currentUser;
+  if (!user || !liked.length) return;
+  if (localStorage.getItem('notif_price_drop') === '0') return;
+  const key = 'car_prices_' + user.uid;
+  const saved = JSON.parse(localStorage.getItem(key) || '{}');
+  const drops = [];
+  liked.forEach(carIdx => {
+    const car = cars[carIdx];
+    const curr = parseCarPrice(car.price);
+    const prev = saved[carIdx];
+    if (prev && curr < prev) drops.push({ car, drop: prev - curr });
+    saved[carIdx] = curr;
+  });
+  localStorage.setItem(key, JSON.stringify(saved));
+  if (drops.length) {
+    const d = drops[0];
+    const dropStr = d.drop.toLocaleString('tr-TR') + ' ₺';
+    showOSNotif('Fiyat Düştü! 🎉', `${d.car.name} ${d.car.year} — ${dropStr} indirim!`, '💰');
+    // Firebase'e de kaydet
+    db.ref('notifications/' + user.uid).push({ type:'price_drop', car: d.car.name, drop: d.drop, time: Date.now() }).catch(()=>{});
+  }
+}
+
+// Öneri algoritması
+function checkRecommendations() {
+  const user = auth.currentUser;
+  if (!user || liked.length < 1) return;
+  if (localStorage.getItem('notif_suggestions') === '0') return;
+  // Son kontrol zamanı — 24 saatte bir öner
+  const lastKey = 'last_rec_' + user.uid;
+  const last = parseInt(localStorage.getItem(lastKey) || '0');
+  if (Date.now() - last < 24 * 60 * 60 * 1000) return;
+  localStorage.setItem(lastKey, Date.now().toString());
+
+  const likedCars = liked.map(i => cars[i]);
+  const brands = [...new Set(likedCars.map(c => c.brand))];
+  const avgPrice = likedCars.reduce((s,c) => s + parseCarPrice(c.price), 0) / likedCars.length;
+
+  const recs = cars
+    .map((car, i) => ({ car, i }))
+    .filter(({ i }) => !liked.includes(i))
+    .filter(({ car }) => {
+      const priceDiff = Math.abs(parseCarPrice(car.price) - avgPrice) / avgPrice;
+      return brands.includes(car.brand) || priceDiff < 0.35;
+    });
+
+  if (recs.length) {
+    const rec = recs[Math.floor(Math.random() * recs.length)];
+    showOSNotif('Sana Özel 🚗', `${rec.car.name} ${rec.car.year} — ${rec.car.price}. Beğenebilirsin!`, '⭐');
+    db.ref('notifications/' + user.uid).push({ type:'recommendation', car: rec.car.name, time: Date.now() }).catch(()=>{});
+  }
+}
+
+// Giriş bildirimi mesajı dinle
+function listenIncomingMessages() {
+  const user = auth.currentUser;
+  if (!user || localStorage.getItem('notif_messages') === '0') return;
+  db.ref('chats').on('child_added', roomSnap => {
+    roomSnap.ref.child('messages').on('child_added', msgSnap => {
+      const m = msgSnap.val();
+      if (m && m.uid !== user.uid) {
+        const room = roomSnap.key.replace('room_','').replace(/-/g,' ');
+        showOSNotif('Yeni Mesaj 💬', m.text || 'Yeni mesaj aldın.', '💬');
+      }
+    });
+  });
+}
+
+// Uygulama açıldığında bildirimleri başlat
+function initNotifications() {
+  setTimeout(() => {
+    checkPriceDrops();
+    checkRecommendations();
+    listenIncomingMessages();
+  }, 2000); // Uygulama tam yüklendikten sonra
 }
 
 function doSignOut() {
@@ -1671,6 +1848,8 @@ auth.onAuthStateChanged(user => {
     btn.onclick = () => showApp();
     btn.style.display = 'flex';
     btn.style.alignItems = 'center';
+    // Bildirimleri başlat
+    initNotifications();
   } else {
     btn.innerHTML = 'Oturum Aç';
     btn.onclick = openAuth;
@@ -1704,6 +1883,21 @@ document.addEventListener('keydown', e => {
 
 <!-- MAIN -->
 <div class="main">
+
+  <!-- BİLDİRİM BANNER -->
+  <div id="notif-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#1a1a1a;color:#fff;padding:12px 16px;animation:slideDown .3s ease;">
+    <div style="display:flex;align-items:flex-start;gap:10px;max-width:480px;margin:0 auto;">
+      <div id="notif-banner-icon" style="font-size:20px;flex-shrink:0;margin-top:1px;">🔔</div>
+      <div style="flex:1;">
+        <div id="notif-banner-title" style="font-size:13px;font-weight:700;margin-bottom:2px;"></div>
+        <div id="notif-banner-body" style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.4;"></div>
+      </div>
+      <button onclick="document.getElementById('notif-banner').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;flex-shrink:0;">✕</button>
+    </div>
+  </div>
+  <style>
+  @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+  </style>
 
   <!-- KEŞFET -->
   <div class="view active" id="view-kesfet">
