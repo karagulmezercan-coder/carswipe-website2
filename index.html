@@ -1465,12 +1465,58 @@ function openProfileScreen(page) {
   const user = auth.currentUser;
 
   const titles = {
-    hesap: 'Hesap Bilgileri', bildirim: 'Bildirimler',
+    ilanlarim: 'İlanlarım', hesap: 'Hesap Bilgileri', bildirim: 'Bildirimler',
     gizlilik: 'Gizlilik & Güvenlik', yardim: 'Yardım & Destek', degerlendir: 'Değerlendir'
   };
   title.textContent = titles[page] || page;
 
-  if (page === 'hesap') {
+  if (page === 'ilanlarim') {
+    body.innerHTML = `<div id="ilanlarim-list" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="text-align:center;color:#aaa;padding:32px 0;font-size:13px;">İlanlar yükleniyor...</div>
+    </div>`;
+    if (!user) return;
+    db.ref('listings').orderByChild('uid').equalTo(user.uid).once('value', snap => {
+      const list = document.getElementById('ilanlarim-list');
+      if (!snap.exists()) {
+        list.innerHTML = `<div style="text-align:center;padding:40px 16px;">
+          <div style="font-size:40px;margin-bottom:12px;">📋</div>
+          <div style="font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:6px;">Henüz ilanın yok</div>
+          <div style="font-size:13px;color:#aaa;">"İlan Ver" butonunu kullanarak ilk ilanını ekle.</div>
+        </div>`;
+        return;
+      }
+      const items = [];
+      snap.forEach(child => { items.push({ id: child.key, ...child.val() }); });
+      items.sort((a,b) => (b.time||0) - (a.time||0));
+      list.innerHTML = items.map(il => {
+        const statusColor = il.status === 'active' ? '#2E7D32' : il.status === 'pending' ? '#F57F17' : '#B71C1C';
+        const statusLabel = il.status === 'active' ? '✅ Yayında' : il.status === 'pending' ? '⏳ Onay Bekliyor' : '❌ Reddedildi';
+        const img = il.photos && il.photos[0] ? il.photos[0] : '';
+        return `<div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.07);">
+          ${img ? `<img src="${img}" style="width:100%;height:140px;object-fit:cover;">` : `<div style="width:100%;height:100px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:32px;">🚗</div>`}
+          <div style="padding:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">
+              <div style="font-size:14px;font-weight:700;color:#1a1a1a;">${il.name||''} ${il.year||''}</div>
+              <div style="font-size:11px;font-weight:700;color:${statusColor};white-space:nowrap;">${statusLabel}</div>
+            </div>
+            <div style="font-size:14px;font-weight:800;color:#E53935;margin-bottom:6px;">${il.price||''}</div>
+            <div style="display:flex;gap:12px;font-size:12px;color:#888;">
+              <span>📍 ${il.location||'—'}</span>
+              <span>🔢 ${il.km||'—'}</span>
+            </div>
+            <div id="views-${il.id}" style="margin-top:8px;font-size:12px;color:#666;font-weight:600;">👁 Yükleniyor...</div>
+          </div>
+        </div>`;
+      }).join('');
+      // Her ilan için görüntülenme sayısını çek
+      items.forEach(il => {
+        db.ref('listings/' + il.id + '/views').once('value', s => {
+          const el = document.getElementById('views-' + il.id);
+          if (el) el.textContent = `👁 ${(s.val()||0).toLocaleString('tr-TR')} görüntülenme`;
+        });
+      });
+    });
+  } else if (page === 'hesap') {
     const displayName = user ? (user.displayName || '') : '';
     const email = user ? user.email : '';
     const creationTime = user && user.metadata && user.metadata.creationTime
@@ -2445,6 +2491,7 @@ document.addEventListener('keydown', e => {
         <div id="tab-specs" class="detail-rows">
           <div class="detail-row"><span class="detail-row-lbl">İlan No</span><span class="detail-row-val" id="detail-ilan-no"></span></div>
           <div class="detail-row"><span class="detail-row-lbl">İlan Tarihi</span><span class="detail-row-val" id="detail-ilan-date"></span></div>
+          <div class="detail-row"><span class="detail-row-lbl">Görüntülenme</span><span class="detail-row-val" id="detail-view-count" style="color:#666;">—</span></div>
           <div class="detail-row"><span class="detail-row-lbl">Marka</span><span class="detail-row-val" id="detail-brand"></span></div>
           <div class="detail-row"><span class="detail-row-lbl">Model</span><span class="detail-row-val" id="detail-model"></span></div>
           <div class="detail-row"><span class="detail-row-lbl">Yıl</span><span class="detail-row-val" id="detail-year"></span></div>
@@ -2853,6 +2900,9 @@ document.addEventListener('keydown', e => {
           <div class="profile-stat"><div class="profile-stat-num" id="stat-views">0</div><div class="profile-stat-lbl">İnceleme</div></div>
         </div>
         <div class="profile-menu">
+          <div class="profile-menu-item" onclick="openProfileScreen('ilanlarim')">
+            <div class="profile-menu-icon">📋</div><div class="profile-menu-text">İlanlarım</div><div class="profile-menu-arrow">›</div>
+          </div>
           <div class="profile-menu-item" onclick="openProfileScreen('hesap')">
             <div class="profile-menu-icon">👤</div><div class="profile-menu-text">Hesap Bilgileri</div><div class="profile-menu-arrow">›</div>
           </div>
@@ -3421,6 +3471,22 @@ function openDetail() {
   const el = document.querySelector('.nav-item');
   showView('detail', el);
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  // Görüntülenme takibi — sadece Firebase ilanları için (firebaseId varsa)
+  const viewEl = document.getElementById('detail-view-count');
+  if (viewEl) viewEl.textContent = '';
+  if (c.firebaseId) {
+    const viewRef = db.ref('listings/' + c.firebaseId + '/views');
+    const user = auth.currentUser;
+    // Kendi ilanını saymıyoruz
+    if (!user || user.uid !== c.uid) {
+      viewRef.transaction(v => (v || 0) + 1);
+    }
+    viewRef.once('value', snap => {
+      const count = snap.val() || 0;
+      if (viewEl) viewEl.textContent = `👁 ${count.toLocaleString('tr-TR')} görüntülenme`;
+    });
+  }
 }
 
 function switchDetailTab(el, tabId) {
