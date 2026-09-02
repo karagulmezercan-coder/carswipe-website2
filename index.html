@@ -1098,7 +1098,6 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
       <div class="footer-col">
         <h4 data-tr="Ürün" data-en="Product">Ürün</h4>
         <ul>
-          <li><a onclick="showApp();return false;" href="#" data-tr="Demo" data-en="Demo">Demo</a></li>
           <li><a href="#features" data-tr="Özellikler" data-en="Features">Özellikler</a></li>
           <li><a href="#faq" data-tr="SSS" data-en="FAQ">SSS</a></li>
         </ul>
@@ -1106,20 +1105,20 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
       <div class="footer-col">
         <h4 data-tr="Şirket" data-en="Company">Şirket</h4>
         <ul>
-          <li><a href="#" data-tr="Hakkımızda" data-en="About Us">Hakkımızda</a></li>
-          <li><a href="#" data-tr="İletişim" data-en="Contact">İletişim</a></li>
-          <li><a href="#" data-tr="Kariyer" data-en="Careers">Kariyer</a></li>
+          <li><a href="#trust-section" data-tr="Hakkımızda" data-en="About Us">Hakkımızda</a></li>
+          <li><a href="mailto:info@getcarswipe.com" data-tr="İletişim" data-en="Contact">İletişim</a></li>
+          <li><a href="#" onclick="showLegal('kariyer');return false;" data-tr="Kariyer" data-en="Careers">Kariyer</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Yasal</h4>
         <ul>
-          <li><a href="#" onclick="showKvkk();return false;">KVKK Aydınlatma Metni</a></li>
-          <li><a href="#">Gizlilik Politikası</a></li>
-          <li><a href="#">Kullanım Koşulları</a></li>
-          <li><a href="#">Çerez Politikası</a></li>
-          <li><a href="#">İlan Verme Kuralları</a></li>
-          <li><a href="#" style="color:#E53935;">İlan Şikâyet Et</a></li>
+          <li><a href="#" onclick="showLegal('kvkk');return false;">KVKK Aydınlatma Metni</a></li>
+          <li><a href="#" onclick="showLegal('gizlilik');return false;">Gizlilik Politikası</a></li>
+          <li><a href="#" onclick="showLegal('kullanim');return false;">Kullanım Koşulları</a></li>
+          <li><a href="#" onclick="showLegal('cerez');return false;">Çerez Politikası</a></li>
+          <li><a href="#" onclick="showLegal('ilan-kurallari');return false;">İlan Verme Kuralları</a></li>
+          <li><a href="#" onclick="showLegal('sikayet');return false;" style="color:#E53935;">İlan Şikâyet Et</a></li>
         </ul>
       </div>
       <div class="footer-col">
@@ -1132,6 +1131,17 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
         </ul>
       </div>
     </div>
+    <!-- Yasal Modal -->
+    <div id="legal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeLegal()">
+      <div style="background:#fff;border-radius:20px;max-width:640px;width:100%;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.25);">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px 16px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+          <h3 id="legal-title" style="font-size:17px;font-weight:800;color:#1a1a1a;margin:0;"></h3>
+          <button onclick="closeLegal()" style="background:none;border:none;font-size:22px;color:#999;cursor:pointer;line-height:1;">✕</button>
+        </div>
+        <div id="legal-body" style="padding:20px 24px;overflow-y:auto;font-size:14px;color:#444;line-height:1.8;"></div>
+      </div>
+    </div>
+
     <div class="footer-bottom">
       <div class="footer-copy">© 2026 <span style="color:#E53935">CarSwipe</span>. <span data-tr="Tüm hakları saklıdır." data-en="All rights reserved.">Tüm hakları saklıdır.</span></div>
       <div class="footer-socials">
@@ -1326,6 +1336,109 @@ function closeAuth() {
   document.getElementById('auth-overlay').style.display = 'none';
   document.body.style.overflow = '';
   clearError();
+}
+
+// ── YASAL MODAL ──
+const _legalContent = {
+  kvkk: {
+    title: 'KVKK Aydınlatma Metni',
+    body: `<p><strong>CarSwipe</strong> olarak kişisel verilerinizin güvenliği ve gizliliği konusunda azami özen göstermekteyiz. Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) kapsamında sizleri bilgilendirmek amacıyla hazırlanmıştır.</p>
+<p><strong>Veri Sorumlusu:</strong> CarSwipe Teknoloji A.Ş.</p>
+<p><strong>Toplanan Veriler:</strong> Ad, e-posta, telefon, araç bilgileri ve uygulama kullanım verileri.</p>
+<p><strong>İşleme Amaçları:</strong> Hizmet sunumu, güvenlik, iyileştirme ve yasal yükümlülükler.</p>
+<p><strong>Haklarınız:</strong> Verilerinize erişim, düzeltme, silme ve işlemeyi kısıtlama haklarına sahipsiniz. Başvurularınız için <a href="mailto:kvkk@getcarswipe.com" style="color:#E53935">kvkk@getcarswipe.com</a> adresine ulaşabilirsiniz.</p>
+<p style="color:#999;font-size:12px">Son güncelleme: Ocak 2026</p>`
+  },
+  gizlilik: {
+    title: 'Gizlilik Politikası',
+    body: `<p>CarSwipe, kullanıcı gizliliğini korumayı temel ilke olarak benimsemektedir.</p>
+<p><strong>Topladığımız Bilgiler:</strong> Kayıt sırasında verdiğiniz bilgiler, ilan verileri, mesajlaşma içerikleri ve uygulama kullanım istatistikleri.</p>
+<p><strong>Paylaşım:</strong> Kişisel verileriniz, açık rızanız olmadan üçüncü taraflarla paylaşılmaz. Yasal zorunluluk hallerinde ilgili kurumlarla paylaşım yapılabilir.</p>
+<p><strong>Güvenlik:</strong> Verileriniz SSL şifreleme ve güvenli sunucularda saklanmaktadır.</p>
+<p><strong>Çerezler:</strong> Oturum ve tercih çerezleri kullanılmaktadır. Tarayıcı ayarlarınızdan yönetebilirsiniz.</p>
+<p>Sorularınız için: <a href="mailto:privacy@getcarswipe.com" style="color:#E53935">privacy@getcarswipe.com</a></p>
+<p style="color:#999;font-size:12px">Son güncelleme: Ocak 2026</p>`
+  },
+  kullanim: {
+    title: 'Kullanım Koşulları',
+    body: `<p>CarSwipe platformunu kullanarak aşağıdaki koşulları kabul etmiş sayılırsınız.</p>
+<p><strong>Hesap:</strong> Gerçek bilgilerle kayıt olmanız zorunludur. Hesabınızın güvenliğinden siz sorumlusunuz.</p>
+<p><strong>İlanlar:</strong> Sahte, yanıltıcı veya yasadışı ilan vermek yasaktır. CarSwipe, uygunsuz ilanları kaldırma hakkını saklı tutar.</p>
+<p><strong>Mesajlaşma:</strong> Platform üzerinden gerçekleşen iletişimde saygılı dil kullanılması zorunludur. Taciz, spam ve dolandırıcılık kesinlikle yasaktır.</p>
+<p><strong>Sorumluluk:</strong> CarSwipe, kullanıcılar arasında gerçekleşen alım-satım işlemlerinden doğrudan sorumlu değildir.</p>
+<p>Sorularınız için: <a href="mailto:info@getcarswipe.com" style="color:#E53935">info@getcarswipe.com</a></p>
+<p style="color:#999;font-size:12px">Son güncelleme: Ocak 2026</p>`
+  },
+  cerez: {
+    title: 'Çerez Politikası',
+    body: `<p>CarSwipe, daha iyi bir kullanıcı deneyimi sunmak için çerez teknolojisinden yararlanmaktadır.</p>
+<p><strong>Zorunlu Çerezler:</strong> Oturum yönetimi ve güvenlik için kullanılır, devre dışı bırakılamaz.</p>
+<p><strong>Tercih Çerezleri:</strong> Dil ve görünüm tercihlerinizi hatırlamak için kullanılır.</p>
+<p><strong>Analitik Çerezler:</strong> Uygulama performansını iyileştirmek amacıyla anonim kullanım verileri toplanır.</p>
+<p>Çerezleri tarayıcı ayarlarınızdan yönetebilirsiniz. Zorunlu olmayan çerezleri reddetmeniz bazı özellikleri etkileyebilir.</p>
+<p style="color:#999;font-size:12px">Son güncelleme: Ocak 2026</p>`
+  },
+  'ilan-kurallari': {
+    title: 'İlan Verme Kuralları',
+    body: `<p>CarSwipe'ta ilan vermek için aşağıdaki kurallara uymanız gerekmektedir.</p>
+<p><strong>Genel Kurallar:</strong></p>
+<ul style="padding-left:18px;margin:8px 0">
+  <li>İlan bilgileri eksiksiz ve doğru olmalıdır.</li>
+  <li>Araç fotoğrafları gerçek ve güncel olmalıdır.</li>
+  <li>Fiyat gerçek satış fiyatını yansıtmalıdır.</li>
+  <li>Kişisel iletişim bilgileri ilan açıklamasına yazılamaz.</li>
+</ul>
+<p><strong>Yasak İçerikler:</strong></p>
+<ul style="padding-left:18px;margin:8px 0">
+  <li>Sahte, hasar gizlenen veya çalıntı araç ilanları</li>
+  <li>Komisyoncu ilanları (sahibinden ilanı görünümünde)</li>
+  <li>Mükerrer ilanlar</li>
+</ul>
+<p>Kurallara aykırı ilanlar uyarı yapılmaksızın kaldırılır ve hesap askıya alınabilir.</p>
+<p style="color:#999;font-size:12px">Son güncelleme: Ocak 2026</p>`
+  },
+  sikayet: {
+    title: 'İlan Şikâyet Et',
+    body: `<p>Kurallara aykırı veya şüpheli bir ilan mı gördünüz? Bize bildirin, en kısa sürede inceleyelim.</p>
+<p><strong>Şikâyet Nedenleri:</strong></p>
+<ul style="padding-left:18px;margin:8px 0">
+  <li>Sahte veya yanıltıcı ilan</li>
+  <li>Çalıntı araç şüphesi</li>
+  <li>Hasar gizleme</li>
+  <li>Uygunsuz içerik</li>
+  <li>Dolandırıcılık girişimi</li>
+</ul>
+<p>Şikâyetlerinizi aşağıdaki e-posta adresine iletebilirsiniz:</p>
+<p><a href="mailto:sikayet@getcarswipe.com" style="color:#E53935;font-weight:700">sikayet@getcarswipe.com</a></p>
+<p style="font-size:13px;color:#888">İlan numarasını, şikâyet nedeninizi ve varsa ekran görüntüsünü eklemeniz süreci hızlandırır.</p>`
+  },
+  kariyer: {
+    title: 'Kariyer',
+    body: `<p>CarSwipe büyüyor ve takımımıza katılacak yetenekli insanlar arıyoruz.</p>
+<p><strong>Açık Pozisyonlar:</strong></p>
+<ul style="padding-left:18px;margin:8px 0">
+  <li>Senior React Native Geliştirici</li>
+  <li>Makine Öğrenmesi Mühendisi</li>
+  <li>Ürün Tasarımcısı (UI/UX)</li>
+  <li>İçerik & Pazarlama Uzmanı</li>
+</ul>
+<p>CV ve portfolyonuzu aşağıdaki adrese gönderin:</p>
+<p><a href="mailto:kariyer@getcarswipe.com" style="color:#E53935;font-weight:700">kariyer@getcarswipe.com</a></p>
+<p style="font-size:13px;color:#888">Konu satırına başvurduğunuz pozisyonu yazınız.</p>`
+  }
+};
+
+function showLegal(type) {
+  const c = _legalContent[type];
+  if (!c) return;
+  document.getElementById('legal-title').textContent = c.title;
+  document.getElementById('legal-body').innerHTML = c.body;
+  document.getElementById('legal-overlay').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeLegal() {
+  document.getElementById('legal-overlay').style.display = 'none';
+  document.body.style.overflow = '';
 }
 document.getElementById('auth-overlay').addEventListener('click', function(e) {
   if (e.target === this) closeAuth();
