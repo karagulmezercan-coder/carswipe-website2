@@ -2119,9 +2119,10 @@ function initIlanVerSelects() {
   document.getElementById('il-takas').value = '';
   document.querySelectorAll('.il-takas-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('il-color-diger').style.display = 'none';
-  ['il-km','il-price','il-trim','il-desc','il-ekspertiz','il-tramer','il-boya-durum','il-boya-detail'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  ['il-km','il-price','il-trim','il-desc','il-ekspertiz','il-tramer','il-tramer-detail','il-boya-durum','il-boya-detail'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   ['il-ekspertiz-var','il-ekspertiz-yok','il-tramer-var','il-tramer-yok','il-boya-yok','il-boya-var'].forEach(id => { const el=document.getElementById(id); if(el) el.classList.remove('selected'); });
   const bd = document.getElementById('il-boya-detail'); if(bd) bd.style.display='none';
+  const td = document.getElementById('il-tramer-detail-wrap'); if(td) td.style.display='none';
 }
 
 function ilanModelUpdate() {
@@ -2420,6 +2421,7 @@ async function submitListing() {
       takas:  document.getElementById('il-takas').value,
       ekspertiz: document.getElementById('il-ekspertiz').value || '',
       tramer: document.getElementById('il-tramer').value || '',
+      tramerDetay: document.getElementById('il-tramer-detail').value.trim() || '',
       boyaDurum: document.getElementById('il-boya-durum').value || '',
       boyaDetay: document.getElementById('il-boya-detail').value || '',
       vasita: document.getElementById('il-vasita').value,
@@ -3402,10 +3404,13 @@ document.addEventListener('keydown', e => {
       <div>
         <span class="il-label">TRAMER KAYDI</span>
         <div style="display:flex;gap:8px;margin-top:2px;">
-          <button class="il-takas-btn" id="il-tramer-var" onclick="selectIlanBtn('il-tramer','Var','il-tramer-var','il-tramer-yok')">Var</button>
-          <button class="il-takas-btn" id="il-tramer-yok" onclick="selectIlanBtn('il-tramer','Yok','il-tramer-var','il-tramer-yok')">Yok</button>
+          <button class="il-takas-btn" id="il-tramer-var" onclick="selectIlanBtn('il-tramer','Var','il-tramer-var','il-tramer-yok');document.getElementById('il-tramer-detail-wrap').style.display='block'">Var</button>
+          <button class="il-takas-btn" id="il-tramer-yok" onclick="selectIlanBtn('il-tramer','Yok','il-tramer-var','il-tramer-yok');document.getElementById('il-tramer-detail-wrap').style.display='none';document.getElementById('il-tramer-detail').value=''">Yok</button>
         </div>
         <input type="hidden" id="il-tramer" value="">
+        <div id="il-tramer-detail-wrap" style="display:none;margin-top:10px;">
+          <textarea id="il-tramer-detail" placeholder="Tramer detaylarını açıklayın… (örn: Sol ön kapı bölgesi 8.500₺ hasar, orijinal parça değişimi yapılmıştır.)" style="width:100%;min-height:80px;border:1.5px solid #ddd;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;resize:vertical;outline:none;box-sizing:border-box;color:#1a1a1a;" onfocus="this.style.borderColor='#E53935'" onblur="this.style.borderColor='#ddd'"></textarea>
+        </div>
       </div>
     </div>
 
@@ -3417,7 +3422,7 @@ document.addEventListener('keydown', e => {
         <button class="il-takas-btn" id="il-boya-var" onclick="selectIlanBtn('il-boya-durum','Var','il-boya-yok','il-boya-var');document.getElementById('il-boya-detail').style.display='block'">Var</button>
       </div>
       <input type="hidden" id="il-boya-durum" value="">
-      <input id="il-boya-detail" type="text" class="il-input" placeholder="Hangi parçalar? (örn: Sol ön kapı, Tampon)" style="display:none;" oninput="ilanFieldChanged('il-boya-detail')">
+      <textarea id="il-boya-detail" placeholder="Boyalı veya değişen parçaları açıklayın… (örn: Sol ön kapı boyalı, ön tampon değişmiş, motor kaputu özgün değil.)" style="display:none;width:100%;min-height:80px;border:1.5px solid #ddd;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;resize:vertical;outline:none;box-sizing:border-box;color:#1a1a1a;" onfocus="this.style.borderColor='#E53935'" onblur="this.style.borderColor='#ddd'" oninput="ilanFieldChanged('il-boya-detail')"></textarea>
     </div>
 
     <!-- Açıklama -->
@@ -3693,7 +3698,7 @@ function openDetail() {
   const eksEl = document.getElementById('detail-ekspertiz');
   if (eksEl) eksEl.textContent = c.ekspertiz || '—';
   const tramEl = document.getElementById('detail-tramer');
-  if (tramEl) tramEl.textContent = c.tramer || '—';
+  if (tramEl) tramEl.textContent = c.tramer === 'Var' && c.tramerDetay ? `Var (${c.tramerDetay})` : (c.tramer || '—');
   const boyaEl = document.getElementById('detail-boya');
   if (boyaEl) boyaEl.textContent = c.boyaDurum ? (c.boyaDurum === 'Var' && c.boyaDetay ? `Var (${c.boyaDetay})` : c.boyaDurum) : '—';
   document.getElementById('detail-loc2').textContent = c.location;
