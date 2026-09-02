@@ -542,11 +542,11 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
 <!-- ══ HERO ══ -->
 <section class="hero" style="display:flex;gap:60px;">
   <div class="hero-content">
-    <div class="hero-eyebrow">🚗 Yakında · Bildirim Al</div>
+    <div class="hero-eyebrow" data-tr="🚗 CarSwipe" data-en="🚗 CarSwipe">🚗 CarSwipe</div>
     <h1>Aradığın aracı uzun listelerde değil, <em>sana özel akışta</em> bul.</h1>
     <p class="hero-sub">CarSwipe, bütçene ve tercihlerine uygun araçları kaydırarak keşfetmeni sağlar. Beğendiğin araçları kaydet, detayları incele ve satıcıyla doğrudan iletişime geç.</p>
     <div class="hero-ctas">
-      <button class="btn-hero-primary" onclick="openEarlyAccess()">🔔 Çıkınca Bana Bildir</button>
+      <button class="btn-hero-primary" onclick="openEarlyAccess()" data-tr="📩 Abone Ol" data-en="📩 Subscribe">📩 Abone Ol</button>
       <button class="btn-hero-secondary" onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">Nasıl Çalışır?</button>
     </div>
     <!-- Erken erişim formu -->
@@ -1062,15 +1062,15 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
 
 <!-- ══ FINAL CTA ══ -->
 <section class="final-cta">
-  <p class="section-tag" style="text-align:center;margin-bottom:20px;">BİLDİRİM</p>
-  <h2>Çıktığında<br>seni haberdar edelim.</h2>
-  <p>E-postanı bırak, uygulama yayına girince sana bildireceğiz.</p>
+  <p class="section-tag" style="text-align:center;margin-bottom:20px;" data-tr="BÜLTEN" data-en="NEWSLETTER">BÜLTEN</p>
+  <h2 data-tr="Gelişmelerden haberdar ol." data-en="Stay in the loop.">Gelişmelerden haberdar ol.</h2>
+  <p data-tr="E-postanı bırak, yeniliklerden ilk sen haberdar ol." data-en="Leave your email, be the first to hear about updates.">E-postanı bırak, yeniliklerden ilk sen haberdar ol.</p>
   <div style="display:flex;gap:10px;max-width:460px;margin:32px auto 0;flex-wrap:wrap;justify-content:center;">
     <input id="final-early-email" type="email" placeholder="E-posta adresin" style="flex:1;min-width:220px;padding:14px 18px;border-radius:12px;border:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;font-size:14px;outline:none;" onfocus="this.style.borderColor='#fff'" onblur="this.style.borderColor='rgba(255,255,255,.25)'">
-    <button onclick="submitFinalAccess()" style="background:#E53935;color:#fff;font-size:15px;font-weight:700;padding:14px 24px;border-radius:12px;border:none;cursor:pointer;white-space:nowrap;">🔔 Bildir</button>
+    <button onclick="submitFinalAccess()" style="background:#E53935;color:#fff;font-size:15px;font-weight:700;padding:14px 24px;border-radius:12px;border:none;cursor:pointer;white-space:nowrap;" data-tr="📩 Abone Ol" data-en="📩 Subscribe">📩 Abone Ol</button>
   </div>
-  <div id="final-success" style="display:none;margin-top:16px;color:#81C784;font-weight:600;font-size:14px;">✓ Kaydedildi! Yayına girince sana haber vereceğiz.</div>
-  <p style="margin-top:16px;font-size:13px;opacity:.4;">Spam yok. İstediğin zaman çıkabilirsin.</p>
+  <div id="final-success" style="display:none;margin-top:16px;color:#81C784;font-weight:600;font-size:14px;" data-tr="✓ Abone oldun! Gelişmelerden haberdar edeceğiz." data-en="✓ Subscribed! We'll keep you updated.">✓ Abone oldun! Gelişmelerden haberdar edeceğiz.</div>
+  <p style="margin-top:16px;font-size:13px;opacity:.4;" data-tr="Spam yok. İstediğin zaman çıkabilirsin." data-en="No spam. Unsubscribe anytime.">Spam yok. İstediğin zaman çıkabilirsin.</p>
 </section>
 
 <!-- ══ FOOTER ══ -->
