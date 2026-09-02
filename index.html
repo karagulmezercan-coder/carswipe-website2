@@ -535,8 +535,7 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
   </ul>
   <div class="nav-right">
     <button class="lang-btn" onclick="toggleLang()" id="lang-toggle" data-tr="EN" data-en="TR">EN</button>
-    <button class="btn-ghost" onclick="openAuth()">Giriş Yap</button>
-    <button id="nav-auth-btn" class="btn-green" onclick="document.getElementById('seller-section').scrollIntoView({behavior:'smooth'})">Aracını Sat</button>
+    <button id="nav-auth-btn" class="btn-green" onclick="openAuth()">Giriş Yap</button>
   </div>
 </nav>
 
@@ -2487,7 +2486,7 @@ auth.onAuthStateChanged(user => {
     loadFirebaseListings();
   } else {
     btn.innerHTML = 'Aracını Sat';
-    btn.onclick = () => document.getElementById('seller-section').scrollIntoView({behavior:'smooth'});
+    btn.onclick = openAuth;
     btn.style.display = '';
     btn.style.alignItems = '';
     // Keşfet açıksa landing'e dön
