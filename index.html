@@ -58,15 +58,16 @@ button{cursor:pointer;font-family:inherit;border:none;outline:none}
 .phone-notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:60px;height:14px;background:#222;border-radius:8px;z-index:20;display:none}
 .phone-screen{position:absolute;inset:0;background:#f0ede8;display:flex;flex-direction:column}
 .card-stack{position:relative;flex:1;overflow:hidden}
-.car-card{position:absolute;inset:0;overflow:hidden;background:#e8e4df;animation:swipeCard 4s ease-in-out infinite}
-.car-card-2{animation-delay:2s;opacity:0}
+.car-card{position:absolute;inset:0;overflow:hidden;background:#e8e4df;animation:swipeRight 8s ease-in-out infinite;z-index:2}
+.car-card-2{animation:swipeLeft 8s ease-in-out infinite;animation-delay:4s;opacity:0;z-index:1}
 .car-card img{width:100%;height:100%;object-fit:cover;display:block}
 .car-info{background:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.5) 40%,rgba(0,0,0,.9) 100%);position:absolute;bottom:0;left:0;right:0;padding:50px 16px 16px}
 .car-info-name{font-size:15px;font-weight:900;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.5)}
 .car-info-price{font-size:14px;font-weight:800;color:#4CAF50;margin-top:3px}
 .car-info-loc{font-size:11px;color:rgba(255,255,255,.8);margin-top:5px}
 .car-info-from{font-size:10px;color:rgba(255,255,255,.55);margin-top:3px}
-.card-label-like{position:absolute;top:24px;left:14px;background:#43A047;color:#fff;font-size:11px;font-weight:800;border-radius:6px;padding:3px 8px;border:2px solid #fff;letter-spacing:1px;transform:rotate(-10deg);opacity:0;animation:showLike 4s ease-in-out infinite;z-index:10}
+.card-label-like{position:absolute;top:24px;left:14px;background:#43A047;color:#fff;font-size:11px;font-weight:800;border-radius:6px;padding:3px 8px;border:2px solid #fff;letter-spacing:1px;transform:rotate(-10deg);opacity:0;animation:showLike 8s ease-in-out infinite;z-index:10}
+.card-label-pass{position:absolute;top:24px;right:14px;background:#E53935;color:#fff;font-size:11px;font-weight:800;border-radius:6px;padding:3px 8px;border:2px solid #fff;letter-spacing:1px;transform:rotate(10deg);opacity:0;animation:showPass 8s ease-in-out infinite;animation-delay:4s;z-index:10}
 /* ── ACTION BAR ── */
 .pscreen-actions-bar{background:#f5f5f5;padding:12px 10px;display:flex;justify-content:space-around;align-items:center;flex-shrink:0}
 .pac-btn2{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:transparent;cursor:pointer}
@@ -75,18 +76,29 @@ button{cursor:pointer;font-family:inherit;border:none;outline:none}
 .pac-like2{background:#F43F5E;border:2.5px solid #F43F5E;color:#fff;font-size:20px}
 .pac-super2{border:2.5px solid #3B82F6;color:#3B82F6;font-size:15px}
 
-@keyframes swipeCard{
-  0%,55%{transform:none;opacity:1}
-  70%{transform:translateX(120%) rotate(15deg);opacity:0}
-  71%{transform:translateX(-20%) rotate(-5deg);opacity:0;z-index:5}
-  80%{opacity:1}
-  100%{transform:none;opacity:1}
+@keyframes swipeRight{
+  0%{transform:none;opacity:0}
+  8%{opacity:1}
+  42%{transform:none;opacity:1}
+  54%{transform:translateX(130%) rotate(18deg);opacity:0}
+  56%,100%{transform:none;opacity:0}
+}
+@keyframes swipeLeft{
+  0%{transform:none;opacity:0}
+  8%{opacity:1}
+  42%{transform:none;opacity:1}
+  54%{transform:translateX(-130%) rotate(-18deg);opacity:0}
+  56%,100%{transform:none;opacity:0}
 }
 @keyframes showLike{
-  0%,40%{opacity:0}
-  50%,65%{opacity:1}
-  70%{opacity:0}
-  100%{opacity:0}
+  0%,28%{opacity:0}
+  36%,48%{opacity:1}
+  56%,100%{opacity:0}
+}
+@keyframes showPass{
+  0%,28%{opacity:0}
+  36%,48%{opacity:1}
+  56%,100%{opacity:0}
 }
 
 /* ── SECTION BASE ── */
@@ -603,6 +615,7 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
               <div class="car-info-loc">📍 İstanbul · Üsküdar · 28.000 km</div>
               <div class="car-info-from">Galeriden</div>
             </div>
+            <div class="card-label-pass">GEÇ</div>
           </div>
         </div>
         <div class="pscreen-actions-bar">
