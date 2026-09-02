@@ -536,7 +536,7 @@ footer{background:#E8E3D9;border-top:1px solid rgba(255,255,255,.06);padding:60p
   <div class="nav-right">
     <button class="lang-btn" onclick="toggleLang()" id="lang-toggle" data-tr="EN" data-en="TR">EN</button>
     <button class="btn-ghost" onclick="openAuth()">Giriş Yap</button>
-    <button class="btn-green" onclick="document.getElementById('seller-section').scrollIntoView({behavior:'smooth'})">Aracını Sat</button>
+    <button id="nav-auth-btn" class="btn-green" onclick="document.getElementById('seller-section').scrollIntoView({behavior:'smooth'})">Aracını Sat</button>
   </div>
 </nav>
 
@@ -2471,7 +2471,7 @@ function doSignOut() {
 
 // ── AUTH STATE ──
 auth.onAuthStateChanged(user => {
-  const btn = document.querySelector('.btn-green');
+  const btn = document.getElementById('nav-auth-btn');
   if (!btn) return;
   if (user) {
     const name = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
@@ -2486,8 +2486,10 @@ auth.onAuthStateChanged(user => {
     initNotifications();
     loadFirebaseListings();
   } else {
-    btn.innerHTML = 'Oturum Aç';
-    btn.onclick = openAuth;
+    btn.innerHTML = 'Aracını Sat';
+    btn.onclick = () => document.getElementById('seller-section').scrollIntoView({behavior:'smooth'});
+    btn.style.display = '';
+    btn.style.alignItems = '';
     // Keşfet açıksa landing'e dön
     const av = document.getElementById('app-view');
     if (av && av.style.display === 'flex' && typeof showLanding === 'function') showLanding();
