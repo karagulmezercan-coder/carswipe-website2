@@ -2276,6 +2276,50 @@ function selectTakas(val) {
   });
 }
 
+function openDegerlemeModal() {
+  document.getElementById('deg-marka').value = '';
+  document.getElementById('deg-model').value = '';
+  document.getElementById('deg-yil').value = '';
+  document.getElementById('deg-km').value = '';
+  document.getElementById('deg-loading').style.display = 'none';
+  document.getElementById('deg-result').style.display = 'none';
+  document.getElementById('deg-error').style.display = 'none';
+  document.getElementById('degerleme-modal').style.display = 'flex';
+}
+function closeDegerlemeModal() {
+  document.getElementById('degerleme-modal').style.display = 'none';
+}
+function runDegerleme() {
+  document.getElementById('deg-loading').style.display = 'block';
+  document.getElementById('deg-result').style.display = 'none';
+  document.getElementById('deg-error').style.display = 'none';
+  const params = new URLSearchParams({
+    marka: document.getElementById('deg-marka').value,
+    model_tam: document.getElementById('deg-model').value,
+    yil: document.getElementById('deg-yil').value,
+    km: document.getElementById('deg-km').value,
+    vites_tipi: 'Manuel',
+  });
+  fetch('https://carswipe-website2.onrender.com/predict?' + params)
+    .then(r => r.json())
+    .then(j => {
+      document.getElementById('deg-loading').style.display = 'none';
+      if (j.tahmin_tl) {
+        document.getElementById('deg-price').textContent = j.tahmin_tl.toLocaleString('tr-TR') + ' ₺';
+        document.getElementById('deg-band').textContent = 'Bant: ' + j.alt_bant_tl.toLocaleString('tr-TR') + ' ₺ – ' + j.ust_bant_tl.toLocaleString('tr-TR') + ' ₺';
+        document.getElementById('deg-result').style.display = 'block';
+      } else {
+        document.getElementById('deg-error').textContent = j.detail || 'Tahmin alınamadı';
+        document.getElementById('deg-error').style.display = 'block';
+      }
+    })
+    .catch(() => {
+      document.getElementById('deg-loading').style.display = 'none';
+      document.getElementById('deg-error').textContent = 'Sunucuya bağlanılamadı.';
+      document.getElementById('deg-error').style.display = 'block';
+    });
+}
+
 function openIlanVer() {
   if (!auth.currentUser) { alert('İlan vermek için giriş yapmalısın.'); return; }
   _ilanPhotos = [];
@@ -2646,6 +2690,11 @@ document.addEventListener('keydown', e => {
       <span style="font-size:18px;">+</span> İlan Ver
     </button>
   </div>
+  <div style="margin:0 8px 12px;">
+    <button onclick="openDegerlemeModal()" style="width:100%;background:#1565C0;color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+      🤖 Araç Değerleme
+    </button>
+  </div>
   <div style="flex:1"></div>
   <a class="nav-item" onclick="doSignOut()" style="color:#E53935"><div class="nav-icon" style="color:#E53935">⏻</div>Çıkış Yap</a>
 </div>
@@ -2819,23 +2868,6 @@ document.addEventListener('keydown', e => {
           <div class="detail-row"><span class="detail-row-lbl">Kimden</span><span class="detail-row-val" id="detail-seller"></span><span id="detail-seller-verified" style="display:none;margin-left:8px;background:#E8F5E9;color:#2E7D32;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;align-items:center;gap:3px;">✅ Doğrulandı</span></div>
           <div class="detail-row"><span class="detail-row-lbl">Konum</span><span class="detail-row-val" id="detail-loc2"></span></div>
         </div>
-        <!-- Yapay Zeka Değerleme Kartı -->
-        <div id="ai-degerleme-card" style="margin:14px 0 4px;border-radius:10px;overflow:hidden;border:1px solid #e0e0e0;background:#fff;">
-          <div style="background:#1565C0;padding:10px 14px;display:flex;align-items:center;">
-            <span style="color:#fff;font-weight:700;font-size:13px;flex:1;">🤖 Yapay Zeka Fiyat Tahmini</span>
-          </div>
-          <div id="ai-deg-btn-wrap" style="padding:14px;text-align:center;">
-            <button onclick="fetchAiDegerleme()" style="background:#1565C0;color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:700;cursor:pointer;">Tahmini Değeri Hesapla</button>
-          </div>
-          <div id="ai-deg-loading" style="display:none;padding:14px;text-align:center;color:#888;font-size:13px;">Hesaplanıyor...</div>
-          <div id="ai-deg-result" style="display:none;padding:14px;text-align:center;background:#E3F2FD;border-top:1px solid #e0e0e0;">
-            <div style="font-size:13px;color:#555;margin-bottom:4px;">Tahmini Değer</div>
-            <div id="ai-deg-price" style="font-size:28px;font-weight:900;color:#1565C0;"></div>
-            <div id="ai-deg-band" style="font-size:12px;color:#666;margin-top:6px;"></div>
-          </div>
-          <div id="ai-deg-error" style="display:none;padding:14px;text-align:center;color:#C62828;font-size:12px;background:#FFEBEE;border-top:1px solid #e0e0e0;"></div>
-        </div>
-
         <!-- TAB: Açıklama -->
         <div id="tab-desc" class="detail-rows" style="display:none; padding:14px; font-size:13px; color:#555; line-height:1.7;">
           Araç bakımlı ve hasarsızdır. Tüm muayeneleri yapılmış olup eksiksiZ teslim edilecektir. Takas ve kredi işlemleri yapılmaktadır. Detaylı bilgi için arayınız.
@@ -3365,6 +3397,43 @@ document.addEventListener('keydown', e => {
     <div style="padding:16px 20px;border-top:1px solid #eee;flex-shrink:0;">
       <button onclick="document.getElementById('kvkk-overlay').style.display='none'" style="width:100%;background:#E53935;color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">Anladım</button>
     </div>
+  </div>
+</div>
+
+<!-- ═══ ARAÇ DEĞERLEME MODAL ═══ -->
+<div id="degerleme-modal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.5);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:28px;width:90%;max-width:420px;box-shadow:0 8px 40px rgba(0,0,0,.2);">
+    <div style="display:flex;align-items:center;margin-bottom:20px;">
+      <div style="flex:1;font-size:17px;font-weight:800;color:#1565C0;">🤖 Araç Değerleme</div>
+      <button onclick="closeDegerlemeModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#888;">✕</button>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;font-weight:700;color:#333;">Marka</label>
+      <input id="deg-marka" placeholder="ör. Renault" style="width:100%;margin-top:4px;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
+    </div>
+    <div style="margin-bottom:4px;">
+      <label style="font-size:12px;font-weight:700;color:#333;">Model (tam adı)</label>
+      <input id="deg-model" placeholder="ör. Clio 1.0 TCe Touch" style="width:100%;margin-top:4px;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
+    </div>
+    <div style="font-size:11px;color:#aaa;margin-bottom:12px;">Sahibinden.com'daki tam model adını yazın</div>
+    <div style="display:flex;gap:10px;margin-bottom:20px;">
+      <div style="flex:1;">
+        <label style="font-size:12px;font-weight:700;color:#333;">Yıl</label>
+        <input id="deg-yil" placeholder="ör. 2020" type="number" style="width:100%;margin-top:4px;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
+      </div>
+      <div style="flex:1;">
+        <label style="font-size:12px;font-weight:700;color:#333;">KM</label>
+        <input id="deg-km" placeholder="ör. 85000" type="number" style="width:100%;margin-top:4px;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
+      </div>
+    </div>
+    <button onclick="runDegerleme()" style="width:100%;background:#1565C0;color:#fff;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;">Tahmini Hesapla</button>
+    <div id="deg-loading" style="display:none;text-align:center;color:#888;font-size:13px;margin-top:14px;">Hesaplanıyor...</div>
+    <div id="deg-result" style="display:none;margin-top:16px;padding:16px;background:#E3F2FD;border-radius:10px;text-align:center;">
+      <div style="font-size:13px;color:#555;margin-bottom:4px;">Tahmini Değer</div>
+      <div id="deg-price" style="font-size:30px;font-weight:900;color:#1565C0;"></div>
+      <div id="deg-band" style="font-size:12px;color:#666;margin-top:6px;"></div>
+    </div>
+    <div id="deg-error" style="display:none;margin-top:14px;padding:12px;background:#FFEBEE;border-radius:8px;text-align:center;color:#C62828;font-size:13px;"></div>
   </div>
 </div>
 
