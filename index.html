@@ -3919,11 +3919,6 @@ function fetchAiDegerleme() {
 
 function openDetail() {
   const c = activeCars[idx];
-  // Değerleme sıfırla
-  document.getElementById('ai-deg-btn-wrap').style.display = 'block';
-  document.getElementById('ai-deg-loading').style.display = 'none';
-  document.getElementById('ai-deg-result').style.display = 'none';
-  document.getElementById('ai-deg-error').style.display = 'none';
   detailPhotoIdx = 0;
   document.getElementById('detail-img').src = carPhotoUrl(c, 0, 700);
   document.getElementById('detail-name').textContent = c.name + ' ' + c.year;
