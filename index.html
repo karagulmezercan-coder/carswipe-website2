@@ -1346,7 +1346,7 @@ const _legalContent = {
 <p><strong>Veri Sorumlusu:</strong> CarSwipe Teknoloji A.Ş.</p>
 <p><strong>Toplanan Veriler:</strong> Ad, e-posta, telefon, araç bilgileri ve uygulama kullanım verileri.</p>
 <p><strong>İşleme Amaçları:</strong> Hizmet sunumu, güvenlik, iyileştirme ve yasal yükümlülükler.</p>
-<p><strong>Haklarınız:</strong> Verilerinize erişim, düzeltme, silme ve işlemeyi kısıtlama haklarına sahipsiniz. Başvurularınız için <a href="mailto:kvkk@getcarswipe.com" style="color:#E53935">kvkk@getcarswipe.com</a> adresine ulaşabilirsiniz.</p>
+<p><strong>Haklarınız:</strong> Verilerinize erişim, düzeltme, silme ve işlemeyi kısıtlama haklarına sahipsiniz. Başvurularınız için <a href="mailto:info@getcarswipe.com" style="color:#E53935">info@getcarswipe.com</a> adresine ulaşabilirsiniz.</p>
 <p style="color:#999;font-size:12px">Son güncelleme: Ocak 2026</p>`
   },
   gizlilik: {
@@ -1356,7 +1356,7 @@ const _legalContent = {
 <p><strong>Paylaşım:</strong> Kişisel verileriniz, açık rızanız olmadan üçüncü taraflarla paylaşılmaz. Yasal zorunluluk hallerinde ilgili kurumlarla paylaşım yapılabilir.</p>
 <p><strong>Güvenlik:</strong> Verileriniz SSL şifreleme ve güvenli sunucularda saklanmaktadır.</p>
 <p><strong>Çerezler:</strong> Oturum ve tercih çerezleri kullanılmaktadır. Tarayıcı ayarlarınızdan yönetebilirsiniz.</p>
-<p>Sorularınız için: <a href="mailto:privacy@getcarswipe.com" style="color:#E53935">privacy@getcarswipe.com</a></p>
+<p>Sorularınız için: <a href="mailto:info@getcarswipe.com" style="color:#E53935">info@getcarswipe.com</a></p>
 <p style="color:#999;font-size:12px">Son güncelleme: Ocak 2026</p>`
   },
   kullanim: {
@@ -1409,7 +1409,7 @@ const _legalContent = {
   <li>Dolandırıcılık girişimi</li>
 </ul>
 <p>Şikâyetlerinizi aşağıdaki e-posta adresine iletebilirsiniz:</p>
-<p><a href="mailto:sikayet@getcarswipe.com" style="color:#E53935;font-weight:700">sikayet@getcarswipe.com</a></p>
+<p><a href="mailto:info@getcarswipe.com" style="color:#E53935;font-weight:700">info@getcarswipe.com</a></p>
 <p style="font-size:13px;color:#888">İlan numarasını, şikâyet nedeninizi ve varsa ekran görüntüsünü eklemeniz süreci hızlandırır.</p>`
   },
   kariyer: {
@@ -1423,7 +1423,7 @@ const _legalContent = {
   <li>İçerik & Pazarlama Uzmanı</li>
 </ul>
 <p>CV ve portfolyonuzu aşağıdaki adrese gönderin:</p>
-<p><a href="mailto:kariyer@getcarswipe.com" style="color:#E53935;font-weight:700">kariyer@getcarswipe.com</a></p>
+<p><a href="mailto:info@getcarswipe.com" style="color:#E53935;font-weight:700">info@getcarswipe.com</a></p>
 <p style="font-size:13px;color:#888">Konu satırına başvurduğunuz pozisyonu yazınız.</p>`
   }
 };
@@ -2819,6 +2819,23 @@ document.addEventListener('keydown', e => {
           <div class="detail-row"><span class="detail-row-lbl">Kimden</span><span class="detail-row-val" id="detail-seller"></span><span id="detail-seller-verified" style="display:none;margin-left:8px;background:#E8F5E9;color:#2E7D32;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;align-items:center;gap:3px;">✅ Doğrulandı</span></div>
           <div class="detail-row"><span class="detail-row-lbl">Konum</span><span class="detail-row-val" id="detail-loc2"></span></div>
         </div>
+        <!-- Yapay Zeka Değerleme Kartı -->
+        <div id="ai-degerleme-card" style="margin:14px 0 4px;border-radius:10px;overflow:hidden;border:1px solid #e0e0e0;background:#fff;">
+          <div style="background:#1565C0;padding:10px 14px;display:flex;align-items:center;">
+            <span style="color:#fff;font-weight:700;font-size:13px;flex:1;">🤖 Yapay Zeka Fiyat Tahmini</span>
+          </div>
+          <div id="ai-deg-btn-wrap" style="padding:14px;text-align:center;">
+            <button onclick="fetchAiDegerleme()" style="background:#1565C0;color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:700;cursor:pointer;">Tahmini Değeri Hesapla</button>
+          </div>
+          <div id="ai-deg-loading" style="display:none;padding:14px;text-align:center;color:#888;font-size:13px;">Hesaplanıyor...</div>
+          <div id="ai-deg-result" style="display:none;padding:14px;text-align:center;background:#E3F2FD;border-top:1px solid #e0e0e0;">
+            <div style="font-size:13px;color:#555;margin-bottom:4px;">Tahmini Değer</div>
+            <div id="ai-deg-price" style="font-size:28px;font-weight:900;color:#1565C0;"></div>
+            <div id="ai-deg-band" style="font-size:12px;color:#666;margin-top:6px;"></div>
+          </div>
+          <div id="ai-deg-error" style="display:none;padding:14px;text-align:center;color:#C62828;font-size:12px;background:#FFEBEE;border-top:1px solid #e0e0e0;"></div>
+        </div>
+
         <!-- TAB: Açıklama -->
         <div id="tab-desc" class="detail-rows" style="display:none; padding:14px; font-size:13px; color:#555; line-height:1.7;">
           Araç bakımlı ve hasarsızdır. Tüm muayeneleri yapılmış olup eksiksiZ teslim edilecektir. Takas ve kredi işlemleri yapılmaktadır. Detaylı bilgi için arayınız.
@@ -3794,8 +3811,50 @@ function nextPhoto() {
 let detailPhotoIdx = 0;
 let galleryPhotoIdx = 0;
 
+function fetchAiDegerleme() {
+  const c = activeCars[idx];
+  document.getElementById('ai-deg-btn-wrap').style.display = 'none';
+  document.getElementById('ai-deg-loading').style.display = 'block';
+  document.getElementById('ai-deg-result').style.display = 'none';
+  document.getElementById('ai-deg-error').style.display = 'none';
+  const km = (c.km || '').toString().replace(/\D/g, '') || '0';
+  const yil = (c.year || '').toString().replace(/\D/g, '') || '2020';
+  const params = new URLSearchParams({
+    marka: c.brand || '',
+    model_tam: c.model || '',
+    yil: yil,
+    km: km,
+    vites_tipi: c.gear || 'Manuel',
+  });
+  fetch('https://carswipe-website2.onrender.com/predict?' + params)
+    .then(r => r.json())
+    .then(j => {
+      document.getElementById('ai-deg-loading').style.display = 'none';
+      if (j.tahmin_tl) {
+        document.getElementById('ai-deg-price').textContent = j.tahmin_tl.toLocaleString('tr-TR') + ' ₺';
+        document.getElementById('ai-deg-band').textContent = 'Bant: ' + j.alt_bant_tl.toLocaleString('tr-TR') + ' ₺ – ' + j.ust_bant_tl.toLocaleString('tr-TR') + ' ₺';
+        document.getElementById('ai-deg-result').style.display = 'block';
+      } else {
+        document.getElementById('ai-deg-error').textContent = j.detail || 'Tahmin alınamadı';
+        document.getElementById('ai-deg-error').style.display = 'block';
+        document.getElementById('ai-deg-btn-wrap').style.display = 'block';
+      }
+    })
+    .catch(() => {
+      document.getElementById('ai-deg-loading').style.display = 'none';
+      document.getElementById('ai-deg-error').textContent = 'Sunucuya bağlanılamadı.';
+      document.getElementById('ai-deg-error').style.display = 'block';
+      document.getElementById('ai-deg-btn-wrap').style.display = 'block';
+    });
+}
+
 function openDetail() {
   const c = activeCars[idx];
+  // Değerleme sıfırla
+  document.getElementById('ai-deg-btn-wrap').style.display = 'block';
+  document.getElementById('ai-deg-loading').style.display = 'none';
+  document.getElementById('ai-deg-result').style.display = 'none';
+  document.getElementById('ai-deg-error').style.display = 'none';
   detailPhotoIdx = 0;
   document.getElementById('detail-img').src = carPhotoUrl(c, 0, 700);
   document.getElementById('detail-name').textContent = c.name + ' ' + c.year;
