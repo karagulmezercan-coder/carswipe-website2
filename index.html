@@ -2277,14 +2277,31 @@ function selectTakas(val) {
 }
 
 function openDegerlemeModal() {
-  document.getElementById('deg-marka').value = '';
-  document.getElementById('deg-model').value = '';
+  // Marka listesini doldur
+  const markaEl = document.getElementById('deg-marka');
+  markaEl.innerHTML = '<option value="">Seçiniz</option>';
+  Object.keys(MODELLER).sort().forEach(m => {
+    markaEl.innerHTML += `<option value="${m}">${m}</option>`;
+  });
+  document.getElementById('deg-model').innerHTML = '<option value="">Önce marka seçin</option>';
   document.getElementById('deg-yil').value = '';
   document.getElementById('deg-km').value = '';
   document.getElementById('deg-loading').style.display = 'none';
   document.getElementById('deg-result').style.display = 'none';
   document.getElementById('deg-error').style.display = 'none';
   document.getElementById('degerleme-modal').style.display = 'flex';
+}
+function degerlemeMarkaUpdate() {
+  const marka = document.getElementById('deg-marka').value;
+  const modelEl = document.getElementById('deg-model');
+  modelEl.innerHTML = '<option value="">Seçiniz</option>';
+  if (marka && MODELLER[marka]) {
+    MODELLER[marka].forEach(m => {
+      modelEl.innerHTML += `<option value="${m}">${m}</option>`;
+    });
+  }
+  document.getElementById('deg-result').style.display = 'none';
+  document.getElementById('deg-error').style.display = 'none';
 }
 function closeDegerlemeModal() {
   document.getElementById('degerleme-modal').style.display = 'none';
@@ -2293,9 +2310,12 @@ function runDegerleme() {
   document.getElementById('deg-loading').style.display = 'block';
   document.getElementById('deg-result').style.display = 'none';
   document.getElementById('deg-error').style.display = 'none';
+  const marka = document.getElementById('deg-marka').value;
+  const model = document.getElementById('deg-model').value;
+  const model_tam = model;
   const params = new URLSearchParams({
-    marka: document.getElementById('deg-marka').value,
-    model_tam: document.getElementById('deg-model').value,
+    marka: marka,
+    model_tam: model_tam,
     yil: document.getElementById('deg-yil').value,
     km: document.getElementById('deg-km').value,
     vites_tipi: 'Manuel',
@@ -3409,13 +3429,16 @@ document.addEventListener('keydown', e => {
     </div>
     <div style="margin-bottom:12px;">
       <label style="font-size:12px;font-weight:700;color:#333;">Marka</label>
-      <input id="deg-marka" placeholder="ör. Renault" style="width:100%;margin-top:4px;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
+      <select id="deg-marka" onchange="degerlemeMarkaUpdate()" style="width:100%;margin-top:4px;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;background:#fff;">
+        <option value="">Seçiniz</option>
+      </select>
     </div>
-    <div style="margin-bottom:4px;">
-      <label style="font-size:12px;font-weight:700;color:#333;">Model (tam adı)</label>
-      <input id="deg-model" placeholder="ör. Clio 1.0 TCe Touch" style="width:100%;margin-top:4px;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;font-weight:700;color:#333;">Model</label>
+      <select id="deg-model" style="width:100%;margin-top:4px;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;background:#fff;">
+        <option value="">Önce marka seçin</option>
+      </select>
     </div>
-    <div style="font-size:11px;color:#aaa;margin-bottom:12px;">Sahibinden.com'daki tam model adını yazın</div>
     <div style="display:flex;gap:10px;margin-bottom:20px;">
       <div style="flex:1;">
         <label style="font-size:12px;font-weight:700;color:#333;">Yıl</label>
