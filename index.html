@@ -2328,6 +2328,25 @@ function closeDegerlemeModal() {
   document.getElementById('degerleme-modal').style.display = 'none';
 }
 function runDegerleme() {
+  // Validation
+  const fields = [
+    {id:'deg-marka', el: document.getElementById('deg-marka')},
+    {id:'deg-model', el: document.getElementById('deg-model')},
+    {id:'deg-yil',  el: document.getElementById('deg-yil')},
+    {id:'deg-km',   el: document.getElementById('deg-km')},
+    {id:'deg-hp',   el: document.getElementById('deg-hp')},
+  ];
+  let valid = true;
+  fields.forEach(f => {
+    if (!f.el.value || f.el.value === '') {
+      f.el.style.border = '2px solid #e53935';
+      valid = false;
+    } else {
+      f.el.style.border = '1px solid #ddd';
+    }
+  });
+  if (!valid) return;
+
   document.getElementById('deg-loading').style.display = 'block';
   document.getElementById('deg-result').style.display = 'none';
   document.getElementById('deg-error').style.display = 'none';
