@@ -2335,12 +2335,14 @@ function runDegerleme() {
   const model = document.getElementById('deg-model').value;
   const trim = (document.getElementById('deg-trim').value || '').trim();
   const model_tam = trim ? `${model} ${trim}` : model;
+  const hp = parseInt(document.getElementById('deg-hp').value) || 0;
   const params = new URLSearchParams({
     marka: marka,
     model_tam: model_tam,
     yil: document.getElementById('deg-yil').value,
     km: document.getElementById('deg-km').value,
     vites_tipi: 'Manuel',
+    motor_gucu: hp,
   });
   fetch('https://carswipe-website2.onrender.com/predict?' + params)
     .then(r => r.json())
@@ -3467,7 +3469,7 @@ document.addEventListener('keydown', e => {
           </select>
         </div>
     </div>
-    <div style="display:flex;gap:10px;margin-bottom:20px;">
+    <div style="display:flex;gap:10px;margin-bottom:12px;">
       <div style="flex:1;">
         <label style="font-size:12px;font-weight:700;color:#333;">Yıl</label>
         <input id="deg-yil" placeholder="ör. 2020" type="number" style="width:100%;margin-top:4px;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
@@ -3476,6 +3478,10 @@ document.addEventListener('keydown', e => {
         <label style="font-size:12px;font-weight:700;color:#333;">KM</label>
         <input id="deg-km" placeholder="ör. 85000" type="number" style="width:100%;margin-top:4px;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
       </div>
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="font-size:12px;font-weight:700;color:#333;">Motor Gücü (HP) <span style="font-weight:400;color:#999;">— opsiyonel, doğruluğu artırır</span></label>
+      <input id="deg-hp" placeholder="ör. 150" type="number" min="0" max="2000" style="width:100%;margin-top:4px;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;">
     </div>
     <button onclick="runDegerleme()" style="width:100%;background:#1565C0;color:#fff;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;">Tahmini Hesapla</button>
     <div id="deg-loading" style="display:none;text-align:center;color:#888;font-size:13px;margin-top:14px;">Hesaplanıyor...</div>
