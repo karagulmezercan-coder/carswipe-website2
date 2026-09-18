@@ -10,11 +10,13 @@ import {
   Keyboard, Linking, SafeAreaView, StatusBar,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Svg, { Rect, Line, Circle, Polygon, Defs, ClipPath, Image as SvgImage, Path, G } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
+
 
 const _dim = Dimensions.get('window');
 const width  = Platform.OS === 'web' ? 301 : _dim.width;
@@ -99,6 +101,7 @@ function NavIconProfile({ active, color }) {
     </Svg>
   );
 }
+
 
 // ─── CONSTANTS ───────────────────────────────────────────────
 const MARKALAR = ['Alfa Romeo','Audi','Bentley','BMW','BYD','Cadillac','Chery','Chevrolet','Chrysler','Citroen','Cupra','Dacia','Daewoo','Daihatsu','Dodge','DS Automobiles','Ferrari','Fiat','Ford','Geely','Honda','Hyundai','IKCO','Infiniti','Jaguar','Kia','Lada','Lamborghini','Lancia','Leapmotor','Lexus','Maserati','Mazda','Mercedes-Benz','MG','MINI','Mitsubishi','Nissan','Opel','Peugeot','Porsche','Proton','Renault','Rolls-Royce','Rover','Saab','Seat','Skoda','Smart','Subaru','Suzuki','Tata','Tesla','Tofaş','TOGG','Toyota','Volkswagen','Volvo'];
@@ -6069,42 +6072,6 @@ export default function App() {
   const [notification, setNotification] = useState(null);
   const [showForm, setShowForm]     = useState(false);
   const [showFilter, setShowFilter] = useState(false);
-  const openDegerlemeModal = () => { setDegerlemeMarka(''); setDegerlemeModel(''); setDegerlemeTrim(''); setDegerlemeYil(''); setDegerlemeKm(''); setDegerlemeHp(''); setDegerlemeSonuc(null); setDegerlemePickerOpen(null); setShowDegerleme(true); };
-  const [showDegerleme, setShowDegerleme] = useState(false);
-  const [degerlemePickerOpen, setDegerlemePickerOpen] = useState(null); // 'marka'|'model'|'trim'|null
-  const [degerlemeMarka, setDegerlemeMarka] = useState('');
-  const [degerlemeModel, setDegerlemeModel] = useState('');
-  const [degerlemeTrim, setDegerlemeTrim] = useState('');
-  const [degerlemeYil, setDegerlemeYil] = useState('');
-  const [degerlemeKm, setDegerlemeKm] = useState('');
-  const [degerlemeHp, setDegerlemeHp] = useState('');
-  const [degerlemeSonuc, setDegerlemeSonuc] = useState(null);
-  const [degerlemeLoading, setDegerlemeLoading] = useState(false);
-
-  const fetchDegerleme = async () => {
-    setDegerlemeLoading(true);
-    setDegerlemeSonuc(null);
-    try {
-      const base = 'https://carswipe-website2.onrender.com';
-      // model_tam: trim varsa "Model Trim", yoksa sadece "Model"
-      const model_tam = degerlemeTrim ? `${degerlemeModel} ${degerlemeTrim}` : degerlemeModel;
-      const params = new URLSearchParams({
-        marka: degerlemeMarka,
-        model_tam,
-        yil: degerlemeYil,
-        km: degerlemeKm,
-        vites_tipi: 'Manuel',
-        motor_gucu: degerlemeHp || 0,
-      });
-      const res = await fetch(`${base}/predict?${params}`);
-      const json = await res.json();
-      setDegerlemeSonuc(json.tahmin_tl ? json : { hata: json.detail || 'Tahmin alınamadı' });
-    } catch (e) {
-      setDegerlemeSonuc({ hata: 'Sunucuya bağlanılamadı.' });
-    } finally {
-      setDegerlemeLoading(false);
-    }
-  };
   const [showUndoPremium, setShowUndoPremium] = useState(false);
   const [form, setForm]             = useState(EMPTY_FORM);
   const [formTouched, setFormTouched] = useState(false);
@@ -6272,11 +6239,11 @@ export default function App() {
     <View style={{width:200, backgroundColor:'#fff', borderRightWidth:1, borderRightColor:'#eee', paddingTop:24, paddingHorizontal:12}}>
       <Text style={{fontSize:18, fontWeight:'900', color:'#E53935', paddingHorizontal:8, marginBottom:28, letterSpacing:-0.5}}>CarSwipe</Text>
       {[
-        {key:'discover', label:S.navDiscover[lang],        Icon:NavIconDiscover},
-        {key:'filter',   label:lang==='TR'?'Filtrele':'Filter', Icon:NavIconFilter},
-        {key:'matches',  label:lang==='TR'?'Beğeniler':'Likes', Icon:NavIconHeart},
-        {key:'messages', label:lang==='TR'?'Mesajlar':'Messages', Icon:NavIconChat},
-        {key:'profile',  label:S.navProfile[lang],         Icon:NavIconProfile},
+        {key:'discover',   label:S.navDiscover[lang],           Icon:NavIconDiscover},
+        {key:'filter',     label:lang==='TR'?'Filtrele':'Filter',   Icon:NavIconFilter},
+        {key:'matches',    label:lang==='TR'?'Beğeniler':'Likes',   Icon:NavIconHeart},
+        {key:'messages',   label:lang==='TR'?'Mesajlar':'Messages', Icon:NavIconChat},
+        {key:'profile',    label:S.navProfile[lang],              Icon:NavIconProfile},
       ].map(tab => {
         const isActive = tab.key==='filter' ? showFilter : activeTab===tab.key;
         return (
@@ -6301,6 +6268,7 @@ export default function App() {
   );
 
   const webWrap = (content) => {
+    if (Platform.OS === 'ios') return <SafeAreaProvider>{content}</SafeAreaProvider>;
     if (Platform.OS !== 'web') return content;
     return (
       <View style={{flex:1, flexDirection:'row', backgroundColor:'#f0ede8'}}>
@@ -6318,6 +6286,7 @@ export default function App() {
   if (!authReady) return null; // AsyncStorage kontrolü bitene kadar bekle
   if (!loggedIn) {
     const wrapAuth = (screen) => {
+      if (Platform.OS === 'ios') return <SafeAreaProvider>{screen}</SafeAreaProvider>;
       if (Platform.OS !== 'web') return screen;
       return (
         <View style={{flex:1, backgroundColor:'#f0ede8', alignItems:'center', justifyContent:'center'}}>
@@ -7036,23 +7005,20 @@ export default function App() {
             <Text style={styles.addCarText}>{S.addCar[lang]}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.addCarBtn, {backgroundColor:'#1565C0', marginTop:10}]} onPress={openDegerlemeModal}>
-            <Text style={styles.addCarText}>🤖 {lang==='EN' ? 'Vehicle Valuation' : 'Araç Değerleme'}</Text>
-          </TouchableOpacity>
-
           <View style={{height:30}}/>
         </ScrollView>
         </>
       )}
 
+
       {/* ── ALT NAV ── */}
       <View style={styles.nav}>
         {[
-          {key:'discover', Icon:NavIconDiscover, label:S.navDiscover[lang]},
-          {key:'filter',   Icon:null,            label:lang==='TR'?'Filtrele':'Filter'},
-          {key:'matches',  Icon:NavIconHeart,    label:lang==='TR'?'Beğeniler':'Likes'},
-          {key:'messages', Icon:NavIconChat,     label:lang==='TR'?'Mesajlar':'Messages'},
-          {key:'profile',  Icon:NavIconProfile,  label:S.navProfile[lang]},
+          {key:'discover',  Icon:NavIconDiscover,  label:S.navDiscover[lang]},
+          {key:'filter',    Icon:null,             label:lang==='TR'?'Filtrele':'Filter'},
+          {key:'matches',   Icon:NavIconHeart,     label:lang==='TR'?'Beğeniler':'Likes'},
+          {key:'messages',  Icon:NavIconChat,      label:lang==='TR'?'Mesajlar':'Messages'},
+          {key:'profile',   Icon:NavIconProfile,   label:S.navProfile[lang]},
         ].map(tab=>(
           <TouchableOpacity key={tab.key} style={styles.navItem}
             onPress={tab.key==='filter'
@@ -7131,163 +7097,6 @@ export default function App() {
         </View>
         </View>
       </Modal>
-
-      {/* ── ARAÇ DEĞERLEME MODAL ── */}
-      <ModalOrView visible={showDegerleme} animationType="slide">
-        <View style={styles.modalContainer}>
-          <PageHeader title={lang==='EN'?'🤖 Vehicle Valuation':'🤖 Araç Değerleme'} showBack onBack={()=>setShowDegerleme(false)}/>
-          <ScrollView style={{flex:1}} contentContainerStyle={{padding:20}}>
-            <Text style={{fontSize:13, color:'#555', marginBottom:16}}>
-              {lang==='EN'?'Enter vehicle details to get an AI price estimate.':'Araç bilgilerini girerek yapay zeka fiyat tahmini alın.'}
-            </Text>
-
-            {/* ── Dropdown seçici (Marka / Model / Trim) ── */}
-            {/* MARKA */}
-            <Text style={{fontWeight:'700', fontSize:13, color:'#333', marginBottom:4}}>{lang==='EN'?'Brand':'Marka'}</Text>
-            <TouchableOpacity
-              onPress={()=>setDegerlemePickerOpen('marka')}
-              style={{borderWidth:1, borderColor:'#ddd', borderRadius:8, padding:12, marginBottom:14,
-                backgroundColor:'#fafafa', flexDirection:'row', justifyContent:'space-between', alignItems:'center'}}>
-              <Text style={{fontSize:14, color: degerlemeMarka ? '#1565C0' : '#999', fontWeight: degerlemeMarka?'600':'400'}}>
-                {degerlemeMarka || (lang==='EN'?'Select brand...':'Marka seçiniz...')}
-              </Text>
-              <Text style={{color:'#999', fontSize:16}}>▾</Text>
-            </TouchableOpacity>
-
-            {/* MODEL */}
-            {degerlemeMarka ? <>
-              <Text style={{fontWeight:'700', fontSize:13, color:'#333', marginBottom:4}}>Model</Text>
-              <TouchableOpacity
-                onPress={()=>setDegerlemePickerOpen('model')}
-                style={{borderWidth:1, borderColor:'#ddd', borderRadius:8, padding:12, marginBottom:14,
-                  backgroundColor:'#fafafa', flexDirection:'row', justifyContent:'space-between', alignItems:'center'}}>
-                <Text style={{fontSize:14, color: degerlemeModel ? '#1565C0' : '#999', fontWeight: degerlemeModel?'600':'400'}}>
-                  {degerlemeModel || (lang==='EN'?'Select model...':'Model seçiniz...')}
-                </Text>
-                <Text style={{color:'#999', fontSize:16}}>▾</Text>
-              </TouchableOpacity>
-            </> : null}
-
-            {/* TRİM */}
-            {degerlemeModel && getTrimsByModel('otomobil', degerlemeMarka, degerlemeModel).length > 0 ? <>
-              <Text style={{fontWeight:'700', fontSize:13, color:'#333', marginBottom:4}}>{lang==='EN'?'Trim / Package':'Donanım / Trim'}</Text>
-              <TouchableOpacity
-                onPress={()=>setDegerlemePickerOpen('trim')}
-                style={{borderWidth:1, borderColor:'#ddd', borderRadius:8, padding:12, marginBottom:14,
-                  backgroundColor:'#fafafa', flexDirection:'row', justifyContent:'space-between', alignItems:'center'}}>
-                <Text style={{fontSize:14, color: degerlemeTrim ? '#1565C0' : '#999', fontWeight: degerlemeTrim?'600':'400'}}>
-                  {degerlemeTrim || (lang==='EN'?'Select trim (optional)...':'Donanım seçiniz (opsiyonel)...')}
-                </Text>
-                <Text style={{color:'#999', fontSize:16}}>▾</Text>
-              </TouchableOpacity>
-            </> : null}
-
-            {/* Picker Modal */}
-            <Modal visible={!!degerlemePickerOpen} transparent animationType="slide" onRequestClose={()=>setDegerlemePickerOpen(null)}>
-              <TouchableOpacity style={{flex:1, backgroundColor:'rgba(0,0,0,0.4)'}} activeOpacity={1} onPress={()=>setDegerlemePickerOpen(null)}/>
-              <View style={{position:'absolute', bottom:0, left:0, right:0, backgroundColor:'#fff', borderTopLeftRadius:20, borderTopRightRadius:20, maxHeight:'70%'}}>
-                <View style={{flexDirection:'row', justifyContent:'space-between', alignItems:'center', padding:16, borderBottomWidth:1, borderBottomColor:'#eee'}}>
-                  <Text style={{fontWeight:'700', fontSize:16, color:'#333'}}>
-                    {degerlemePickerOpen==='marka' ? (lang==='EN'?'Brand':'Marka') : degerlemePickerOpen==='model' ? 'Model' : (lang==='EN'?'Trim':'Donanım')}
-                  </Text>
-                  <TouchableOpacity onPress={()=>setDegerlemePickerOpen(null)}>
-                    <Text style={{fontSize:18, color:'#666'}}>✕</Text>
-                  </TouchableOpacity>
-                </View>
-                <ScrollView keyboardShouldPersistTaps="handled">
-                  {(degerlemePickerOpen==='marka'
-                    ? getBrandsByTur('otomobil')
-                    : degerlemePickerOpen==='model'
-                      ? getModelsByBrand('otomobil', degerlemeMarka)
-                      : getTrimsByModel('otomobil', degerlemeMarka, degerlemeModel)
-                  ).map(opt => (
-                    <TouchableOpacity key={opt}
-                      onPress={()=>{
-                        if(degerlemePickerOpen==='marka'){ setDegerlemeMarka(opt); setDegerlemeModel(''); setDegerlemeTrim(''); }
-                        else if(degerlemePickerOpen==='model'){ setDegerlemeModel(opt); setDegerlemeTrim(''); }
-                        else { setDegerlemeTrim(opt); }
-                        setDegerlemeSonuc(null);
-                        setDegerlemePickerOpen(null);
-                      }}
-                      style={{padding:16, borderBottomWidth:1, borderBottomColor:'#f0f0f0',
-                        backgroundColor:(
-                          (degerlemePickerOpen==='marka'&&opt===degerlemeMarka)||
-                          (degerlemePickerOpen==='model'&&opt===degerlemeModel)||
-                          (degerlemePickerOpen==='trim'&&opt===degerlemeTrim)
-                        )?'#E3F2FD':'#fff'}}>
-                      <Text style={{fontSize:15, color:'#333'}}>{opt}</Text>
-                    </TouchableOpacity>
-                  ))}
-                  <View style={{height:30}}/>
-                </ScrollView>
-              </View>
-            </Modal>
-
-            {/* YIL ve KM */}
-            <View style={{flexDirection:'row', gap:10, marginBottom:4}}>
-              <View style={{flex:1}}>
-                <Text style={{fontWeight:'700', fontSize:13, color:'#333', marginBottom:4}}>{lang==='EN'?'Year':'Yıl'}</Text>
-                <TextInput
-                  style={{borderWidth:1, borderColor:'#ddd', borderRadius:8, padding:10, fontSize:14, backgroundColor:'#fafafa'}}
-                  placeholder="ör. 2020"
-                  value={degerlemeYil}
-                  onChangeText={setDegerlemeYil}
-                  keyboardType="numeric"
-                />
-              </View>
-              <View style={{flex:1}}>
-                <Text style={{fontWeight:'700', fontSize:13, color:'#333', marginBottom:4}}>KM</Text>
-                <TextInput
-                  style={{borderWidth:1, borderColor:'#ddd', borderRadius:8, padding:10, fontSize:14, backgroundColor:'#fafafa'}}
-                  placeholder="ör. 85000"
-                  value={degerlemeKm}
-                  onChangeText={setDegerlemeKm}
-                  keyboardType="numeric"
-                />
-              </View>
-            </View>
-            {/* HP */}
-            <Text style={{fontWeight:'700', fontSize:13, color:'#333', marginTop:12, marginBottom:4}}>
-              {lang==='EN'?'Engine Power (HP)':'Motor Gücü (HP)'} <Text style={{fontWeight:'400', color:'#999', fontSize:12}}>{lang==='EN'?'— optional':'— opsiyonel'}</Text>
-            </Text>
-            <TextInput
-              style={{borderWidth:1, borderColor:'#ddd', borderRadius:8, padding:10, marginBottom:20, fontSize:14, backgroundColor:'#fafafa'}}
-              placeholder="ör. 150"
-              value={degerlemeHp}
-              onChangeText={setDegerlemeHp}
-              keyboardType="numeric"
-            />
-
-            <TouchableOpacity
-              style={{backgroundColor:'#1565C0', padding:14, borderRadius:10, alignItems:'center'}}
-              onPress={fetchDegerleme}
-              disabled={degerlemeLoading}>
-              <Text style={{color:'#fff', fontWeight:'700', fontSize:15}}>
-                {degerlemeLoading ? (lang==='EN'?'Calculating...':'Hesaplanıyor...') : (lang==='EN'?'Get Estimate':'Tahmini Hesapla')}
-              </Text>
-            </TouchableOpacity>
-
-            {degerlemeSonuc && !degerlemeSonuc.hata && (
-              <View style={{marginTop:24, padding:20, backgroundColor:'#E3F2FD', borderRadius:12, alignItems:'center'}}>
-                <Text style={{fontSize:13, color:'#555', marginBottom:6}}>{lang==='EN'?'Estimated Value':'Tahmini Değer'}</Text>
-                <Text style={{fontSize:32, fontWeight:'900', color:'#1565C0'}}>
-                  {degerlemeSonuc.tahmin_tl.toLocaleString('tr-TR')} ₺
-                </Text>
-                <Text style={{fontSize:12, color:'#666', marginTop:8}}>
-                  {lang==='EN'?'Range: ':'Bant: '}
-                  {degerlemeSonuc.alt_bant_tl.toLocaleString('tr-TR')} ₺ – {degerlemeSonuc.ust_bant_tl.toLocaleString('tr-TR')} ₺
-                </Text>
-              </View>
-            )}
-            {degerlemeSonuc && degerlemeSonuc.hata && (
-              <View style={{marginTop:20, padding:16, backgroundColor:'#FFEBEE', borderRadius:10}}>
-                <Text style={{color:'#C62828', textAlign:'center'}}>{degerlemeSonuc.hata}</Text>
-              </View>
-            )}
-            <View style={{height:40}}/>
-          </ScrollView>
-        </View>
-      </ModalOrView>
 
       {/* ── LISTING FORM ── */}
       <ModalOrView visible={showForm} animationType="slide">
@@ -7709,6 +7518,7 @@ export default function App() {
       </View>
     );
   }
+  if (Platform.OS === 'ios') return <SafeAreaProvider>{appContent}</SafeAreaProvider>;
   return appContent;
 }
 
