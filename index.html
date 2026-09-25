@@ -2653,6 +2653,67 @@ function dvHesapla() {
 }
 
 // ── AUTH STATE ──
+const ADMIN_EMAIL = 'engin.karagulmez@gmail.com';
+
+// ── ADMİN FONKSİYONLARI ──
+let _adminCurrentTab = 'pending';
+
+function adminTab(tab) {
+  _adminCurrentTab = tab;
+  ['pending','active','rejected'].forEach(t => {
+    const btn = document.getElementById('atab-' + t);
+    if (!btn) return;
+    if (t === tab) {
+      btn.style.background = '#E53935'; btn.style.color = '#fff'; btn.style.borderColor = '#E53935';
+    } else {
+      btn.style.background = '#fff'; btn.style.color = '#555'; btn.style.borderColor = '#ddd';
+    }
+  });
+  loadAdminListings(tab);
+}
+
+function loadAdminListings(status) {
+  const list = document.getElementById('admin-list');
+  if (!list) return;
+  list.innerHTML = '<div style="color:#aaa;font-size:14px;padding:20px 0">Yükleniyor...</div>';
+  db.ref('listings').orderByChild('status').equalTo(status).once('value').then(snap => {
+    const items = [];
+    snap.forEach(ch => items.push({ id: ch.key, ...ch.val() }));
+    items.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+    if (!items.length) {
+      list.innerHTML = '<div style="color:#aaa;font-size:14px;padding:20px 0">Bu kategoride ilan yok.</div>';
+      return;
+    }
+    list.innerHTML = items.map(il => {
+      const foto = (il.photos && il.photos[0]) ? `<img src="${il.photos[0]}" style="width:100px;height:80px;object-fit:cover;border-radius:10px;flex-shrink:0">` : `<div style="width:100px;height:80px;background:#eee;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:28px">🚗</div>`;
+      const tarih = il.createdAt ? new Date(il.createdAt).toLocaleDateString('tr-TR') : '-';
+      const actions = status === 'pending'
+        ? `<button onclick="adminApprove('${il.id}')" style="background:#2E7D32;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;margin-right:8px">✅ Onayla</button>
+           <button onclick="adminReject('${il.id}')" style="background:#C62828;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer">❌ Reddet</button>`
+        : status === 'active'
+        ? `<button onclick="adminReject('${il.id}')" style="background:#C62828;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer">Yayından Kaldır</button>`
+        : `<button onclick="adminApprove('${il.id}')" style="background:#2E7D32;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer">✅ Yayına Al</button>`;
+      return `<div style="background:#fff;border-radius:14px;padding:16px;display:flex;gap:14px;align-items:flex-start;box-shadow:0 2px 8px rgba(0,0,0,.07)">
+        ${foto}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:15px;font-weight:800;color:#111;margin-bottom:4px">${il.title||'İsimsiz İlan'}</div>
+          <div style="font-size:14px;font-weight:700;color:#E53935;margin-bottom:4px">${il.price ? Number(il.price).toLocaleString('tr-TR') + ' ₺' : '-'}</div>
+          <div style="font-size:12px;color:#888;margin-bottom:8px">${il.city||''} · ${il.year||''} · ${tarih}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">${actions}</div>
+        </div>
+      </div>`;
+    }).join('');
+  });
+}
+
+function adminApprove(id) {
+  db.ref('listings/' + id + '/status').set('active').then(() => loadAdminListings(_adminCurrentTab));
+}
+
+function adminReject(id) {
+  db.ref('listings/' + id + '/status').set('rejected').then(() => loadAdminListings(_adminCurrentTab));
+}
+
 auth.onAuthStateChanged(user => {
   const btn = document.getElementById('nav-auth-btn');
   if (!btn) return;
@@ -2665,6 +2726,9 @@ auth.onAuthStateChanged(user => {
     btn.onclick = () => showApp();
     btn.style.display = 'flex';
     btn.style.alignItems = 'center';
+    // Admin menüsünü göster/gizle
+    const adminNav = document.getElementById('admin-nav-item');
+    if (adminNav) adminNav.style.display = user.email === ADMIN_EMAIL ? 'flex' : 'none';
     // Bildirimleri ve aktif ilanları başlat
     initNotifications();
     loadFirebaseListings();
@@ -2708,6 +2772,7 @@ document.addEventListener('keydown', e => {
     </button>
   </div>
   <div style="flex:1"></div>
+  <a class="nav-item" id="admin-nav-item" onclick="showView('admin', this)" style="display:none;color:#7B1FA2"><div class="nav-icon" style="color:#7B1FA2">🛡️</div>Admin Panel</a>
   <a class="nav-item" onclick="doSignOut()" style="color:#E53935"><div class="nav-icon" style="color:#E53935">⏻</div>Çıkış Yap</a>
 </div>
 
@@ -3416,6 +3481,24 @@ document.addEventListener('keydown', e => {
     </div>
 
     <div id="dv-hata" style="display:none;margin-top:16px;background:#fff3f3;border:1.5px solid #ffcdd2;border-radius:10px;padding:12px 14px;font-size:13px;color:#c62828;"></div>
+  </div>
+
+  <!-- ADMİN VIEW -->
+  <div class="view" id="view-admin">
+    <div class="content-page" style="max-width:860px">
+      <div>
+        <div class="page-title">🛡️ Admin Panel</div>
+        <div class="page-subtitle">Onay bekleyen ilanları incele ve yayına al veya reddet.</div>
+      </div>
+      <div id="admin-tabs" style="display:flex;gap:10px;margin-bottom:4px">
+        <button onclick="adminTab('pending')" id="atab-pending" style="padding:8px 20px;border-radius:20px;border:2px solid #E53935;background:#E53935;color:#fff;font-weight:700;font-size:13px;cursor:pointer">⏳ Bekleyenler</button>
+        <button onclick="adminTab('active')" id="atab-active" style="padding:8px 20px;border-radius:20px;border:2px solid #ddd;background:#fff;color:#555;font-weight:700;font-size:13px;cursor:pointer">✅ Yayındakiler</button>
+        <button onclick="adminTab('rejected')" id="atab-rejected" style="padding:8px 20px;border-radius:20px;border:2px solid #ddd;background:#fff;color:#555;font-weight:700;font-size:13px;cursor:pointer">❌ Reddedilenler</button>
+      </div>
+      <div id="admin-list" style="display:flex;flex-direction:column;gap:14px;margin-top:8px">
+        <div style="color:#aaa;font-size:14px;padding:20px 0">Yükleniyor...</div>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -4228,6 +4311,7 @@ function showView(id, el) {
     }
   }
   if (id === 'profil') { renderProfile(); }
+  if (id === 'admin') { adminTab('pending'); }
   if (id === 'filtrele') initFilters();
   if (id === 'degerleme') {
     buildSelect('dv-marka', MARKALAR, 'Marka seçin');
