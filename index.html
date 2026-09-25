@@ -1695,8 +1695,11 @@ function openProfileScreen(page) {
             <button id="phone-verify-btn" onclick="showPhoneVerifyUI()" style="background:none;border:none;color:#E53935;font-size:13px;font-weight:600;cursor:pointer;display:none;">Doğrula</button>
           </div>
           <div id="phone-input-area" style="display:none;margin-top:10px;">
-            <div style="font-size:12px;color:#888;margin-bottom:8px;">Telefon numaranı gir (örn: +90 532 xxx xx xx)</div>
-            <input id="inp-phone" type="tel" placeholder="+90 5xx xxx xx xx" style="width:100%;padding:10px 12px;border:1.5px solid #E53935;border-radius:8px;font-size:14px;outline:none;margin-bottom:8px;box-sizing:border-box;">
+            <div style="font-size:12px;color:#888;margin-bottom:8px;">Telefon numaranı gir</div>
+            <div style="display:flex;align-items:center;border:1.5px solid #E53935;border-radius:8px;overflow:hidden;margin-bottom:8px;">
+              <span style="background:#f5f5f5;padding:10px 12px;font-size:14px;font-weight:700;color:#333;border-right:1px solid #ddd;white-space:nowrap">🇹🇷 +90</span>
+              <input id="inp-phone" type="tel" placeholder="5xx xxx xx xx" maxlength="10" style="flex:1;padding:10px 12px;border:none;font-size:14px;outline:none;box-sizing:border-box;">
+            </div>
             <div id="recaptcha-container" style="margin-bottom:8px;"></div>
             <div id="phone-send-msg" style="font-size:12px;color:#888;margin-bottom:8px;"></div>
             <div style="display:flex;gap:8px;">
@@ -1906,10 +1909,11 @@ async function startPhoneVerify() {
   const user = auth.currentUser;
   if (!user) { alert('Giriş yapman gerekiyor.'); return; }
   const phoneRaw = (document.getElementById('inp-phone') || {}).value || '';
-  const phone = phoneRaw.replace(/\s/g, '');
-  if (!phone.startsWith('+') || phone.length < 10) {
+  const digits = phoneRaw.replace(/\D/g, '');
+  const phone = '+90' + digits;
+  if (digits.length !== 10 || !digits.startsWith('5')) {
     const msg = document.getElementById('phone-send-msg');
-    if (msg) { msg.style.color='#E53935'; msg.textContent='Geçerli bir numara gir (örn: +905321234567)'; }
+    if (msg) { msg.style.color='#E53935'; msg.textContent='Geçerli bir numara gir (örn: 5321234567 — 10 hane)'; }
     return;
   }
   const msg = document.getElementById('phone-send-msg');
