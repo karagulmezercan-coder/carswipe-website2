@@ -3312,52 +3312,8 @@ document.addEventListener('keydown', e => {
           </div>
         </div>
 
-        <div class="app-body">
-          <div class="msg-item" id="conv-toyota" data-conv="conv-toyota" onclick="convItemClick(this,'Toyota Corolla 2022','https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=100&q=80','Merhaba, araç hâlâ satışta mı?')">
-            <span class="conv-chk" style="display:none;color:#E53935;font-size:16px;flex-shrink:0;margin-right:4px;">○</span>
-            <img class="msg-avatar" src="https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=100&q=80" alt="">
-            <div class="msg-info">
-              <div class="msg-name">Toyota Corolla 2022</div>
-              <div class="msg-preview">Merhaba, araç hâlâ satışta mı?</div>
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
-              <div class="msg-time">14:32</div>
-              <div class="msg-unread-dot"></div>
-            </div>
-          </div>
-          <div class="msg-item" id="conv-bmw" data-conv="conv-bmw" onclick="convItemClick(this,'BMW 3 Serisi 2021','https://images.unsplash.com/photo-1555215695-3004980ad54e?w=100&q=80','Fiyatta pazarlık mümkün mü?')">
-            <span class="conv-chk" style="display:none;color:#E53935;font-size:16px;flex-shrink:0;margin-right:4px;">○</span>
-            <img class="msg-avatar" src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=100&q=80" alt="">
-            <div class="msg-info">
-              <div class="msg-name">BMW 3 Serisi 2021</div>
-              <div class="msg-preview">Fiyatta pazarlık mümkün mü?</div>
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
-              <div class="msg-time">Dün</div>
-            </div>
-          </div>
-          <div class="msg-item" id="conv-audi" data-conv="conv-audi" onclick="convItemClick(this,'Audi A4 2022','https://images.unsplash.com/photo-1542362567-b07e54358753?w=100&q=80','Araç İstanbul\'da mı?')">
-            <span class="conv-chk" style="display:none;color:#E53935;font-size:16px;flex-shrink:0;margin-right:4px;">○</span>
-            <img class="msg-avatar" src="https://images.unsplash.com/photo-1542362567-b07e54358753?w=100&q=80" alt="">
-            <div class="msg-info">
-              <div class="msg-name">Audi A4 2022</div>
-              <div class="msg-preview">Araç İstanbul'da mı?</div>
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
-              <div class="msg-time">Pazartesi</div>
-            </div>
-          </div>
-          <div class="msg-item" id="conv-porsche" data-conv="conv-porsche" onclick="convItemClick(this,'Porsche Cayenne 2019','https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=100&q=80','Test sürüşü yapabilir miyim?')">
-            <span class="conv-chk" style="display:none;color:#E53935;font-size:16px;flex-shrink:0;margin-right:4px;">○</span>
-            <img class="msg-avatar" src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=100&q=80" alt="">
-            <div class="msg-info">
-              <div class="msg-name">Porsche Cayenne 2019</div>
-              <div class="msg-preview">Test sürüşü yapabilir miyim?</div>
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
-              <div class="msg-time">Pazar</div>
-            </div>
-          </div>
+        <div class="app-body" id="msg-list-body">
+          <div style="text-align:center;color:#aaa;font-size:14px;padding:40px 20px">Yükleniyor...</div>
         </div>
       </div>
 
@@ -4370,6 +4326,7 @@ function showView(id, el) {
     }
   }
   if (id === 'profil') { renderProfile(); }
+  if (id === 'mesajlar') { loadConversations(); }
   if (id === 'admin') { adminTab('pending'); }
   if (id === 'filtrele') initFilters();
   if (id === 'degerleme') {
@@ -4561,6 +4518,81 @@ function getRoomId(carSlug) {
   const uid = auth.currentUser ? auth.currentUser.uid : 'anon';
   // Room: uid + carSlug (demo: tek kullanıcı kendi sohbetini görür)
   return uid + '_' + carSlug.replace(/[^a-zA-Z0-9]/g,'_');
+}
+
+function loadConversations() {
+  const user = auth.currentUser;
+  const body = document.getElementById('msg-list-body');
+  if (!body) return;
+  if (!user) {
+    body.innerHTML = '<div style="text-align:center;color:#aaa;font-size:14px;padding:40px 20px">Mesajları görmek için giriş yapmalısın.</div>';
+    return;
+  }
+  body.innerHTML = '<div style="text-align:center;color:#aaa;font-size:14px;padding:40px 20px">Yükleniyor...</div>';
+  db.ref('chats').once('value').then(snap => {
+    const convs = [];
+    snap.forEach(room => {
+      const roomId = room.key;
+      // Sadece bu kullanıcının dahil olduğu sohbetler
+      if (!roomId.includes(user.uid)) return;
+      const msgs = [];
+      room.child('messages').forEach(m => msgs.push(m.val()));
+      if (!msgs.length) return;
+      const lastMsg = msgs[msgs.length - 1];
+      const meta = room.child('meta').val() || {};
+      convs.push({ roomId, lastMsg, meta, msgCount: msgs.length });
+    });
+    convs.sort((a,b) => (b.lastMsg.time||0) - (a.lastMsg.time||0));
+    if (!convs.length) {
+      body.innerHTML = '<div style="text-align:center;color:#aaa;font-size:14px;padding:40px 20px">💬 Henüz mesajın yok.<br>Bir araç ilanında "Mesaj At" dene!</div>';
+      return;
+    }
+    body.innerHTML = convs.map(cv => {
+      const name = cv.meta.carName || cv.roomId;
+      const avatar = cv.meta.carPhoto || '';
+      const preview = cv.lastMsg.text || '';
+      const tarih = cv.lastMsg.time ? new Date(cv.lastMsg.time).toLocaleDateString('tr-TR', {day:'numeric',month:'short'}) : '';
+      const avatarHtml = avatar
+        ? `<img class="msg-avatar" src="${avatar}" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0">`
+        : `<div style="width:44px;height:44px;border-radius:50%;background:#E53935;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🚗</div>`;
+      return `<div class="msg-item" onclick="openChatById('${cv.roomId}','${name.replace(/'/g,"\\'")}','${avatar}')">
+        ${avatarHtml}
+        <div class="msg-info" style="flex:1;min-width:0">
+          <div class="msg-name">${name}</div>
+          <div class="msg-preview" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${preview}</div>
+        </div>
+        <div class="msg-time" style="font-size:11px;color:#aaa;flex-shrink:0">${tarih}</div>
+      </div>`;
+    }).join('');
+  }).catch(() => {
+    body.innerHTML = '<div style="text-align:center;color:#aaa;font-size:14px;padding:40px 20px">Mesajlar yüklenemedi.</div>';
+  });
+}
+
+function openChatById(roomId, name, avatar) {
+  if (!auth.currentUser) return;
+  document.getElementById('chat-title').textContent = name;
+  if (document.getElementById('chat-avatar')) document.getElementById('chat-avatar').src = avatar;
+  document.getElementById('msg-list-screen').style.display = 'none';
+  const cs = document.getElementById('chat-screen');
+  cs.style.display = 'flex';
+  currentRoomId = roomId;
+  if (chatListener) { db.ref('chats/' + chatListener + '/messages').off(); }
+  chatListener = roomId;
+  const messagesRef = db.ref('chats/' + roomId + '/messages');
+  const body = document.getElementById('chat-body');
+  body.innerHTML = '';
+  window._selectedMsgs = {};
+  messagesRef.on('child_added', snap => {
+    const m = snap.val();
+    const isMe = m.uid === auth.currentUser.uid;
+    const div = document.createElement('div');
+    div.className = isMe ? 'msg-out' : 'msg-in';
+    div.textContent = m.text;
+    div.style.cssText = `max-width:75%;padding:10px 14px;border-radius:16px;font-size:13px;line-height:1.5;margin:4px 10px;align-self:${isMe?'flex-end':'flex-start'};background:${isMe?'#E53935':'#EDE8DF'};color:${isMe?'#fff':'#111'}`;
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight;
+  });
 }
 
 function openChat(name, avatar, firstMsg) {
