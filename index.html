@@ -4147,7 +4147,7 @@ function updateDetailPhotoCount() {
 function renderDetailThumbs() {
   const c = activeCars[idx];
   document.getElementById('detail-thumbs').innerHTML = c.photos.map((p, i) =>
-    `<img class="thumb-img${i === 0 ? ' active' : ''}" src="https://images.unsplash.com/${p}?w=120&q=70" onclick="selectThumb(${i})" alt="">`
+    `<img class="thumb-img${i === 0 ? ' active' : ''}" src="${carPhotoUrl(c, i, 120)}" onclick="selectThumb(${i})" alt="">`
   ).join('');
 }
 
