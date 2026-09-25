@@ -2580,10 +2580,14 @@ function loadFirebaseListings() {
       });
     });
     if (newCars.length) {
-      // Mevcut cars[]'ın önüne ekle
-      activeCars = [...newCars, ...cars];
-      loadCard(0, false);
+      // Sadece gerçek ilanları göster, demo ilanları kaldır
+      activeCars = newCars;
+    } else {
+      // Firebase'de ilan yoksa boş ekran göster
+      activeCars = [];
     }
+    currentIndex = 0;
+    loadCard(0, false);
   }).catch(() => {});
 }
 
@@ -5034,7 +5038,8 @@ function renderBegeniler() {
     return;
   }
   body.innerHTML = liked.map((carIdx, li) => {
-    const c = cars[carIdx];
+    const c = activeCars[carIdx];
+    if (!c) return '';
     return `<div class="liked-car-item" data-caridx="${carIdx}" onclick="begenItemClick(this, ${carIdx})" style="cursor:pointer;">
       <span class="begen-chk" style="display:none;color:#E53935;font-size:16px;flex-shrink:0;margin-right:4px;">○</span>
       <img class="liked-car-thumb" src="${carPhotoUrl(c, 0, 200)}" alt="">
@@ -5042,7 +5047,7 @@ function renderBegeniler() {
         <div class="liked-car-name">${c.name}</div>
         <div class="liked-car-price">${c.price}</div>
         <div class="liked-car-meta">${c.meta}</div>
-        <div class="liked-car-badge">${c.seller}</div>
+        <div class="liked-car-badge">${c.seller||''}</div>
       </div>
     </div>`;
   }).join('');
