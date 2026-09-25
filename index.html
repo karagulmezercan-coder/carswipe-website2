@@ -4028,27 +4028,26 @@ function initFilters() {
   });
 }
 
-const cars = [
-  { name:'Toyota Corolla', brand:'Toyota', model:'Corolla', year:'2022', price:'895.000 ₺', location:'İstanbul / Kadıköy', meta:'📍 İstanbul · Kadıköy · 22.000 km', seller:'Sahibinden', km:'22.000 km', fuel:'Benzin', gear:'Otomatik', color:'Beyaz', kasa:'Sedan', motor:'132 hp', hacim:'1600 cc', hasar:'Hasarsız', durum:'İkinci El', ilanNo:'100000001',
-    photos:['photo-1621007947382-bb3c3994e3fb','photo-1559416523-140ddc3d238c','photo-1568605117036-5fe5e7bab0b7','photo-1492144534655-ae79c964c9d7','photo-1520031441872-265e4ff70366','photo-1474512879090-37a57c5e8f1f'] },
-  { name:'Volkswagen Golf', brand:'Volkswagen', model:'Golf', year:'2022', price:'985.000 ₺', location:'Bursa / Nilüfer', meta:'📍 Bursa · Nilüfer · 52.000 km', seller:'Sahibinden', km:'52.000 km', fuel:'Dizel', gear:'Otomatik', color:'Gri', kasa:'Hatchback', motor:'150 hp', hacim:'2000 cc', hasar:'Hasarsız', durum:'İkinci El', ilanNo:'100000002',
-    photos:['photo-1533473359331-0135ef1b58bf','photo-1492144534655-ae79c964c9d7','photo-1520031441872-265e4ff70366','photo-1568605117036-5fe5e7bab0b7','photo-1559416523-140ddc3d238c','photo-1449965408869-eaa3f722e40d'] },
-  { name:'BMW 3 Serisi', brand:'BMW', model:'3 Serisi', year:'2021', price:'1.450.000 ₺', location:'İstanbul / Kadıköy', meta:'📍 İstanbul · Kadıköy · 38.000 km', seller:'Galeriden', km:'38.000 km', fuel:'Benzin', gear:'Otomatik', color:'Siyah', kasa:'Sedan', motor:'184 hp', hacim:'2000 cc', hasar:'Hasarsız', durum:'İkinci El', ilanNo:'100000003',
-    photos:['photo-1555215695-3004980ad54e','photo-1617469767053-d3b523a0b982','photo-1526726538690-5cbf90d6db31','photo-1552519507-da3b142c6e3d','photo-1542362567-b07e54358753','photo-1580274437636-8a0f4d91c99f'] },
-  { name:'Honda Civic', brand:'Honda', model:'Civic', year:'2020', price:'725.000 ₺', location:'İzmir / Bornova', meta:'📍 İzmir · Bornova · 67.000 km', seller:'Sahibinden', km:'67.000 km', fuel:'Benzin', gear:'Manuel', color:'Kırmızı', kasa:'Sedan', motor:'126 hp', hacim:'1500 cc', hasar:'Hasarsız', durum:'İkinci El', ilanNo:'100000004',
-    photos:['photo-1494976388531-d1058494cdd8','photo-1519641471654-76ce0107ad5b','photo-1474512879090-37a57c5e8f1f','photo-1621007947382-bb3c3994e3fb','photo-1533473359331-0135ef1b58bf','photo-1485291571150-772bcfc10da5'] },
-  { name:'Audi A4', brand:'Audi', model:'A4', year:'2022', price:'1.850.000 ₺', location:'İstanbul / Beşiktaş', meta:'📍 İstanbul · Beşiktaş · 22.000 km', seller:'Galeriden', km:'22.000 km', fuel:'Benzin', gear:'Otomatik', color:'Mavi', kasa:'Sedan', motor:'150 hp', hacim:'2000 cc', hasar:'Hasarsız', durum:'İkinci El', ilanNo:'100000005',
-    photos:['photo-1542362567-b07e54358753','photo-1552519507-da3b142c6e3d','photo-1449965408869-eaa3f722e40d','photo-1555215695-3004980ad54e','photo-1526726538690-5cbf90d6db31','photo-1617469767053-d3b523a0b982'] },
-  { name:'Porsche Cayenne', brand:'Porsche', model:'Cayenne', year:'2019', price:'3.200.000 ₺', location:'İstanbul / Sarıyer', meta:'📍 İstanbul · Sarıyer · 45.000 km', seller:'Galeriden', km:'45.000 km', fuel:'Benzin', gear:'Otomatik', color:'Gümüş', kasa:'SUV', motor:'340 hp', hacim:'3000 cc', hasar:'Hasarsız', durum:'İkinci El', ilanNo:'100000006',
-    photos:['photo-1503376780353-7e6692767b70','photo-1485291571150-772bcfc10da5','photo-1580274437636-8a0f4d91c99f','photo-1519641471654-76ce0107ad5b','photo-1503376780353-7e6692767b70','photo-1492144534655-ae79c964c9d7'] },
-];
+const cars = []; // Demo ilanlar kaldırıldı — sadece Firebase'den gelen gerçek ilanlar gösterilir
 let idx = 0;
 let photoIdx = 0;
 let history = [];
 let liked = [];
-let activeCars = cars; // filtrelenmiş liste
+let activeCars = []; // Firebase'den yüklenir
 
 function loadCard(i, transition) {
+  if (!activeCars.length) {
+    // Ilan yok — boş ekran göster
+    const cardName = document.getElementById('card-name');
+    const cardPrice = document.getElementById('card-price');
+    const cardMeta = document.getElementById('card-meta');
+    const img = document.getElementById('card-img');
+    if (img) img.src = '';
+    if (cardName) cardName.textContent = 'Henüz ilan yok';
+    if (cardPrice) cardPrice.textContent = '';
+    if (cardMeta) cardMeta.textContent = 'Yakında ilanlar burada görünecek 🚗';
+    return;
+  }
   idx = ((i % activeCars.length) + activeCars.length) % activeCars.length;
   photoIdx = 0;
   const c = activeCars[idx];
