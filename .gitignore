@@ -1,1 +1,7 @@
-scraper/carswipe_checkpoint.pkl 
+scraper/carswipe_checkpoint.pkl
+node_modules/
+.expo/
+*.pkl
+*.pyc
+__pycache__/
+
