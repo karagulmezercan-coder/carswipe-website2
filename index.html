@@ -4887,7 +4887,13 @@ function loadConversations() {
       return;
     }
     body.innerHTML = convs.map(cv => {
-      const name = cv.meta.carName || cv.roomId;
+      // carName yoksa roomId'den UID kısmını çıkarıp kalan slug'ı göster
+      const _fallbackName = (() => {
+        const uid = auth.currentUser.uid;
+        const stripped = cv.roomId.startsWith(uid + '_') ? cv.roomId.slice(uid.length + 1) : cv.roomId;
+        return stripped.replace(/_/g, ' ').trim() || 'Sohbet';
+      })();
+      const name = cv.meta.carName || _fallbackName;
       const avatar = cv.meta.carPhoto || '';
       const preview = cv.lastMsg.text || '';
       const tarih = cv.lastMsg.time ? new Date(cv.lastMsg.time).toLocaleDateString('tr-TR', {day:'numeric',month:'short'}) : '';
@@ -4946,6 +4952,14 @@ function openChat(name, avatar, firstMsg) {
 
   currentRoomId = getRoomId(name);
   const messagesRef = db.ref('chats/' + currentRoomId + '/messages');
+
+  // Meta kaydet (carName ve carPhoto yoksa yaz)
+  db.ref('chats/' + currentRoomId + '/meta').transaction(existing => {
+    if (!existing || !existing.carName) {
+      return { carName: name, carPhoto: avatar };
+    }
+    return; // zaten varsa dokunma
+  });
 
   // Önceki listener'ı kapat
   if (chatListener) { db.ref('chats/' + chatListener + '/messages').off(); }
