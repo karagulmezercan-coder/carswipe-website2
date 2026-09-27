@@ -3678,7 +3678,7 @@ document.addEventListener('keydown', e => {
     <div class="il-row2 il-section">
       <div>
         <span class="il-label">YAKIT *</span>
-        <select id="il-fuel" class="il-select" onchange="ilanFieldChanged('il-fuel')"><option value="">Seçiniz</option></select>
+        <select id="il-fuel" class="il-select" onchange="ilanFieldChanged('il-fuel');updateHacimForFuel()"><option value="">Seçiniz</option></select>
       </div>
       <div>
         <span class="il-label">VİTES *</span>
@@ -3920,6 +3920,19 @@ function buildSelect(id, opts, placeholder) {
   const sel = document.getElementById(id);
   if (!sel) return;
   sel.innerHTML = `<option value="">${placeholder}</option>` + opts.map(o=>`<option>${o}</option>`).join('');
+}
+function updateHacimForFuel() {
+  const fuel = (document.getElementById('il-fuel') || {}).value || '';
+  const hacimSel = document.getElementById('il-hacim');
+  if (!hacimSel) return;
+  if (fuel === 'Elektrik') {
+    hacimSel.innerHTML = '<option value="Elektrikli Motor">Elektrikli Motor</option>';
+    hacimSel.value = 'Elektrikli Motor';
+    ilanUpdateFieldStyle('il-hacim', true);
+  } else {
+    buildSelect('il-hacim', MOTOR_HACMI, 'Seçiniz');
+    ilanUpdateFieldStyle('il-hacim', false);
+  }
 }
 let gpsAktif = false;
 function aktivateGPS() {
