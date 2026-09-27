@@ -1499,12 +1499,12 @@ function submitAuth() {
     let _regUser = null;
     auth.createUserWithEmailAndPassword(email, pass)
       .then(r => { _regUser = r.user; if (name) return r.user.updateProfile({displayName: name}); })
-      .then(() => _regUser.sendEmailVerification())
+      .then(() => _regUser.sendEmailVerification({ url: 'https://getcarswipe.com' }))
       .then(() => {
         closeAuth();
         showApp();
         // Doğrulama maili gönderildi bildirimi
-        setTimeout(() => showInAppBanner('E-postanı Doğrula', `${email} adresine doğrulama maili gönderdik. Lütfen kontrol et.`, '📧'), 800);
+        setTimeout(() => showInAppBanner('E-postanı Doğrula', `${email} adresine doğrulama linki gönderdik. Linke tıklayınca getcarswipe.com'a yönlendirileceksin.`, '📧'), 800);
       })
       .catch(e => { showError(getErrMsg(e.code)); btn.textContent = 'Kayıt Ol'; btn.disabled = false; });
   }
@@ -2618,6 +2618,15 @@ function buildIlanPreview() {
 async function submitListing() {
   const user = auth.currentUser;
   if (!user) return;
+  // E-posta doğrulaması kontrolü
+  if (!user.emailVerified) {
+    if (confirm('İlan verebilmek için e-postanı doğrulaman gerekiyor.\n\n"Tamam" ile tekrar doğrulama maili gönderelim mi?')) {
+      user.sendEmailVerification({ url: 'https://getcarswipe.com' })
+        .then(() => alert('Doğrulama maili gönderildi. E-postanı kontrol et, linke tıkla ve geri gel.'))
+        .catch(() => alert('Mail gönderilemedi. Daha sonra tekrar dene.'));
+    }
+    return;
+  }
   // Validasyon
   const brand  = document.getElementById('il-brand').value;
   const model  = document.getElementById('il-model').value;
@@ -5144,6 +5153,11 @@ function sendMsg() {
   const input = document.getElementById('chat-input');
   const text = input.value.trim();
   if (!text || !currentRoomId || !auth.currentUser) return;
+  // E-posta doğrulaması kontrolü
+  if (!auth.currentUser.emailVerified) {
+    showInAppBanner('E-postanı Doğrula', 'Mesaj gönderebilmek için e-posta adresini doğrulamalısın. Gelen kutunu kontrol et.', '🔒');
+    return;
+  }
   db.ref('chats/' + currentRoomId + '/messages').push({
     uid: auth.currentUser.uid,
     text: text,
