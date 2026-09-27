@@ -2558,6 +2558,14 @@ function adminTab(tab) {
   else { loadAdminListings(tab); }
 }
 
+function deleteAdminUser(uid) {
+  if (!confirm('Bu kullanıcının DB kaydı silinecek. Emin misin?')) return;
+  db.ref('users/' + uid).remove().then(() => {
+    showInAppBanner('Silindi', 'Kullanıcı DB kaydı silindi.', '🗑️');
+    loadAdminUsers();
+  }).catch(e => alert('Hata: ' + e.message));
+}
+
 function loadAdminUsers() {
   const list = document.getElementById('admin-list');
   list.innerHTML = '<div style="text-align:center;padding:30px;color:#aaa">Yükleniyor…</div>';
@@ -2612,6 +2620,7 @@ function loadAdminUsers() {
           <div style="margin-top:8px;background:#f9f9f9;border-radius:8px;padding:8px;font-size:12px">
             <span style="color:#aaa">Son Giriş: </span><span style="font-weight:600;color:#555">${lastLogin}</span>
           </div>
+          <button onclick="deleteAdminUser('${u.uid}')" style="margin-top:10px;width:100%;background:#fff;color:#E53935;border:1.5px solid #E53935;border-radius:8px;padding:8px;font-size:13px;font-weight:700;cursor:pointer;">🗑️ DB Kaydını Sil</button>
         </div>`;
       }).join('');
     });
