@@ -2480,7 +2480,7 @@ function ilanNextStep(step) {
   }
   // Adım 2'den 3'e geçerken fotoğraf kontrolü
   if (step === 3) {
-    if (_ilanPhotos.length === 0) {
+    if (_ilanPhotos.length === 0 && _ilanExistingPhotos.length === 0) {
       alert('En az 1 fotoğraf eklemelisin.');
       return;
     }
