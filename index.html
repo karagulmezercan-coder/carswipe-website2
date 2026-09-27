@@ -2462,6 +2462,7 @@ function loadFirebaseListings() {
         kasa: l.kasa,
         photos: l.photos && l.photos.length ? l.photos.map(u => ({ isUrl: true, url: u })) : [],
         ilanNo: l.ilanNo || '',
+        firebaseId: child.key,
         fromFirebase: true
       });
     });
