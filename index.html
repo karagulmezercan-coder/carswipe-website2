@@ -2558,6 +2558,21 @@ function adminTab(tab) {
   else { loadAdminListings(tab); }
 }
 
+function banAdminUser(uid) {
+  if (!confirm('Bu kullanıcı banlanacak. Giriş yapamaz hale gelir. Emin misin?')) return;
+  db.ref('users/' + uid).update({ banned: true }).then(() => {
+    showInAppBanner('Banlandı', 'Kullanıcı banlandı.', '🚫');
+    loadAdminUsers();
+  }).catch(e => alert('Hata: ' + e.message));
+}
+
+function unbanAdminUser(uid) {
+  db.ref('users/' + uid).update({ banned: false }).then(() => {
+    showInAppBanner('Ban Kaldırıldı', 'Kullanıcının banı kaldırıldı.', '✅');
+    loadAdminUsers();
+  }).catch(e => alert('Hata: ' + e.message));
+}
+
 function deleteAdminUser(uid) {
   if (!confirm('Bu kullanıcının DB kaydı silinecek. Emin misin?')) return;
   db.ref('users/' + uid).remove().then(() => {
@@ -2591,7 +2606,8 @@ function loadAdminUsers() {
           ? '<span style="color:#2E7D32;font-weight:600;font-size:12px">✅ Doğrulandı</span>'
           : '<span style="color:#E53935;font-size:12px">✗ Doğrulanmadı</span>';
         return `
-        <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);">
+        <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);${u.banned ? 'border:2px solid #E53935;opacity:.8' : ''}">
+          ${u.banned ? '<div style="background:#E53935;color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;margin-bottom:8px;display:inline-block">🚫 BANLI</div>' : ''}
           <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px">
             ${avatar}
             <div style="flex:1;min-width:0">
@@ -2620,7 +2636,13 @@ function loadAdminUsers() {
           <div style="margin-top:8px;background:#f9f9f9;border-radius:8px;padding:8px;font-size:12px">
             <span style="color:#aaa">Son Giriş: </span><span style="font-weight:600;color:#555">${lastLogin}</span>
           </div>
-          <button onclick="deleteAdminUser('${u.uid}')" style="margin-top:10px;width:100%;background:#fff;color:#E53935;border:1.5px solid #E53935;border-radius:8px;padding:8px;font-size:13px;font-weight:700;cursor:pointer;">🗑️ DB Kaydını Sil</button>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            ${u.banned
+              ? `<button onclick="unbanAdminUser('${u.uid}')" style="flex:1;background:#2E7D32;color:#fff;border:none;border-radius:8px;padding:8px;font-size:13px;font-weight:700;cursor:pointer;">✅ Banı Kaldır</button>`
+              : `<button onclick="banAdminUser('${u.uid}')" style="flex:1;background:#fff;color:#E53935;border:1.5px solid #E53935;border-radius:8px;padding:8px;font-size:13px;font-weight:700;cursor:pointer;">🚫 Banla</button>`
+            }
+            <button onclick="deleteAdminUser('${u.uid}')" style="flex:1;background:#fff;color:#999;border:1.5px solid #ddd;border-radius:8px;padding:8px;font-size:13px;font-weight:600;cursor:pointer;">🗑️ DB Sil</button>
+          </div>
         </div>`;
       }).join('');
     });
@@ -2740,6 +2762,15 @@ auth.onAuthStateChanged(user => {
     // Admin menüsünü göster/gizle
     const adminNav = document.getElementById('admin-nav-item');
     if (adminNav) adminNav.style.display = user.email === ADMIN_EMAIL ? 'flex' : 'none';
+    // Ban kontrolü
+    db.ref('users/' + user.uid + '/banned').once('value').then(snap => {
+      if (snap.val() === true) {
+        auth.signOut();
+        setTimeout(() => {
+          alert('Hesabınız askıya alınmıştır. Destek için info@getcarswipe.com adresine yazın.');
+        }, 300);
+      }
+    }).catch(() => {});
     // Kullanıcı bilgilerini Firebase'e kaydet (her girişte güncelle)
     db.ref('users/' + user.uid).update({
       displayName: user.displayName || '',
