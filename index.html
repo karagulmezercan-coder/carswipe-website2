@@ -3078,6 +3078,33 @@ function closeAdminDetail() {
   document.getElementById('admin-detail-modal').style.display = 'none';
 }
 
+// ── Firebase Email Action Handler (verifyEmail, resetPassword) ──
+(function handleFirebaseEmailAction() {
+  const params = new URLSearchParams(window.location.search);
+  const mode = params.get('mode');
+  const oobCode = params.get('oobCode');
+  if (!mode || !oobCode) return;
+
+  if (mode === 'verifyEmail') {
+    auth.applyActionCode(oobCode).then(() => {
+      // Doğrulama başarılı — URL'yi temizle ve uygulamayı aç
+      window.history.replaceState({}, document.title, window.location.pathname);
+      auth.currentUser && auth.currentUser.reload();
+      // Banner göster
+      setTimeout(() => {
+        showInAppBanner('✅ E-posta Doğrulandı', 'Hesabın doğrulandı! Artık ilan verebilir ve mesaj gönderebilirsin.', '✅');
+      }, 1200);
+    }).catch(() => {
+      setTimeout(() => {
+        showInAppBanner('❌ Doğrulama Hatası', 'Link geçersiz veya süresi dolmuş. Tekrar doğrulama maili iste.', '❌');
+      }, 1200);
+    });
+  } else if (mode === 'resetPassword') {
+    // Şifre sıfırlama — şimdilik Firebase default sayfasına bırak
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+})();
+
 auth.onAuthStateChanged(user => {
   const btn = document.getElementById('nav-auth-btn');
   if (!btn) return;
