@@ -2304,16 +2304,47 @@ function handlePhotoPreview(input) {
 function renderPhotoGrid() {
   const grid = document.getElementById('il-photo-grid');
   let html = _ilanPhotos.map((p, i) => `
-    <div style="aspect-ratio:1;position:relative;border-radius:10px;overflow:hidden;">
-      <img src="${p.dataUrl}" style="width:100%;height:100%;object-fit:cover;">
-      ${i===0?'<div style="position:absolute;top:4px;left:4px;background:#E53935;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;">KAPAK</div>':''}
+    <div draggable="true" data-idx="${i}" ondragstart="photoDragStart(event,${i})" ondragover="photoDragOver(event)" ondrop="photoDrop(event,${i})" ondragend="photoDragEnd(event)"
+      style="aspect-ratio:1;position:relative;border-radius:10px;overflow:hidden;cursor:grab;border:${i===0?'2.5px solid #E53935':'2px solid transparent'};box-sizing:border-box;transition:opacity .2s;">
+      <img src="${p.dataUrl}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;">
+      ${i===0
+        ? '<div style="position:absolute;top:4px;left:4px;background:#E53935;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.3px;">KAPAK</div>'
+        : `<div onclick="setKapak(${i})" style="position:absolute;top:4px;left:4px;background:rgba(0,0,0,.55);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;cursor:pointer;letter-spacing:.3px;">KAPAK YAP</div>`}
       <button onclick="_ilanPhotos.splice(${i},1);renderPhotoGrid()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      <div style="position:absolute;bottom:4px;right:5px;color:rgba(255,255,255,.6);font-size:14px;pointer-events:none;">⠿</div>
     </div>`).join('');
-  if (_ilanPhotos.length < 6) {
+  if (_ilanPhotos.length < 10) {
     html += `<div onclick="document.getElementById('il-photos-input').click()" style="aspect-ratio:1;background:#f0f0f0;border:2px dashed #ddd;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:24px;color:#ccc;">
       <div>+</div><div style="font-size:11px;color:#bbb;margin-top:4px;">Ekle</div></div>`;
   }
   grid.innerHTML = html;
+}
+function setKapak(idx) {
+  const item = _ilanPhotos.splice(idx, 1)[0];
+  _ilanPhotos.unshift(item);
+  renderPhotoGrid();
+}
+let _dragSrcIdx = null;
+function photoDragStart(e, idx) {
+  _dragSrcIdx = idx;
+  e.dataTransfer.effectAllowed = 'move';
+  e.currentTarget.style.opacity = '0.4';
+}
+function photoDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+function photoDrop(e, idx) {
+  e.preventDefault();
+  if (_dragSrcIdx === null || _dragSrcIdx === idx) return;
+  const item = _ilanPhotos.splice(_dragSrcIdx, 1)[0];
+  _ilanPhotos.splice(idx, 0, item);
+  _dragSrcIdx = null;
+  renderPhotoGrid();
+}
+function photoDragEnd(e) {
+  _dragSrcIdx = null;
+  renderPhotoGrid();
 }
 
 function buildIlanPreview() {
@@ -3815,7 +3846,7 @@ document.addEventListener('keydown', e => {
   <!-- ADIM 2: Fotoğraflar -->
   <div id="ilan-step-2" style="display:none;flex:1;overflow-y:auto;padding:16px;">
     <div style="font-size:13px;font-weight:700;color:#E53935;margin-bottom:8px;letter-spacing:.5px;">FOTOĞRAFLAR</div>
-    <p style="font-size:13px;color:#888;margin-bottom:16px;">En fazla 10 fotoğraf yükleyebilirsin. İlk fotoğraf kapak olarak görünür.</p>
+    <p style="font-size:13px;color:#888;margin-bottom:16px;">En fazla 10 fotoğraf yükleyebilirsin. <b>Kapak yapmak</b> için "Kapak Yap"a tıkla, <b>sıralamak</b> için sürükle-bırak.</p>
     <input id="il-photos-input" type="file" accept="image/*" multiple style="display:none;" onchange="handlePhotoPreview(this)">
     <div id="il-photo-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
       <div onclick="document.getElementById('il-photos-input').click()" style="aspect-ratio:1;background:#f0f0f0;border:2px dashed #ddd;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:24px;color:#ccc;">
