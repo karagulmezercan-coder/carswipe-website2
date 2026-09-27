@@ -2365,6 +2365,9 @@ async function submitListing() {
     // Fotoğrafları Cloudinary'ye yükle
     const photoUrls = [];
     const listingId = db.ref('listings').push().key;
+    // Otomatik ilan numarası: Firebase sayacından sıradaki numarayı al
+    const counterSnap = await db.ref('meta/ilanCounter').transaction(v => (v || 0) + 1);
+    const ilanNo = counterSnap.snapshot.val();
     if (_ilanPhotos.length > 0) {
       document.getElementById('il-upload-progress').style.display = 'block';
       for (let i = 0; i < _ilanPhotos.length; i++) {
@@ -2424,6 +2427,7 @@ async function submitListing() {
       seller: document.getElementById('il-seller').value,
       desc:   document.getElementById('il-desc').value || '',
       photos: photoUrls,
+      ilanNo,
       status: 'pending',
       time: Date.now()
     };
