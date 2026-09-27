@@ -2461,6 +2461,7 @@ function loadFirebaseListings() {
         color: l.color,
         kasa: l.kasa,
         photos: l.photos && l.photos.length ? l.photos.map(u => ({ isUrl: true, url: u })) : [],
+        ilanNo: l.ilanNo || '',
         fromFirebase: true
       });
     });
@@ -4075,7 +4076,12 @@ function openDetail() {
   document.getElementById('detail-location').textContent = c.location;
   document.getElementById('detail-tag-hasar').textContent = c.hasar;
   document.getElementById('detail-tag-seller').textContent = c.seller;
-  document.getElementById('detail-ilan-no').textContent = c.ilanNo;
+  const ilanNoEl = document.getElementById('detail-ilan-no');
+  if (ilanNoEl) {
+    ilanNoEl.textContent = c.ilanNo || '';
+    const ilanNoRow = ilanNoEl.closest('.detail-row');
+    if (ilanNoRow) ilanNoRow.style.display = c.ilanNo ? '' : 'none';
+  }
   const now = new Date(); const months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
   document.getElementById('detail-ilan-date').textContent = now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
   document.getElementById('detail-brand').textContent = c.brand;
