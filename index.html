@@ -1652,6 +1652,7 @@ function openProfileScreen(page) {
               <span>🔢 ${il.km||'—'}</span>
             </div>
             <div id="views-${il.id}" style="margin-top:8px;font-size:12px;color:#666;font-weight:600;">👁 Yükleniyor...</div>
+            <button onclick="openIlanDuzenle('${il.id}')" style="margin-top:10px;width:100%;background:#fff;border:1.5px solid #E53935;color:#E53935;border-radius:8px;padding:8px;font-size:13px;font-weight:700;cursor:pointer;">✏️ Düzenle</button>
           </div>
         </div>`;
       }).join('');
@@ -2097,7 +2098,9 @@ function carPhotoUrl(car, photoIndex, w) {
 }
 
 // ── İLAN VER SİSTEMİ ──
-let _ilanPhotos = []; // { file, dataUrl } listesi
+let _ilanPhotos = []; // { file, dataUrl } — yeni yüklenecek fotoğraflar
+let _ilanExistingPhotos = []; // mevcut URL'ler (düzenleme modunda)
+let _editingIlanId = null; // null = yeni ilan, string = düzenleme modu
 
 function initIlanVerSelects() {
   // Filtre ekranıyla aynı veri dizilerini kullan
@@ -2171,14 +2174,120 @@ function selectTakas(val) {
 function openIlanVer() {
   if (!auth.currentUser) { alert('İlan vermek için giriş yapmalısın.'); return; }
   _ilanPhotos = [];
+  _ilanExistingPhotos = [];
+  _editingIlanId = null;
+  document.querySelector('#ilan-ver-overlay .app-header div[style*="font-size:17px"]').textContent = 'İlan Ver';
+  document.getElementById('ilan-submit-btn').textContent = 'İlanı Gönder ✓';
+  document.getElementById('ilan-step-success').querySelector('div[style*="font-size:22px"]').textContent = 'İlanın Alındı!';
+  document.getElementById('ilan-step-success').querySelector('p').textContent = 'Ekibimiz inceledikten sonra yayına girecek. Onaylandığında sana bildirim göndereceğiz.';
   initIlanVerSelects();
   ilanNextStep(1);
-  const overlay = document.getElementById('ilan-ver-overlay');
-  overlay.style.display = 'flex';
+  document.getElementById('ilan-ver-overlay').style.display = 'flex';
 }
 
 function closeIlanVer() {
   document.getElementById('ilan-ver-overlay').style.display = 'none';
+}
+
+async function openIlanDuzenle(ilanId) {
+  if (!auth.currentUser) return;
+  const snap = await db.ref('listings/' + ilanId).once('value');
+  const il = snap.val();
+  if (!il) return;
+
+  _ilanPhotos = [];
+  _ilanExistingPhotos = il.photos ? [...il.photos] : [];
+  _editingIlanId = ilanId;
+
+  document.querySelector('#ilan-ver-overlay .app-header div[style*="font-size:17px"]').textContent = 'İlanı Düzenle';
+  document.getElementById('ilan-submit-btn').textContent = 'Güncelle ✓';
+  document.getElementById('ilan-step-success').querySelector('div[style*="font-size:22px"]').textContent = 'İlan Güncellendi!';
+  document.getElementById('ilan-step-success').querySelector('p').textContent = 'Değişiklikleriniz admin onayına gönderildi. Onaylandıktan sonra yayına girecek.';
+
+  initIlanVerSelects();
+  ilanNextStep(1);
+  document.getElementById('ilan-ver-overlay').style.display = 'flex';
+
+  // Alanları doldur (selectler render olduktan sonra)
+  setTimeout(() => {
+    // Vasıta tipi
+    if (il.vasita) {
+      document.getElementById('il-vasita').value = il.vasita;
+      document.querySelectorAll('.il-vcard').forEach(c => {
+        if (c.querySelector('.il-vcard-lbl') && c.querySelector('.il-vcard-lbl').textContent === il.vasita) c.classList.add('selected');
+      });
+    }
+    // Marka → Model
+    const brandEl = document.getElementById('il-brand');
+    if (il.brand) { brandEl.value = il.brand; ilanModelUpdate(); ilanFieldChanged('il-brand'); }
+    setTimeout(() => {
+      if (il.model) { document.getElementById('il-model').value = il.model; ilanFieldChanged('il-model'); }
+    }, 50);
+    // Diğer selectler
+    ['year','kasa','fuel','gear','cekis','durum','hacim','hp','hasar','seller'].forEach(k => {
+      const el = document.getElementById('il-' + k);
+      if (el && il[k === 'year' ? 'year' : k]) { el.value = il[k === 'year' ? 'year' : k] || ''; ilanFieldChanged('il-' + k); }
+    });
+    if (il.fuel === 'Elektrik') updateHacimForFuel();
+    // Şehir → İlçe
+    if (il.location) {
+      const parts = il.location.split(' / ');
+      const sehirEl = document.getElementById('il-sehir');
+      if (parts[0]) { sehirEl.value = parts[0]; ilanIlceUpdate(); ilanFieldChanged('il-sehir'); }
+      setTimeout(() => {
+        if (parts[1]) { document.getElementById('il-ilce').value = parts[1]; ilanFieldChanged('il-ilce'); }
+      }, 50);
+    }
+    // Input alanları
+    if (il.km) document.getElementById('il-km').value = parseInt(il.km) || '';
+    if (il.price) document.getElementById('il-price').value = parseInt((il.price+'').replace(/\D/g,'')) || '';
+    if (il.trim) document.getElementById('il-trim').value = il.trim;
+    if (il.desc) document.getElementById('il-desc').value = il.desc;
+    // Renk
+    const colorEl = document.getElementById('il-color');
+    if (il.color) {
+      const colorOpts = Array.from(colorEl.options).map(o => o.value);
+      if (colorOpts.includes(il.color)) { colorEl.value = il.color; }
+      else { colorEl.value = 'Diğer'; document.getElementById('il-color-diger').style.display='block'; document.getElementById('il-color-diger').value = il.color; }
+      ilanFieldChanged('il-color');
+    }
+    // Takas
+    if (il.takas) {
+      document.getElementById('il-takas').value = il.takas;
+      document.querySelectorAll('.il-takas-btn').forEach(b => {
+        if (b.dataset.val === il.takas) b.classList.add('selected');
+      });
+    }
+    // Ekspertiz / Tramer / Boya
+    ['ekspertiz','tramer'].forEach(k => {
+      const val = il[k];
+      if (val) {
+        document.getElementById('il-' + k).value = val;
+        const varBtn = document.getElementById('il-' + k + '-var');
+        const yokBtn = document.getElementById('il-' + k + '-yok');
+        if (varBtn && yokBtn) { if (val === 'Var') varBtn.classList.add('selected'); else yokBtn.classList.add('selected'); }
+        if (k === 'tramer' && val === 'Var' && il.tramerDetay) {
+          const tw = document.getElementById('il-tramer-detail-wrap');
+          if (tw) tw.style.display = 'block';
+          const td = document.getElementById('il-tramer-detail');
+          if (td) td.value = il.tramerDetay || '';
+        }
+      }
+    });
+    if (il.boyaDurum) {
+      document.getElementById('il-boya-durum').value = il.boyaDurum;
+      if (il.boyaDurum === 'Boyalı/Değişen Parça Var') {
+        const bd = document.getElementById('il-boya-detail');
+        if (bd) { bd.style.display='block'; bd.value = il.boyaDetay || ''; }
+        const bv = document.getElementById('il-boya-var'); if (bv) bv.classList.add('selected');
+      } else {
+        const by = document.getElementById('il-boya-yok'); if (by) by.classList.add('selected');
+      }
+    }
+    // Mevcut fotoğrafları grid'e yansıt
+    renderPhotoGrid();
+    ilanFieldChanged('il-km'); ilanFieldChanged('il-price');
+  }, 100);
 }
 
 // Zorunlu alanlar listesi
@@ -2313,25 +2422,43 @@ function handlePhotoPreview(input) {
 
 function renderPhotoGrid() {
   const grid = document.getElementById('il-photo-grid');
-  let html = _ilanPhotos.map((p, i) => `
-    <div draggable="true" data-idx="${i}" ondragstart="photoDragStart(event,${i})" ondragover="photoDragOver(event)" ondrop="photoDrop(event,${i})" ondragend="photoDragEnd(event)"
+  // Tüm fotoğrafları birleştir: mevcut URL'ler + yeni yüklemeler
+  const allPhotos = [
+    ..._ilanExistingPhotos.map(url => ({ type:'existing', url })),
+    ..._ilanPhotos.map(p => ({ type:'new', dataUrl: p.dataUrl }))
+  ];
+  const totalCount = allPhotos.length;
+  let html = allPhotos.map((p, i) => {
+    const src = p.type === 'existing' ? p.url : p.dataUrl;
+    const removeCall = p.type === 'existing'
+      ? `_ilanExistingPhotos.splice(${_ilanExistingPhotos.indexOf(p.url)},1);renderPhotoGrid()`
+      : `_ilanPhotos.splice(${i - _ilanExistingPhotos.length},1);renderPhotoGrid()`;
+    return `<div draggable="true" data-idx="${i}" ondragstart="photoDragStart(event,${i})" ondragover="photoDragOver(event)" ondrop="photoDrop(event,${i})" ondragend="photoDragEnd(event)"
       style="aspect-ratio:1;position:relative;border-radius:10px;overflow:hidden;cursor:grab;border:${i===0?'2.5px solid #E53935':'2px solid transparent'};box-sizing:border-box;transition:opacity .2s;">
-      <img src="${p.dataUrl}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;">
+      <img src="${src}" style="width:100%;height:100%;object-fit:cover;pointer-events:none;">
       ${i===0
         ? '<div style="position:absolute;top:4px;left:4px;background:#E53935;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.3px;">KAPAK</div>'
         : `<div onclick="setKapak(${i})" style="position:absolute;top:4px;left:4px;background:rgba(0,0,0,.55);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;cursor:pointer;letter-spacing:.3px;">KAPAK YAP</div>`}
-      <button onclick="_ilanPhotos.splice(${i},1);renderPhotoGrid()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      <button onclick="${removeCall}" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
       <div style="position:absolute;bottom:4px;right:5px;color:rgba(255,255,255,.6);font-size:14px;pointer-events:none;">⠿</div>
-    </div>`).join('');
-  if (_ilanPhotos.length < 10) {
+    </div>`;
+  }).join('');
+  if (totalCount < 10) {
     html += `<div onclick="document.getElementById('il-photos-input').click()" style="aspect-ratio:1;background:#f0f0f0;border:2px dashed #ddd;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:24px;color:#ccc;">
       <div>+</div><div style="font-size:11px;color:#bbb;margin-top:4px;">Ekle</div></div>`;
   }
   grid.innerHTML = html;
 }
 function setKapak(idx) {
-  const item = _ilanPhotos.splice(idx, 1)[0];
-  _ilanPhotos.unshift(item);
+  // Tüm fotoğrafları birleştir, idx'i başa taşı, sonra geri dağıt
+  const all = [
+    ..._ilanExistingPhotos.map(url => ({ type:'existing', url })),
+    ..._ilanPhotos.map(p => ({ type:'new', ...p }))
+  ];
+  const item = all.splice(idx, 1)[0];
+  all.unshift(item);
+  _ilanExistingPhotos = all.filter(x => x.type === 'existing').map(x => x.url);
+  _ilanPhotos = all.filter(x => x.type === 'new').map(x => ({ file: x.file, dataUrl: x.dataUrl }));
   renderPhotoGrid();
 }
 let _dragSrcIdx = null;
@@ -2347,8 +2474,14 @@ function photoDragOver(e) {
 function photoDrop(e, idx) {
   e.preventDefault();
   if (_dragSrcIdx === null || _dragSrcIdx === idx) return;
-  const item = _ilanPhotos.splice(_dragSrcIdx, 1)[0];
-  _ilanPhotos.splice(idx, 0, item);
+  const all = [
+    ..._ilanExistingPhotos.map(url => ({ type:'existing', url })),
+    ..._ilanPhotos.map(p => ({ type:'new', ...p }))
+  ];
+  const item = all.splice(_dragSrcIdx, 1)[0];
+  all.splice(idx, 0, item);
+  _ilanExistingPhotos = all.filter(x => x.type === 'existing').map(x => x.url);
+  _ilanPhotos = all.filter(x => x.type === 'new').map(x => ({ file: x.file, dataUrl: x.dataUrl }));
   _dragSrcIdx = null;
   renderPhotoGrid();
 }
@@ -2405,10 +2538,22 @@ async function submitListing() {
   try {
     // Fotoğrafları Cloudinary'ye yükle
     const photoUrls = [];
-    const listingId = db.ref('listings').push().key;
-    // Otomatik ilan numarası: Firebase sayacından sıradaki numarayı al
-    const counterSnap = await db.ref('meta/ilanCounter').transaction(v => (v || 0) + 1);
-    const ilanNo = counterSnap.snapshot.val();
+    const isEdit = !!_editingIlanId;
+    const listingId = isEdit ? _editingIlanId : db.ref('listings').push().key;
+
+    // Yeni ilan ise ilanNo al, düzenleme ise eskiyi koru
+    let ilanNo = null;
+    if (!isEdit) {
+      const counterSnap = await db.ref('meta/ilanCounter').transaction(v => (v || 0) + 1);
+      ilanNo = counterSnap.snapshot.val();
+    } else {
+      const snap = await db.ref('listings/' + listingId + '/ilanNo').once('value');
+      ilanNo = snap.val();
+    }
+
+    // Fotoğraf yükle (sadece yeni seçilenler)
+    // Düzenleme modunda mevcut URL'ler _ilanExistingPhotos'ta
+    const newPhotoUrls = [..._ilanExistingPhotos]; // mevcut URL'ler önce
     if (_ilanPhotos.length > 0) {
       document.getElementById('il-upload-progress').style.display = 'block';
       for (let i = 0; i < _ilanPhotos.length; i++) {
@@ -2423,13 +2568,13 @@ async function submitListing() {
         });
         if (!res.ok) throw new Error('Fotoğraf yüklenemedi.');
         const data = await res.json();
-        photoUrls.push(data.secure_url);
+        newPhotoUrls.push(data.secure_url);
       }
       document.getElementById('il-upload-bar').style.width = '100%';
       document.getElementById('il-upload-progress').style.display = 'none';
     }
 
-    // İlanı kaydet
+    // İlanı kaydet / güncelle
     const priceNum = parseInt(price);
     const priceStr = priceNum.toLocaleString('tr-TR') + ' ₺';
     const kmNum = parseInt(km);
@@ -2467,16 +2612,17 @@ async function submitListing() {
       meta: `📍 ${location} · ${kmStr}`,
       seller: document.getElementById('il-seller').value,
       desc:   document.getElementById('il-desc').value || '',
-      photos: photoUrls,
+      photos: newPhotoUrls,
       ilanNo,
       status: 'pending',
-      time: Date.now()
+      time: isEdit ? (await db.ref('listings/' + listingId + '/time').once('value')).val() : Date.now(),
+      ...(isEdit ? { editedAt: Date.now() } : {})
     };
     await db.ref('listings/' + listingId).set(listing);
     ilanNextStep('success');
   } catch(e) {
     alert('Hata: ' + e.message);
-    btn.disabled = false; btn.textContent = 'İlanı Gönder ✓';
+    btn.disabled = false; btn.textContent = _editingIlanId ? 'Güncelle ✓' : 'İlanı Gönder ✓';
   }
 }
 
