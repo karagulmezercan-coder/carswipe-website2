@@ -4900,7 +4900,10 @@ function loadConversations() {
       const avatarHtml = avatar
         ? `<img class="msg-avatar" src="${avatar}" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0">`
         : `<div style="width:44px;height:44px;border-radius:50%;background:#E53935;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🚗</div>`;
-      return `<div class="msg-item" onclick="openChatById('${cv.roomId}','${name.replace(/'/g,"\\'")}','${avatar}')">
+      const safeRoom = cv.roomId.replace(/'/g,"\\'");
+      const safeName = name.replace(/'/g,"\\'");
+      return `<div class="msg-item" data-conv="${cv.roomId}" onclick="convItemClick(this,'${safeName}','${avatar}','')">
+        <span class="conv-chk" style="display:none;color:#E53935;font-size:18px;flex-shrink:0;margin-right:6px;">○</span>
         ${avatarHtml}
         <div class="msg-info" style="flex:1;min-width:0">
           <div class="msg-name">${name}</div>
@@ -5009,7 +5012,12 @@ function convItemClick(el, name, avatar, firstMsg) {
   if (_convSelectMode) {
     toggleConvSelect(el);
   } else {
-    openChat(name, avatar, firstMsg);
+    const roomId = el.dataset.conv;
+    if (roomId) {
+      openChatById(roomId, name, avatar);
+    } else {
+      openChat(name, avatar, firstMsg);
+    }
   }
 }
 
@@ -5078,17 +5086,26 @@ function selectAllConvs() {
 function deleteSelectedConvs() {
   const keys = Object.keys(_selectedConvs);
   if (!keys.length) { alert('Önce sohbet seçin.'); return; }
-  keys.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.remove();
+  if (!confirm(keys.length + ' sohbet silinsin mi?')) return;
+  const promises = keys.map(id => db.ref('chats/' + id).remove().catch(() => {}));
+  Promise.all(promises).then(() => {
+    keys.forEach(id => {
+      const el = document.querySelector('.msg-item[data-conv="' + id + '"]');
+      if (el) el.remove();
+    });
+    exitConvSelectMode();
   });
-  exitConvSelectMode();
 }
 
 function deleteAllConvs() {
   if (!confirm('Tüm sohbetler silinsin mi?')) return;
-  document.querySelectorAll('.msg-item[data-conv]').forEach(el => el.remove());
-  exitConvSelectMode();
+  const ids = [];
+  document.querySelectorAll('.msg-item[data-conv]').forEach(el => ids.push(el.dataset.conv));
+  const promises = ids.map(id => db.ref('chats/' + id).remove().catch(() => {}));
+  Promise.all(promises).then(() => {
+    document.querySelectorAll('.msg-item[data-conv]').forEach(el => el.remove());
+    exitConvSelectMode();
+  });
 }
 
 let _chatReturnToDetail = false;
