@@ -1973,6 +1973,23 @@ function parseCarPrice(priceStr) {
   return parseInt((priceStr || '0').replace(/\./g,'').replace(/[^0-9]/g,'')) || 0;
 }
 
+function playNotifSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.35);
+  } catch(e) {}
+}
+
 function showInAppBanner(title, body, icon) {
   const banner = document.getElementById('notif-banner');
   const tEl = document.getElementById('notif-banner-title');
@@ -1985,6 +2002,7 @@ function showInAppBanner(title, body, icon) {
   banner.style.display = 'block';
   clearTimeout(banner._t);
   banner._t = setTimeout(() => { banner.style.display = 'none'; }, 5000);
+  playNotifSound();
 }
 
 function showOSNotif(title, body, icon) {
