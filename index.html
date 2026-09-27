@@ -3640,8 +3640,8 @@ document.addEventListener('keydown', e => {
         <!-- Chat Header -->
         <div id="chat-header-normal" class="app-header" style="display:flex;align-items:center;gap:10px;padding:10px 12px;">
           <button onclick="closeChat()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0 4px;">‹</button>
-          <img id="chat-avatar" src="" style="width:30px;height:30px;border-radius:50%;object-fit:cover;">
-          <div id="chat-title" style="font-size:13px;font-weight:700;color:#fff;flex:1;"></div>
+          <div id="chat-avatar-wrap" style="width:36px;height:36px;border-radius:8px;overflow:hidden;flex-shrink:0;background:#fff3;display:flex;align-items:center;justify-content:center;font-size:18px;">🚗</div>
+          <div id="chat-title" style="font-size:14px;font-weight:700;color:#fff;flex:1;"></div>
         </div>
 
         <!-- Chat Mesajlar -->
@@ -4917,10 +4917,20 @@ function loadConversations() {
   });
 }
 
+function _setChatAvatar(avatar) {
+  const wrap = document.getElementById('chat-avatar-wrap');
+  if (!wrap) return;
+  if (avatar) {
+    wrap.innerHTML = `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;">`;
+  } else {
+    wrap.innerHTML = '🚗';
+  }
+}
+
 function openChatById(roomId, name, avatar) {
   if (!auth.currentUser) return;
   document.getElementById('chat-title').textContent = name;
-  if (document.getElementById('chat-avatar')) document.getElementById('chat-avatar').src = avatar;
+  _setChatAvatar(avatar);
   document.getElementById('msg-list-screen').style.display = 'none';
   const cs = document.getElementById('chat-screen');
   cs.style.display = 'flex';
@@ -4929,24 +4939,37 @@ function openChatById(roomId, name, avatar) {
   chatListener = roomId;
   const messagesRef = db.ref('chats/' + roomId + '/messages');
   const body = document.getElementById('chat-body');
-  body.innerHTML = '';
+  body.innerHTML = '<div id="chat-empty-state" style="text-align:center;color:#bbb;font-size:13px;padding:40px 20px;flex:1;">Henüz mesaj yok.<br>İlk mesajı sen gönder! 👋</div>';
   window._selectedMsgs = {};
   messagesRef.on('child_added', snap => {
+    const emptyState = document.getElementById('chat-empty-state');
+    if (emptyState) emptyState.remove();
     const m = snap.val();
+    const key = snap.key;
     const isMe = m.uid === auth.currentUser.uid;
+    const timeStr = new Date(m.time).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
     const div = document.createElement('div');
-    div.className = isMe ? 'msg-out' : 'msg-in';
-    div.textContent = m.text;
-    div.style.cssText = `max-width:75%;padding:10px 14px;border-radius:16px;font-size:13px;line-height:1.5;margin:4px 10px;align-self:${isMe?'flex-end':'flex-start'};background:${isMe?'#E53935':'#EDE8DF'};color:${isMe?'#fff':'#111'}`;
+    div.dataset.key = key;
+    div.style.cssText = `display:flex;flex-direction:row;align-items:center;gap:6px;padding:2px 4px;border-radius:8px;justify-content:${isMe?'flex-end':'flex-start'};`;
+    const inner = document.createElement('div');
+    inner.style.cssText = `display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};`;
+    inner.innerHTML = `
+      <div style="max-width:75%;padding:9px 13px;border-radius:16px;font-size:12px;line-height:1.5;background:${isMe?'#E53935':'#fff'};color:${isMe?'#fff':'#222'};border-bottom-${isMe?'right':'left'}-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.08);">${m.text}</div>
+      <div style="font-size:10px;color:#bbb;margin-top:2px;">${timeStr}</div>`;
+    div.appendChild(inner);
     body.appendChild(div);
     body.scrollTop = body.scrollHeight;
+  });
+  messagesRef.on('child_removed', snap => {
+    const el = body.querySelector(`[data-key="${snap.key}"]`);
+    if (el) el.remove();
   });
 }
 
 function openChat(name, avatar, firstMsg) {
   if (!auth.currentUser) { alert('Sohbet için giriş yapmalısın.'); return; }
   document.getElementById('chat-title').textContent = name;
-  document.getElementById('chat-avatar').src = avatar;
+  _setChatAvatar(avatar);
   document.getElementById('msg-list-screen').style.display = 'none';
   const cs = document.getElementById('chat-screen');
   cs.style.display = 'flex';
@@ -4967,13 +4990,6 @@ function openChat(name, avatar, firstMsg) {
   // Önceki listener'ı kapat
   if (chatListener) { db.ref('chats/' + chatListener + '/messages').off(); }
   chatListener = currentRoomId;
-
-  // İlk mesaj yoksa ekle
-  messagesRef.limitToLast(1).once('value', snap => {
-    if (!snap.exists()) {
-      messagesRef.push({ uid:'other', text: firstMsg, time: Date.now() });
-    }
-  });
 
   // Gerçek zamanlı dinle
   const body = document.getElementById('chat-body');
