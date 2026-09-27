@@ -1496,9 +1496,16 @@ function submitAuth() {
       .catch(e => { showError(getErrMsg(e.code)); btn.textContent = 'Giriş Yap'; btn.disabled = false; });
   } else {
     const name = document.getElementById('auth-name').value.trim();
+    let _regUser = null;
     auth.createUserWithEmailAndPassword(email, pass)
-      .then(r => { if (name) return r.user.updateProfile({displayName: name}); })
-      .then(() => { closeAuth(); showApp(); })
+      .then(r => { _regUser = r.user; if (name) return r.user.updateProfile({displayName: name}); })
+      .then(() => _regUser.sendEmailVerification())
+      .then(() => {
+        closeAuth();
+        showApp();
+        // Doğrulama maili gönderildi bildirimi
+        setTimeout(() => showInAppBanner('E-postanı Doğrula', `${email} adresine doğrulama maili gönderdik. Lütfen kontrol et.`, '📧'), 800);
+      })
       .catch(e => { showError(getErrMsg(e.code)); btn.textContent = 'Kayıt Ol'; btn.disabled = false; });
   }
 }
