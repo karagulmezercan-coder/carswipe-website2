@@ -1724,6 +1724,10 @@ function openProfileScreen(page) {
     }
   } else if (page === 'bildirim') {
     body.innerHTML = `
+      <div id="ilan-notif-list" style="margin-bottom:16px;">
+        <div style="text-align:center;padding:24px;color:#aaa;font-size:13px;">Bildirimler yükleniyor...</div>
+      </div>
+      <div style="font-size:12px;color:#aaa;font-weight:600;letter-spacing:.4px;margin-bottom:8px;padding:0 4px;">BİLDİRİM TERCİHLERİ</div>
       <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);">
         ${[['İlanıma beğeni geldi','new_like'],['Mesajlar','messages'],['Fiyat düşüşleri','price_drop'],['Önerilen araçlar','suggestions']].map(([label, key]) => {
           const on = localStorage.getItem('notif_'+key) !== '0';
@@ -1736,6 +1740,43 @@ function openProfileScreen(page) {
         </div>`;}).join('')}
       </div>
       <p style="font-size:12px;color:#aaa;text-align:center;margin-top:14px;">Bildirim tercihleri bu cihaza kaydedilir.</p>`;
+    // İlan bildirimlerini yükle
+    if (user) {
+      db.ref('notifications/' + user.uid).orderByChild('time').limitToLast(20).once('value', snap => {
+        const notifList = document.getElementById('ilan-notif-list');
+        if (!notifList) return;
+        const items = [];
+        snap.forEach(child => {
+          const n = child.val();
+          if (n.type === 'listing_approved' || n.type === 'listing_rejected') {
+            items.push({ key: child.key, ...n });
+          }
+        });
+        items.sort((a,b) => (b.time||0) - (a.time||0));
+        if (items.length === 0) {
+          notifList.innerHTML = `<div style="background:#fff;border-radius:14px;padding:20px;text-align:center;color:#aaa;font-size:13px;box-shadow:0 1px 4px rgba(0,0,0,.06);">Henüz ilan bildirimin yok.</div>`;
+          return;
+        }
+        notifList.innerHTML = `
+          <div style="font-size:12px;color:#aaa;font-weight:600;letter-spacing:.4px;margin-bottom:8px;padding:0 4px;">İLAN BİLDİRİMLERİ</div>
+          <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+          ${items.map(n => {
+            const date = n.time ? new Date(n.time).toLocaleDateString('tr-TR',{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : '';
+            const bg = n.read ? '#fff' : (n.type==='listing_approved' ? '#f1f8e9' : '#fff8f8');
+            return `<div style="padding:14px 16px;border-bottom:1px solid #f5f5f5;background:${bg};">
+              <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:3px;">${n.title||''}</div>
+              <div style="font-size:12px;color:#666;line-height:1.5;margin-bottom:4px;">${n.body||''}</div>
+              <div style="font-size:11px;color:#aaa;">${date}</div>
+            </div>`;
+          }).join('')}
+          </div>`;
+        // Hepsini okundu yap
+        items.forEach(n => {
+          if (!n.read) db.ref('notifications/' + user.uid + '/' + n.key).update({ read: true }).catch(()=>{});
+        });
+        updateNotifBadge();
+      });
+    }
   } else if (page === 'gizlilik') {
     body.innerHTML = `
       <div style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:12px;">
@@ -2085,7 +2126,41 @@ function initNotifications() {
     checkPriceDrops();
     checkRecommendations();
     listenIncomingMessages();
+    listenIlanNotifications();
   }, 2000); // Uygulama tam yüklendikten sonra
+}
+
+function listenIlanNotifications() {
+  const user = auth.currentUser;
+  if (!user) return;
+  // Okunmamış ilan bildirimleri için realtime dinleyici
+  db.ref('notifications/' + user.uid).orderByChild('read').equalTo(false).on('child_added', snap => {
+    const n = snap.val();
+    if (!n || n.type !== 'listing_approved' && n.type !== 'listing_rejected') return;
+    // Banner göster
+    showInAppBanner(n.title, n.body, n.type === 'listing_approved' ? '✅' : '❌');
+    // Okundu olarak işaretle (3 sn sonra)
+    setTimeout(() => {
+      snap.ref.update({ read: true }).catch(() => {});
+    }, 3000);
+    // Rozeti güncelle
+    updateNotifBadge();
+  });
+  // İlk yüklemede okunmamış sayısını kontrol et
+  updateNotifBadge();
+}
+
+function updateNotifBadge() {
+  const user = auth.currentUser;
+  if (!user) return;
+  db.ref('notifications/' + user.uid).orderByChild('read').equalTo(false).once('value', snap => {
+    const count = snap.numChildren();
+    const badge = document.getElementById('notif-badge');
+    if (badge) {
+      badge.textContent = count;
+      badge.style.display = count > 0 ? 'flex' : 'none';
+    }
+  });
 }
 
 // Fotoğraf URL yardımcısı — Firebase Storage URL veya Unsplash
@@ -2880,16 +2955,46 @@ function loadAdminListings(status) {
 }
 
 function adminApprove(id) {
-  db.ref('listings/' + id + '/status').set('active').then(() => {
-    closeAdminDetail();
-    loadAdminListings(_adminCurrentTab);
+  db.ref('listings/' + id).once('value').then(snap => {
+    const il = snap.val();
+    if (!il) return;
+    db.ref('listings/' + id + '/status').set('active').then(() => {
+      // Kullanıcıya bildirim gönder
+      if (il.uid) {
+        db.ref('notifications/' + il.uid).push({
+          type: 'listing_approved',
+          title: '✅ İlanınız Onaylandı',
+          body: `"${il.name || (il.brand + ' ' + il.model)} ${il.year || ''}" ilanınız yayına alındı.`,
+          ilanId: id,
+          time: Date.now(),
+          read: false
+        }).catch(() => {});
+      }
+      closeAdminDetail();
+      loadAdminListings(_adminCurrentTab);
+    });
   });
 }
 
 function adminReject(id) {
-  db.ref('listings/' + id + '/status').set('rejected').then(() => {
-    closeAdminDetail();
-    loadAdminListings(_adminCurrentTab);
+  db.ref('listings/' + id).once('value').then(snap => {
+    const il = snap.val();
+    if (!il) return;
+    db.ref('listings/' + id + '/status').set('rejected').then(() => {
+      // Kullanıcıya bildirim gönder
+      if (il.uid) {
+        db.ref('notifications/' + il.uid).push({
+          type: 'listing_rejected',
+          title: '❌ İlanınız Reddedildi',
+          body: `"${il.name || (il.brand + ' ' + il.model)} ${il.year || ''}" ilanınız onaylanmadı. Düzenleyerek tekrar gönderebilirsiniz.`,
+          ilanId: id,
+          time: Date.now(),
+          read: false
+        }).catch(() => {});
+      }
+      closeAdminDetail();
+      loadAdminListings(_adminCurrentTab);
+    });
   });
 }
 
@@ -3555,7 +3660,10 @@ document.addEventListener('keydown', e => {
             <div class="profile-menu-icon">👤</div><div class="profile-menu-text">Hesap Bilgileri</div><div class="profile-menu-arrow">›</div>
           </div>
           <div class="profile-menu-item" onclick="openProfileScreen('bildirim')">
-            <div class="profile-menu-icon">🔔</div><div class="profile-menu-text">Bildirimler</div><div class="profile-menu-arrow">›</div>
+            <div class="profile-menu-icon">🔔</div>
+            <div class="profile-menu-text" style="flex:1;">Bildirimler</div>
+            <div id="notif-badge" style="display:none;background:#E53935;color:#fff;font-size:11px;font-weight:700;min-width:18px;height:18px;border-radius:9px;align-items:center;justify-content:center;padding:0 4px;margin-right:6px;">0</div>
+            <div class="profile-menu-arrow">›</div>
           </div>
           <div class="profile-menu-item" onclick="openProfileScreen('gizlilik')">
             <div class="profile-menu-icon">🔒</div><div class="profile-menu-text">Gizlilik & Güvenlik</div><div class="profile-menu-arrow">›</div>
