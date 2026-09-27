@@ -1689,58 +1689,22 @@ function openProfileScreen(page) {
           <div style="font-size:14px;color:#1a1a1a;">${creationTime}</div>
         </div>
         <div style="padding:16px;" id="phone-verify-section">
-          <div style="font-size:11px;color:#aaa;font-weight:600;letter-spacing:.5px;margin-bottom:8px;">TELEFON DOĞRULAMASI</div>
-          <div id="phone-status-row" style="display:flex;align-items:center;justify-content:space-between;">
-            <span id="phone-status-txt" style="font-size:14px;color:#888;">Yükleniyor…</span>
-            <button id="phone-verify-btn" onclick="showPhoneVerifyUI()" style="background:none;border:none;color:#E53935;font-size:13px;font-weight:600;cursor:pointer;display:none;">Doğrula</button>
+          <div style="font-size:11px;color:#aaa;font-weight:600;letter-spacing:.5px;margin-bottom:8px;">TELEFON NUMARASI</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input id="inp-phone" type="tel" placeholder="+90 5xx xxx xx xx" style="flex:1;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;outline:none;box-sizing:border-box;">
+            <button onclick="savePhoneNumber()" style="background:#E53935;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">Kaydet</button>
           </div>
-          <div id="phone-input-area" style="display:none;margin-top:10px;">
-            <div style="font-size:12px;color:#888;margin-bottom:8px;">Telefon numaranı gir</div>
-            <div style="display:flex;align-items:center;border:1.5px solid #E53935;border-radius:8px;overflow:hidden;margin-bottom:8px;">
-              <span style="background:#f5f5f5;padding:10px 12px;font-size:14px;font-weight:700;color:#333;border-right:1px solid #ddd;white-space:nowrap">🇹🇷 +90</span>
-              <input id="inp-phone" type="tel" placeholder="5xx xxx xx xx" maxlength="10" style="flex:1;padding:10px 12px;border:none;font-size:14px;outline:none;box-sizing:border-box;">
-            </div>
-            <div id="recaptcha-container" style="margin-bottom:8px;"></div>
-            <div id="phone-send-msg" style="font-size:12px;color:#888;margin-bottom:8px;"></div>
-            <div style="display:flex;gap:8px;">
-              <button onclick="startPhoneVerify()" style="flex:1;background:#E53935;color:#fff;border:none;border-radius:8px;padding:10px;font-weight:700;cursor:pointer;font-size:13px;">SMS Gönder</button>
-              <button onclick="cancelPhoneVerify()" style="flex:1;background:#f0f0f0;color:#666;border:none;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;font-size:13px;">İptal</button>
-            </div>
-          </div>
-          <div id="phone-otp-area" style="display:none;margin-top:10px;">
-            <div style="font-size:12px;color:#388E3C;margin-bottom:8px;">✓ SMS gönderildi. Telefonuna gelen kodu gir:</div>
-            <input id="inp-otp" type="number" placeholder="6 haneli kod" style="width:100%;padding:10px 12px;border:1.5px solid #E53935;border-radius:8px;font-size:16px;font-weight:700;letter-spacing:4px;outline:none;margin-bottom:8px;box-sizing:border-box;text-align:center;">
-            <div id="otp-msg" style="font-size:12px;color:#888;margin-bottom:8px;"></div>
-            <div style="display:flex;gap:8px;">
-              <button onclick="confirmPhoneCode()" style="flex:1;background:#E53935;color:#fff;border:none;border-radius:8px;padding:10px;font-weight:700;cursor:pointer;font-size:13px;">Onayla</button>
-              <button onclick="cancelPhoneVerify()" style="flex:1;background:#f0f0f0;color:#666;border:none;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;font-size:13px;">İptal</button>
-            </div>
-          </div>
+          <div id="phone-save-msg" style="font-size:12px;margin-top:6px;"></div>
         </div>
       </div>
       <div id="hesap-msg" style="display:none;background:#E8F5E9;border-radius:10px;padding:12px 14px;font-size:13px;color:#2E7D32;font-weight:600;text-align:center;"></div>`;
-    // Load phone verification status
+    // Kayıtlı telefon numarasını input'a doldur
     if (user) {
-      db.ref('users/' + user.uid + '/phoneVerified').once('value').then(snap => {
-        const verified = snap.val();
-        const statusTxt = document.getElementById('phone-status-txt');
-        const verifyBtn = document.getElementById('phone-verify-btn');
-        if (!statusTxt) return;
-        if (verified) {
-          db.ref('users/' + user.uid + '/phone').once('value').then(ps => {
-            const phone = ps.val() || '';
-            if (statusTxt) statusTxt.innerHTML = `<span style="color:#2E7D32;font-weight:600;">✅ Doğrulandı${phone ? ' · ' + phone : ''}</span>`;
-          });
-        } else {
-          if (statusTxt) { statusTxt.textContent = 'Henüz doğrulanmadı'; statusTxt.style.color='#E53935'; }
-          if (verifyBtn) verifyBtn.style.display = 'block';
-        }
-      }).catch(() => {
-        const statusTxt = document.getElementById('phone-status-txt');
-        const verifyBtn = document.getElementById('phone-verify-btn');
-        if (statusTxt) { statusTxt.textContent = 'Henüz doğrulanmadı'; statusTxt.style.color='#E53935'; }
-        if (verifyBtn) verifyBtn.style.display = 'block';
-      });
+      db.ref('users/' + user.uid + '/phone').once('value').then(snap => {
+        const phone = snap.val() || '';
+        const inp = document.getElementById('inp-phone');
+        if (inp && phone) inp.value = phone;
+      }).catch(() => {});
     }
   } else if (page === 'bildirim') {
     body.innerHTML = `
@@ -1887,114 +1851,22 @@ function saveProfileEmail() {
   });
 }
 
-// ── TELEFON DOĞRULAMA FONKSİYONLARI ──
-let _phoneConfirmResult = null;
-let _recaptchaVerifier = null;
-
-function showPhoneVerifyUI() {
-  document.getElementById('phone-status-row').style.display = 'none';
-  document.getElementById('phone-input-area').style.display = 'block';
-  document.getElementById('phone-otp-area').style.display = 'none';
-}
-
-function cancelPhoneVerify() {
-  document.getElementById('phone-status-row').style.display = 'flex';
-  document.getElementById('phone-input-area').style.display = 'none';
-  document.getElementById('phone-otp-area').style.display = 'none';
-  if (_recaptchaVerifier) { try { _recaptchaVerifier.clear(); } catch(e) {} _recaptchaVerifier = null; }
-  document.getElementById('recaptcha-container').innerHTML = '';
-}
-
-async function startPhoneVerify() {
+// ── TELEFON NUMARASI (SMS doğrulama yok, sadece kayıt) ──
+async function savePhoneNumber() {
   const user = auth.currentUser;
-  if (!user) { alert('Giriş yapman gerekiyor.'); return; }
-  const phoneRaw = (document.getElementById('inp-phone') || {}).value || '';
-  const digits = phoneRaw.replace(/\D/g, '');
-  const phone = '+90' + digits;
-  if (digits.length !== 10 || !digits.startsWith('5')) {
-    const msg = document.getElementById('phone-send-msg');
-    if (msg) { msg.style.color='#E53935'; msg.textContent='Geçerli bir numara gir (örn: 5321234567 — 10 hane)'; }
+  if (!user) return;
+  const phone = ((document.getElementById('inp-phone') || {}).value || '').trim();
+  const msg = document.getElementById('phone-save-msg');
+  if (!phone) {
+    if (msg) { msg.style.color='#E53935'; msg.textContent='Telefon numarası boş olamaz.'; }
     return;
   }
-  const msg = document.getElementById('phone-send-msg');
-  if (msg) { msg.style.color='#888'; msg.textContent='Gönderiliyor…'; }
   try {
-    if (_recaptchaVerifier) { try { _recaptchaVerifier.clear(); } catch(e) {} }
-    _recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-      size: 'normal',
-      callback: () => {},
-      'expired-callback': () => {
-        const m = document.getElementById('phone-send-msg');
-        if (m) { m.style.color='#E53935'; m.textContent='reCAPTCHA süresi doldu, tekrar dene.'; }
-        if (_recaptchaVerifier) { try { _recaptchaVerifier.clear(); } catch(e) {} _recaptchaVerifier = null; }
-        document.getElementById('recaptcha-container').innerHTML = '';
-      }
-    });
-    _phoneConfirmResult = await user.linkWithPhoneNumber(phone, _recaptchaVerifier);
-    document.getElementById('phone-input-area').style.display = 'none';
-    document.getElementById('phone-otp-area').style.display = 'block';
+    await db.ref('users/' + user.uid).update({ phone });
+    if (msg) { msg.style.color='#2E7D32'; msg.textContent='✅ Telefon numarası kaydedildi.'; setTimeout(()=>{ if(msg) msg.textContent=''; },3000); }
   } catch(e) {
-    if (_recaptchaVerifier) { try { _recaptchaVerifier.clear(); } catch(err) {} _recaptchaVerifier = null; }
-    document.getElementById('recaptcha-container').innerHTML = '';
-    const errMap = {
-      'auth/invalid-phone-number': 'Geçersiz telefon numarası.',
-      'auth/too-many-requests': 'Çok fazla deneme yapıldı. Lütfen bekle.',
-      'auth/provider-already-linked': 'Bu telefon zaten hesabına bağlı.',
-      'auth/credential-already-in-use': 'Bu telefon başka bir hesapta kullanılıyor.'
-    };
-    if (msg) { msg.style.color='#E53935'; msg.textContent = errMap[e.code] || ('Hata: ' + e.message); }
+    if (msg) { msg.style.color='#E53935'; msg.textContent='Hata: ' + e.message; }
   }
-}
-
-async function confirmPhoneCode() {
-  if (!_phoneConfirmResult) { alert('Önce SMS gönder.'); return; }
-  const code = ((document.getElementById('inp-otp') || {}).value || '').trim();
-  if (!code || code.length < 4) {
-    const m = document.getElementById('otp-msg');
-    if (m) { m.style.color='#E53935'; m.textContent='Kodu eksiksiz gir.'; }
-    return;
-  }
-  const m = document.getElementById('otp-msg');
-  if (m) { m.style.color='#888'; m.textContent='Doğrulanıyor…'; }
-  try {
-    const result = await _phoneConfirmResult.confirm(code);
-    const user = auth.currentUser;
-    const phone = ((document.getElementById('inp-phone') || {}).value || '').replace(/\s/g,'');
-    // Save to Firebase DB
-    await db.ref('users/' + user.uid).update({ phoneVerified: true, phone: phone });
-    // Update UI
-    document.getElementById('phone-otp-area').style.display = 'none';
-    const statusRow = document.getElementById('phone-status-row');
-    const statusTxt = document.getElementById('phone-status-txt');
-    const verifyBtn = document.getElementById('phone-verify-btn');
-    if (statusRow) statusRow.style.display = 'flex';
-    if (statusTxt) { statusTxt.innerHTML = `<span style="color:#2E7D32;font-weight:600;">✅ Doğrulandı · ${phone}</span>`; }
-    if (verifyBtn) verifyBtn.style.display = 'none';
-    const hesapMsg = document.getElementById('hesap-msg');
-    if (hesapMsg) { hesapMsg.style.display='block'; hesapMsg.textContent='✅ Telefon numaranız doğrulandı!'; setTimeout(()=>hesapMsg.style.display='none',4000); }
-    _phoneConfirmResult = null;
-    // Update profile badge
-    renderPhoneVerifiedBadge(true);
-  } catch(e) {
-    const errMap = { 'auth/invalid-verification-code': 'Kod hatalı, tekrar dene.', 'auth/code-expired': 'Kodun süresi doldu. SMS\'i tekrar gönder.' };
-    if (m) { m.style.color='#E53935'; m.textContent = errMap[e.code] || ('Hata: ' + e.message); }
-  }
-}
-
-function renderPhoneVerifiedBadge(show) {
-  let badge = document.getElementById('phone-verified-badge');
-  if (show) {
-    if (!badge) {
-      const nameEl = document.getElementById('profile-name-txt');
-      if (nameEl && nameEl.parentNode) {
-        badge = document.createElement('div');
-        badge.id = 'phone-verified-badge';
-        badge.style.cssText = 'font-size:12px;color:#2E7D32;font-weight:600;margin-top:2px;';
-        badge.textContent = '✅ Doğrulanmış Satıcı';
-        nameEl.parentNode.insertBefore(badge, nameEl.nextSibling);
-      }
-    }
-  } else if (badge) { badge.remove(); }
 }
 
 function toggleNotif(el, key) {
