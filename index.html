@@ -1623,7 +1623,17 @@ function openProfileScreen(page) {
         return;
       }
       const items = [];
-      snap.forEach(child => { items.push({ id: child.key, ...child.val() }); });
+      const now = Date.now();
+      const ONE_DAY = 24 * 60 * 60 * 1000;
+      snap.forEach(child => {
+        const il = child.val();
+        // Aktif olmayan ilanlar 1 günden eskiyse sil
+        if (il.status !== 'active' && il.time && (now - il.time) > ONE_DAY) {
+          db.ref('listings/' + child.key).remove().catch(() => {});
+          return; // bu ilanı listeye ekleme
+        }
+        items.push({ id: child.key, ...il });
+      });
       items.sort((a,b) => (b.time||0) - (a.time||0));
       list.innerHTML = items.map(il => {
         const statusColor = il.status === 'active' ? '#2E7D32' : il.status === 'pending' ? '#F57F17' : '#B71C1C';
