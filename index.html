@@ -1544,6 +1544,12 @@ function getErrMsg(code) {
 
 // ── PROFİL FONKSİYONLARI ──
 function renderProfile() {
+  // Her profil sekmesine gelişte sub-sayfayı kapat, ana menüyü göster
+  const _sub = document.getElementById('profil-sub');
+  const _main = document.getElementById('profil-main');
+  if (_sub) _sub.style.transform = 'translateX(100%)';
+  if (_main) _main.style.transform = 'translateX(0)';
+
   const user = auth.currentUser;
   const avatarEl = document.getElementById('profile-avatar-inner');
   const nameEl = document.getElementById('profile-name-txt');
