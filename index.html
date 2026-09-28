@@ -2637,8 +2637,29 @@ async function submitListing() {
   const sehir  = document.getElementById('il-sehir').value;
   const ilce   = document.getElementById('il-ilce').value;
   const location = [sehir, ilce].filter(Boolean).join(' / ');
-  if (!brand || !model || !year || !price || !km || !sehir) {
-    alert('Lütfen zorunlu alanları doldurun (Marka, Model, Yıl, Fiyat, KM, Şehir).'); ilanNextStep(1); return;
+  const fuel   = document.getElementById('il-fuel').value;
+  const gear   = document.getElementById('il-gear').value;
+  const kasa   = document.getElementById('il-kasa').value;
+  const color  = document.getElementById('il-color').value;
+  const hasar  = document.getElementById('il-hasar').value;
+  const seller = document.getElementById('il-seller').value;
+  const _empty = (v, placeholder) => !v || v === placeholder || v === 'Seçiniz';
+  const missing = [];
+  if (_empty(brand,  'Seçiniz')) missing.push('Marka');
+  if (_empty(model,  'Seçiniz')) missing.push('Model');
+  if (_empty(year,   'Seçiniz')) missing.push('Yıl');
+  if (!km)                       missing.push('Kilometre');
+  if (!price)                    missing.push('Fiyat');
+  if (_empty(sehir,  'Şehir seçin') || _empty(sehir, 'Şehir')) missing.push('Şehir');
+  if (_empty(fuel,   'Seçiniz')) missing.push('Yakıt');
+  if (_empty(gear,   'Seçiniz')) missing.push('Vites');
+  if (_empty(kasa,   'Seçiniz')) missing.push('Kasa Tipi');
+  if (_empty(color,  'Seçiniz')) missing.push('Renk');
+  if (_empty(hasar,  'Seçiniz')) missing.push('Hasar Durumu');
+  if (_empty(seller, 'Seçiniz')) missing.push('Satıcı Tipi');
+  if (missing.length > 0) {
+    alert('Lütfen şu zorunlu alanları doldurun:\n• ' + missing.join('\n• '));
+    ilanNextStep(1); return;
   }
   const btn = document.getElementById('ilan-submit-btn');
   btn.disabled = true; btn.textContent = 'Gönderiliyor...';
@@ -3466,7 +3487,7 @@ document.addEventListener('keydown', e => {
 
         <!-- Marka & Model -->
         <div class="filter-section">
-          <div class="filter-label">🚗 Marka &amp; Model</div>
+          <div class="filter-label">🚗 Marka &amp; Model <span style="color:#E53935">*</span></div>
           <div style="display:flex;gap:8px;">
             <select id="f-marka" style="flex:1;min-width:0;width:0;padding:9px 6px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:12px;background:#fff;color:#555;outline:none;overflow:hidden;text-overflow:ellipsis;"><option>Marka</option></select>
             <select id="f-model" style="flex:1;min-width:0;width:0;padding:9px 6px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:12px;background:#fff;color:#555;outline:none;overflow:hidden;text-overflow:ellipsis;"><option>Model</option></select>
@@ -4286,13 +4307,23 @@ function updateHacimForFuel() {
   const fuel = (document.getElementById('il-fuel') || {}).value || '';
   const hacimSel = document.getElementById('il-hacim');
   if (!hacimSel) return;
+  const hpSel = document.getElementById('il-hp');
   if (fuel === 'Elektrik') {
     hacimSel.innerHTML = '<option value="Elektrikli Motor">Elektrikli Motor</option>';
     hacimSel.value = 'Elektrikli Motor';
     ilanUpdateFieldStyle('il-hacim', true);
+    if (hpSel) {
+      hpSel.innerHTML = '<option value="Elektrikli Motor">Elektrikli Motor</option>';
+      hpSel.value = 'Elektrikli Motor';
+      ilanUpdateFieldStyle('il-hp', true);
+    }
   } else {
     buildSelect('il-hacim', MOTOR_HACMI, 'Seçiniz');
     ilanUpdateFieldStyle('il-hacim', false);
+    if (hpSel) {
+      buildSelect('il-hp', MOTOR_GUCU, 'Seçiniz');
+      ilanUpdateFieldStyle('il-hp', false);
+    }
   }
 }
 let gpsAktif = false;
@@ -4816,6 +4847,21 @@ function resetFilters() {
 function applyFilter() {
   const val = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
   const num = id => { const el = document.getElementById(id); return el && el.value ? parseFloat(el.value) : null; };
+
+  const _marka = val('f-marka');
+  const _model = val('f-model');
+  if (!_marka || _marka === 'Marka') {
+    alert('Lütfen önce bir marka seçin.');
+    document.getElementById('f-marka').style.border = '1.5px solid #E53935';
+    return;
+  }
+  if (!_model || _model === 'Model') {
+    alert('Lütfen bir model seçin.');
+    document.getElementById('f-model').style.border = '1.5px solid #E53935';
+    return;
+  }
+  document.getElementById('f-marka').style.border = '1.5px solid #e0e0e0';
+  document.getElementById('f-model').style.border = '1.5px solid #e0e0e0';
 
   const ilanNo   = val('f-ilannon');
   const kelime   = val('f-kelime').toLowerCase();
